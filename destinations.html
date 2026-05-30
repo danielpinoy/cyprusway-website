@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore Cyprus destinations covered by CyprusWay — Paphos, Limassol, Larnaca, Ayia Napa, Protaras, and the Troodos Mountains. Curated place guides for your trip.">
+  <meta property="og:title" content="Destinations — CyprusWay">
+  <meta property="og:description" content="Six distinctive regions across Cyprus — Paphos, Limassol, Larnaca, Ayia Napa, Protaras, and the Troodos Mountains. Curated place guides for your trip.">
+  <meta property="og:image" content="https://cyprusway.com/images/Cyprus beach aerial.jpg">
+  <meta property="og:url" content="https://cyprusway.com/destinations.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://cyprusway.com/images/Cyprus beach aerial.jpg">
+  <title>Destinations — CyprusWay</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header" role="banner">
+  <div class="container">
+    <a href="index.html" class="wordmark" aria-label="CyprusWay home">
+      <span class="cw-cyprus">Cyprus</span><span class="cw-way">Way</span>
+    </a>
+    <div class="lang-switcher">
+      <div class="lang-current-wrap">
+        <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span class="lang-current">EN</span>
+        <span class="lang-arrow"></span>
+      </div>
+      <ul class="lang-dropdown"></ul>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" onclick="document.querySelector('.mobile-nav').classList.toggle('open');this.classList.toggle('open');">
+      <span></span><span></span><span></span>
+    </button>
+    <nav aria-label="Main navigation">
+      <ul class="nav-links">
+        <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+        <li class="has-dropdown">
+          <a href="features.html" data-i18n="nav_features">Features</a>
+          <ul class="nav-dropdown">
+            <li><a href="features.html#virtual-tours" data-i18n="nav_vt">360&deg; Virtual Tours</a></li>
+            <li><a href="features.html#trip-planning" data-i18n="nav_tp">Trip Planning</a></li>
+            <li><a href="features.html#ask-pete" data-i18n="nav_ap">Ask Pete</a></li>
+            <li><a href="features.html#booking-help" data-i18n="nav_bh">Booking Help</a></li>
+          </ul>
+        </li>
+        <li class="has-dropdown">
+          <a href="destinations.html" class="active" data-i18n="nav_destinations">Destinations</a>
+          <ul class="nav-dropdown">
+            <li><a href="destinations.html#paphos" data-i18n="nav_paphos">Paphos</a></li>
+            <li><a href="destinations.html#limassol" data-i18n="nav_limassol">Limassol</a></li>
+            <li><a href="destinations.html#larnaca" data-i18n="nav_larnaca">Larnaca</a></li>
+            <li><a href="destinations.html#ayia-napa" data-i18n="nav_ayia">Ayia Napa</a></li>
+            <li><a href="destinations.html#protaras" data-i18n="nav_protaras">Protaras</a></li>
+            <li><a href="destinations.html#troodos" data-i18n="nav_troodos">Troodos Mountains</a></li>
+          </ul>
+        </li>
+        <li><a href="about.html" data-i18n="nav_about">About</a></li>
+        <li><a href="premium.html" class="nav-premium">Premium</a></li>
+      </ul>
+      <ul class="mobile-nav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="destinations.html">Destinations</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="premium.html" style="color:var(--gold);font-weight:700;">Premium</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<div class="page-photo-banner" style="background-image:url('images/Cyprus beach aerial.jpg');" role="img" aria-label="Cyprus coastline">
+  <div class="page-photo-banner-text reveal">
+    <h1 data-i18n="dest_hero_title">Destinations across Cyprus</h1>
+    <p data-i18n="dest_hero_sub">Six distinctive regions, each with its own landscape, history, and character</p>
+  </div>
+</div>
+
+<section style="padding-top:4rem;">
+  <div class="container reveal-stagger">
+
+    <div class="dest-detail" id="paphos">
+      <div class="dest-detail-image" style="background-image:url('images/Paphos harbour.jpg');" role="img" aria-label="Paphos harbour"></div>
+      <div class="dest-detail-text">
+        <h2>Paphos</h2>
+        <p data-i18n="d_paphos_p1">Paphos sits on Cyprus's western coast, a UNESCO World Heritage city wrapped around a scenic harbour. Its archaeological park holds some of the finest Roman floor mosaics in the Eastern Mediterranean, and the Tombs of the Kings &mdash; underground burial chambers carved from solid rock &mdash; stretch across a coastal plateau just north of the harbour. The old town has kept its traditional character with narrow streets, family-run tavernas, and a slower pace that contrasts with the resort strip along Poseidonos Avenue.</p>
+        <p data-i18n="d_paphos_p2">Beyond the city, the Akamas Peninsula stretches north &mdash; a wild finger of coast with the Blue Lagoon at its tip, the Avakas Gorge cutting inland, and the Baths of Aphrodite tucked into the hillside. Coral Bay, 12 kilometres north of the centre, is one of the district's most popular sandy beaches. Inland, traditional villages like Tsada and Tala offer wine-country dining and mountain views. The Aphrodite Cultural Route connects sites tied to the goddess across the district, ending at Petra tou Romiou &mdash; Aphrodite's Rock &mdash; where the sea breaks against a stack of limestone rising from the shoreline.</p>
+      </div>
+    </div>
+
+    <div class="dest-detail" id="limassol">
+      <div class="dest-detail-image" style="background-image:url('images/Limassol Marina.jpg');" role="img" aria-label="Limassol marina"></div>
+      <div class="dest-detail-text">
+        <h2>Limassol</h2>
+        <p data-i18n="d_limassol_p1">Limassol is Cyprus's cosmopolitan waterfront city, stretching along a broad bay on the south coast. The modern marina and the adjacent Molos promenade form the city's social centre &mdash; a landscaped seafront walk lined with cafes, sculpture gardens, and views across the Mediterranean. The old town, just inland, is a dense grid of narrow streets with a growing food and bar scene, anchored by a medieval castle where Richard the Lionheart is said to have married.</p>
+        <p data-i18n="d_limassol_p2">To the west, the Kourion archaeological site sits on a cliff overlooking the sea &mdash; a Greco-Roman city with a restored amphitheatre that still hosts summer concerts. Further west, Kolossi Castle marks the edge of the wine region. The Krassochoria villages &mdash; Omodos, Koilani, Lofou &mdash; climb into the Troodos foothills, producing some of Cyprus's best wines, including the island's signature sweet Commandaria. Limassol is also known for its festivals: the Carnival in February or March fills the streets, and the Wine Festival in September turns the Municipal Gardens into an open-air celebration.</p>
+      </div>
+    </div>
+
+    <div class="dest-detail" id="larnaca">
+      <div class="dest-detail-image" style="background-image:url('images/Larnaca promenade.jpg');" role="img" aria-label="Larnaca promenade"></div>
+      <div class="dest-detail-text">
+        <h2>Larnaca</h2>
+        <p data-i18n="d_larnaca_p1">Larnaca stretches along a sheltered bay on Cyprus's southeast coast, its palm-lined Finikoudes Promenade forming the city's defining feature. The Church of St. Lazarus, a 9th-century Byzantine stone church in the town centre, is one of the island's most significant religious sites. Just west of the city, the Larnaca Salt Lake fills with water in winter and, from November to March, attracts thousands of flamingos. On its shore, Hala Sultan Tekke &mdash; an Ottoman mosque and shrine &mdash; is one of the most important Islamic pilgrimage sites in the Mediterranean.</p>
+        <p data-i18n="d_larnaca_p2">Offshore, the Zenobia wreck &mdash; a Swedish roll-on/roll-off ferry that sank in 1980 &mdash; is consistently ranked among the world's top ten wreck dives. The region also holds some of Cyprus's oldest human history: the Choirokoitia Neolithic settlement, a UNESCO site, dates back nearly 9,000 years. Inland, the hill village of Lefkara is known across Europe for its traditional lace and silver craft, a trade that goes back centuries.</p>
+      </div>
+    </div>
+
+    <div class="dest-detail" id="ayia-napa">
+      <div class="dest-detail-image" style="background-image:url('images/Nissi Beach.jpg');" role="img" aria-label="Nissi Beach, Ayia Napa"></div>
+      <div class="dest-detail-text">
+        <h2>Ayia Napa</h2>
+        <p data-i18n="d_ayia_p1">Ayia Napa, on Cyprus's far eastern coast, is known for two very different identities that coexist within the same coastline. The town centre is one of the Mediterranean's most energetic nightlife districts, with a dense cluster of clubs, bars, and music venues around the central square. By day &mdash; and a short distance away &mdash; the beaches tell a different story entirely. Nissi Beach, a long arc of white sand with shallow turquoise water, is among the most photographed beaches on the island. Makronissos Beach, just to the southwest, offers a quieter stretch of sand backed by low cliffs.</p>
+        <p data-i18n="d_ayia_p2">Cape Greco National Park, at the easternmost tip, is a limestone headland of sea caves, coastal walking trails, and dramatic cliff-top views. The sea caves are accessible by boat or by scrambling down from the cliffs. The Love Bridge &mdash; a natural rock arch &mdash; is one of the most photographed spots on the island. Offshore, the cape offers some of Cyprus's best diving and snorkelling. The area also has water parks, go-karting, and boat trips to the nearby Blue Lagoon.</p>
+      </div>
+    </div>
+
+    <div class="dest-detail" id="protaras">
+      <div class="dest-detail-image" style="background-image:url('images/Stunning aerial view of Pernera, Cyprus, showcasing the coastline and iconic St. Nicholas Church..jpg');" role="img" aria-label="Protaras coastline"></div>
+      <div class="dest-detail-text">
+        <h2>Protaras</h2>
+        <p data-i18n="d_protaras_p1">Protaras sits just north of Ayia Napa on the eastern coast, but offers a calmer, more family-oriented atmosphere. Fig Tree Bay &mdash; named for a lone fig tree on the beach &mdash; is the area's best-known stretch of sand: shallow, clear water, a Blue Flag designation, and a gently shelving shore that makes it particularly suitable for children. The bay is backed by a coastal path that runs south toward Cape Greco and north toward Paralimni.</p>
+        <p data-i18n="d_protaras_p2">Konnos Bay, tucked between Protaras and Cape Greco, is a smaller, more sheltered cove with green hillside rising behind it and calm water that's good for swimming and snorkelling. The area has several water parks and a popular evening water-and-light show on the seafront. Protaras appeals to families and couples who want proximity to the attractions of the eastern coast without the late-night energy of Ayia Napa.</p>
+      </div>
+    </div>
+
+    <div class="dest-detail" id="troodos">
+      <div class="dest-detail-image" style="background-image:url('images/Troodos mountains.jpg');" role="img" aria-label="Troodos mountains"></div>
+      <div class="dest-detail-text">
+        <h2>Troodos Mountains</h2>
+        <p data-i18n="d_troodos_p1">The Troodos range rises across the centre of Cyprus, its highest peak &mdash; Mount Olympus &mdash; reaching 1,952 metres and holding snow through winter. The mountains feel like a different country from the coast: pine forest replaces scrubland, stone-built villages replace resort strips, and the air is noticeably cooler even in summer. Ten painted Byzantine churches scattered through the villages, with their distinctive steep roofs and vivid interior frescoes, are collectively a UNESCO World Heritage site.</p>
+        <p data-i18n="d_troodos_p2">The Kykkos Monastery, the richest and most famous of Cyprus's monasteries, sits in the Marathasa Valley with a museum of religious art and a mosaic-covered courtyard. The village of Omodos anchors the wine region with its cobbled square, the Holy Cross monastery, and wineries producing zivania and Commandaria. Platres, a resort village with a cooler climate, is the starting point for walks to the Caledonia and Millomeri waterfalls. Kalopanagiotis, in the Marathasa Valley, combines traditional stone architecture with sulphur springs and a spa. The Artemis Trail circles the summit and the Atalante Trail runs below it &mdash; both offering long views across the island.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="section-divider reveal" aria-hidden="true"><span class="divider-dot"></span></div>
+
+<section class="reveal">
+  <div class="container">
+    <span class="section-label" style="display:block;text-align:center;" data-i18n="d_cat_heading">What you'll find</span>
+    <h2 style="text-align:center;margin-bottom:2.5rem;" data-i18n="d_cat_sub">Curated places across every category</h2>
+    <div class="card-grid three-col reveal-stagger">
+      <div class="cat-card">
+        <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 16c.5-1 1.5-2 3-2s2.5 1 3 2M16 16c.5-1 1.5-2 3-2s2.5 1 3 2"/><path d="M2 12c1-2 4-4 7-3s5 4 8 3"/><path d="M6 13c0-1 .5-2 1-2s1 1 1 2"/><path d="M16 13c0-1 .5-2 1-2s1 1 1 2"/></svg>
+        <h3 data-i18n="d_cat_beaches">Beaches</h3>
+        <p data-i18n="d_cat_beaches_desc">From the famous arcs of Nissi Beach and Fig Tree Bay to quiet coves like Konnos Bay and remote shores like Lara Beach.</p>
+      </div>
+      <div class="cat-card">
+        <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="3" width="8" height="3" rx="1"/><rect x="9" y="6" width="6" height="12" rx="1"/><rect x="7" y="18" width="10" height="3" rx="1"/></svg>
+        <h3 data-i18n="d_cat_archaeo">Archaeological Sites</h3>
+        <p data-i18n="d_cat_archaeo_desc">Kourion, Paphos mosaics, Tombs of the Kings, Choirokoitia &mdash; Cyprus has 9,000 years of layered history to explore.</p>
+      </div>
+      <div class="cat-card">
+        <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 L12 7"/><path d="M10 7a2 2 0 0 1 4 0v2a4 4 0 0 1-4 4v0a4 4 0 0 1-4-4V7a2 2 0 0 1 4 0Z"/><circle cx="12" cy="7" r="1"/><line x1="12" y1="14" x2="12" y2="20"/><path d="M8 20h8"/></svg>
+        <h3 data-i18n="d_cat_churches">Monasteries &amp; Churches</h3>
+        <p data-i18n="d_cat_churches_desc">Kykkos Monastery, painted Troodos churches, Agios Neophytos, and St. Lazarus &mdash; faith and architecture across the island.</p>
+      </div>
+      <div class="cat-card">
+        <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22V7"/><path d="M9 10 12 7l3 3"/><path d="M9 14 12 11l3 3"/><path d="M9 18 12 15l3 3"/><line x1="7" y1="22" x2="17" y2="22"/></svg>
+        <h3 data-i18n="d_cat_nature">Nature &amp; Trails</h3>
+        <p data-i18n="d_cat_nature_desc">Avakas Gorge, Cape Greco sea caves, Caledonia Waterfalls, the Artemis Trail, and the wild Akamas Peninsula.</p>
+      </div>
+      <div class="cat-card">
+        <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="6" r="2.5"/><circle cx="14" cy="6" r="2.5"/><circle cx="11" cy="11" r="2.5"/><circle cx="17" cy="11" r="2.5"/><circle cx="8" cy="16" r="2.5"/><circle cx="14" cy="16" r="2.5"/><path d="M8 8.5V9.5"/><path d="M14 8.5V9.5"/><line x1="11" y1="13.5" x2="12" y2="22"/><line x1="10" y1="22" x2="14" y2="22"/></svg>
+        <h3 data-i18n="d_cat_wine">Villages &amp; Wine</h3>
+        <p data-i18n="d_cat_wine_desc">Omodos, Lefkara, the Krassochoria wine villages &mdash; traditional Cyprus with village squares, wineries, and local crafts.</p>
+      </div>
+      <div class="cat-card">
+        <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="9" width="14" height="12" rx="1"/><rect x="8" y="5" width="3" height="4"/><rect x="13" y="5" width="3" height="4"/><rect x="6" y="6" width="4" height="3"/><rect x="14" y="6" width="4" height="3"/></svg>
+        <h3 data-i18n="d_cat_castles">Castles &amp; Fortifications</h3>
+        <p data-i18n="d_cat_castles_desc">Limassol Castle, Kolossi Castle, Paphos Castle, the Venetian Walls of Nicosia &mdash; centuries of strategic architecture.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-col">
+        <h4>CyprusWay</h4>
+        <p style="margin:0;color:rgba(255,255,255,0.65);font-size:0.9rem;" data-i18n="footer_tagline">Your companion for discovering Cyprus.</p>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer_pages">Pages</h4>
+        <ul>
+          <li><a href="index.html" data-i18n="footer_home">Home</a></li>
+          <li><a href="features.html" data-i18n="footer_features">Features</a></li>
+          <li><a href="destinations.html" data-i18n="footer_destinations">Destinations</a></li>
+          <li><a href="about.html" data-i18n="footer_about">About</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer_info">Info</h4>
+        <ul>
+          <li><a href="privacy.html" data-i18n="footer_privacy">Privacy Policy</a></li>
+          <li><a href="terms.html" data-i18n="footer_terms">Terms of Service</a></li>
+          <li><a href="about.html#contact" data-i18n="footer_contact">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-disclosure">
+      <p><strong data-i18n="footer_disclosure_strong">Affiliate disclosure:</strong> <span data-i18n="footer_disclosure">CyprusWay may earn a commission from bookings made through links on this site, at no extra cost to you.</span></p>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer_copyright">&copy; 2026 Almisource LTD. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script defer src="js/config.js"></script>
+<script defer src="js/cookie-consent.js"></script>
+<script defer src="js/i18n.js"></script>
+<script defer src="js/lang.js"></script>
+<script defer src="js/main.js"></script>
+</body>
+</html>
