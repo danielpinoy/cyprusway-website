@@ -23,11 +23,11 @@
     }
   }
 
-  function setConsent() {
+  function setConsent(state) {
     var expiry = new Date();
     expiry.setDate(expiry.getDate() + EXPIRY_DAYS);
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      accepted: true,
+      accepted: state,
       expires: expiry.toISOString()
     }));
   }
@@ -41,7 +41,10 @@
     banner.innerHTML =
       '<div class="cookie-banner-inner">' +
         '<p class="cookie-banner-text">This site uses cookies for essential functionality and to track affiliate bookings. <a href="privacy.html">Learn more</a>.</p>' +
-        '<button class="cookie-banner-accept btn btn-primary">Accept</button>' +
+        '<div class="cookie-banner-actions">' +
+          '<button class="cookie-banner-decline">Decline</button>' +
+          '<button class="cookie-banner-accept btn btn-primary">Accept</button>' +
+        '</div>' +
       '</div>';
 
     document.body.appendChild(banner);
@@ -51,10 +54,21 @@
 
     /* Wire accept button */
     banner.querySelector('.cookie-banner-accept').addEventListener('click', function () {
-      setConsent();
-      banner.classList.remove('cookie-banner-visible');
-      setTimeout(function () { banner.remove(); }, 400);
+      setConsent(true);
+      dismissBanner(banner);
     });
+
+    /* Wire decline button */
+    banner.querySelector('.cookie-banner-decline').addEventListener('click', function () {
+      setConsent(false);
+      dismissBanner(banner);
+    });
+  }
+
+  /* --- Dismiss banner --- */
+  function dismissBanner(banner) {
+    banner.classList.remove('cookie-banner-visible');
+    setTimeout(function () { banner.remove(); }, 400);
   }
 
   /* --- Init --- */

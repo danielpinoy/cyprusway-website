@@ -164,5 +164,10 @@ CW.t = {
   succ_reg:{en:"Regenerate Day",pl:"Regeneruj dzień",de:"Tag neu generieren",el:"Αναδημιουργία ημέρας",sv:"Regenerera dag" },
   succ_pdf:{en:"PDF Export",pl:"Eksport PDF",de:"PDF-Export",el:"Εξαγωγή PDF",sv:"PDF-export" },
   succ_cta:{en:"Start exploring Cyprus",pl:"Zacznij odkrywać Cypr",de:"Beginnen Sie, Zypern zu erkunden",el:"Ξεκινήστε να εξερευνάτε την Κύπρο",sv:"Börja utforska Cypern" },
-  succ_note:{en:"Premium works wherever you sign in — on the website, the iOS app, and the Android app.",pl:"Premium działa wszędzie tam, gdzie się zalogujesz — na stronie, w aplikacji iOS i Android.",de:"Premium funktioniert überall dort, wo Sie sich anmelden — auf der Website, in der iOS-App und in der Android-App.",el:"Το premium λειτουργεί όπου συνδέεστε — στον ιστότοπο, στην εφαρμογή iOS και στην εφαρμογή Android.",sv:"Premium fungerar var du än loggar in — på webbplatsen, iOS-appen och Android-appen." }
+  succ_note:{en:"Premium works wherever you sign in — on the website, the iOS app, and the Android app.",pl:"Premium działa wszędzie tam, gdzie się zalogujesz — na stronie, w aplikacji iOS i Android.",de:"Premium funktioniert überall dort, wo Sie sich anmelden — auf der Website, in der iOS-App und in der Android-App.",el:"Το premium λειτουργεί όπου συνδέεστε — στον ιστότοπο, στην εφαρμογή iOS και στην εφαρμογή Android.",sv:"Premium fungerar var du än loggar in — på webbplatsen, iOS-appen och Android-appen." },
+
+  /* === home banner === */
+  banner_heading:{en:"Unlock the full experience",pl:"Odblokuj pelne doswiadczenie",de:"Das volle Erlebnis freischalten",el:"Ξεκλειδώστε την πλήρη εμπειρία",sv:"Las upp hela upplevelsen" },
+  banner_desc:{en:"All 25 Virtual Tours, AI Trip Planner, unlimited Ask Pete — one payment, forever.",pl:"Wszystkie 25 wirtualnych wycieczek, planer podrozy AI, nielimitowany Ask Pete — jedna platnosc, na zawsze.",de:"Alle 25 virtuellen Touren, KI-Reiseplaner, unbegrenzt Frag Pete — eine Zahlung, fur immer.",el:"Και οι 25 εικονικές περιηγήσεις, σχεδιαστής ταξιδιού AI, απεριόριστο Ask Pete — μία πληρωμή, για πάντα.",sv:"Alla 25 virtuella turer, AI-reseplanerare, obegransad Fraga Pete — en betalning, for alltid." },
+  banner_cta:{en:"Get Premium — €4.99",pl:"Kup Premium — 4,99 €",de:"Premium holen — 4,99 €",el:"Αποκτήστε Premium — 4,99 €",sv:"Skaffa Premium — 4,99 €" }
 };
