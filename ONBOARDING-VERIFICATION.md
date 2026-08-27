@@ -183,10 +183,13 @@ time — confirmed as a local clock issue, not code.
 > `HEAD` (`lang.js` before `main.js`) produces it identically, and it is unrelated to
 > onboarding.
 >
+> **This was throwing before this branch existed.** It is not something onboarding
+> introduced. `git show HEAD:index.html` shows `lang.js` loading before `main.js` there too,
+> which is the whole cause — the dropdown items exist by the time `wireSmoothScroll` runs, so
+> it binds them. Every language switch on every page of the live site throws today.
+>
 > Fixed with a three-line guard in `js/main.js` that bails on `#` and empty hrefs. Re-tested:
-> five consecutive language switches now produce **zero** console output. This is a fifth
-> change you did not ask for — I made it because it invalidated a claim in this report and the
-> fix is a guard clause. Reverting is trivial.
+> five consecutive language switches now produce **zero** console output.
 
 ---
 
@@ -232,49 +235,91 @@ a different tone.
 
 **3. The GoTrue clock-skew warning** is yours to fix on the machine; nothing to do in code.
 
+---
+
+## Pre-existing issues found, not fixed
+
+**The site talks about "the app" 33 times across 8 pages and never links to it.** Not one
+App Store link, Play Store link, or download button anywhere in the HTML, JS or CSS:
+
+| Page | Mentions | | Page | Mentions |
+|---|---|---|---|---|
+| `terms.html` | 7 | | `about.html` | 4 |
+| `privacy.html` | 6 | | `features.html` | 2 |
+| `faq.html` | 5 | | `premium.html` | 2 |
+| `index.html` | 5 | | `premium-success.html` | 2 |
+
+The hero says "all in one app", the premium page sells access that "works everywhere — on web
+and in the app", and `premium-success.html` congratulates people on access that is "active
+across web and app" — with no way to get the app from any of them. Surfaced during the
+two-button question, because "get the app" was the one genuinely different second destination
+the interests screen could have offered, and it turned out not to exist. Out of scope here,
+but it is a gap on the conversion path, not just a missing link.
+
+**The premium page's own copy** still says "Create a free account so your premium access
+works everywhere" above a button now labelled "Sign in". Minor, and the mode distinction is
+deliberately collapsed (sign-in and sign-up are the same action), but the sentence predates
+that decision.
+
 **4. `My CyprusWay` now routes to `index.html`,** not `premium.html`. One line in `ROUTES`.
 
 **5. The language-switcher exception**, described under point 11 above.
 
 ---
 
+**6. The interests screen is now one button, not two.** Approved after review.
+
+The Figma screen has "Explore" (secondary, navy) and "My CyprusWay" (primary, gold). The
+second name comes from the app, where it means a personalised feed. The web has no such
+surface, so both landed somewhere generic and the pair was cosmetic.
+
+The deciding argument was what the routing fix exposed: `Explore` → `destinations.html` and
+`My CyprusWay` → `index.html` meant the *secondary* button led somewhere more specific than
+the *primary* one. A primary/secondary pair asserts that one path is recommended, and gold
+was pointing at the weaker action. Beyond that, someone who has just been asked for their
+interests has no basis to choose between two destinations they have never seen, and
+"My CyprusWay" names a surface the website does not have.
+
+Checked for a real second action before recommending the collapse: *continue on the web* vs
+*get the app* would have earned two buttons honestly, since that is where "My CyprusWay"
+actually lives. The site has no App Store or Play links anywhere (see pre-existing issues),
+so that destination does not exist either.
+
+Now: one full-width gold button, **"Start exploring"** → `destinations.html`, in all five
+languages (`onb_start_exploring`). `onb_explore` and `onb_mycw` were removed — they were
+added on this branch and never shipped. `.onb-submit-row` and `.onb-btn--secondary` were
+removed with them, and `.onb-btn` is now simply `width: 100%`, which also retired the
+360px-specific padding those two labels needed.
+
+Verified live: one button, 426px wide — exactly the card's inner width — disabled at 60%
+until a chip is picked, then a real save wrote
+`interests: ["ancient_ruins","culture_art"], onboarding_completed: true` and landed on
+`destinations.html`.
+
+---
+
 ## What is still left to your decision
-
-**Routing after save:**
-
-| Button | Destination |
-|---|---|
-| Explore | `destinations.html` |
-| My CyprusWay | `index.html` |
-
-See the note below on whether this screen should have two buttons at all.
 
 **The signin subline** is still the placeholder "Sign in to pick up where you left off." One
 dictionary entry, `onb_signin_sub`.
 
-**Two buttons, or one.** My recommendation is one. Reasoning in the handover, but the short
-version: the two now differ only in destination, and after the routing change the *secondary*
-button leads somewhere more specific (`destinations.html`) than the *primary* one
-(`index.html`), which inverts the emphasis. I checked whether "get the app" could be the real
-second action — the site has no App Store or Play links anywhere, so it cannot be. Not
-changed; it is your screen and you asked for a read, not a rewrite.
-
 ---
 
-## Also not verified end-to-end
+## The interests-write failure banner — now verified
 
-**The interests-write failure banner.** The OAuth error banner is proven (point 7) and the
-save-failure path uses the same `showAlert` function, the same live region and the same
-markup — only the message key differs. What is not exercised is the branch that treats a
-zero-row response as an error:
+This was outstanding in the first version of this report. Run since, on a live session with
+the update forced to return `{ data: [], error: null }` — the exact silent-success shape that
+`.select('id')` exists to catch:
 
-```js
-if (res.error) throw res.error;
-if (!res.data || !res.data.length) throw new Error('zero_rows');
-```
+| | Result |
+|---|---|
+| Zero-row response caught | yes, treated as failure despite `error: null` |
+| Banner | "We couldn't save your interests. Please try again." |
+| Navigation | none — stayed on the interests screen |
+| Button | re-enabled, label restored from "Saving…" |
+| Selection | kept (`beach_coast`, `local_food` still shown as selected) |
 
-Reaching it needs a live session plus a forced zero-row update, and the session is behind
-the same sign-in that is blocking point 4. I will run it in the same pass.
+Without `.select('id')` that write would have reported success and saved nothing. It does not.
 
 ---
 

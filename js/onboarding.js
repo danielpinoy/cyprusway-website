@@ -27,12 +27,14 @@
     'churches_monasteries'
   ];
 
-  /* --- Where the two submit buttons go ---
-     Placeholder routing. The design does not say what differs
-     between them; both save identically. */
+  /* --- Where the submit button goes ---
+     The Figma screen has two buttons, "Explore" and "My CyprusWay",
+     carried over from the app where the second means a personalised
+     feed. The web has no such surface, so both would have landed
+     somewhere generic — a primary/secondary pair claiming one path
+     is recommended when the two were equivalent. Collapsed to one. */
   var ROUTES = {
-    explore: 'destinations.html',
-    mycw: 'index.html'
+    explore: 'destinations.html'
   };
 
   var BACKDROP = 'images/Paphos harbour.jpg';
@@ -320,12 +322,8 @@
       '</div>' +
       '<div class="onb-chips">' + chips + '</div>' +
       '<div class="onb-alert-region" role="status" aria-live="polite"></div>' +
-      '<div class="onb-submit-row">' +
-      '<button type="button" class="onb-btn onb-btn--secondary" data-dest="explore" disabled aria-disabled="true">' +
-      '<span data-i18n="onb_explore"></span></button>' +
-      '<button type="button" class="onb-btn onb-btn--primary" data-dest="mycw" disabled aria-disabled="true">' +
-      '<span data-i18n="onb_mycw"></span></button>' +
-      '</div>';
+      '<button type="button" class="onb-btn onb-btn--primary" data-dest="explore" disabled aria-disabled="true">' +
+      '<span data-i18n="onb_start_exploring"></span></button>';
 
     body.querySelectorAll('.onb-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
