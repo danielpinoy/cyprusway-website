@@ -1,0 +1,5 @@
+/* Applied only to glyphs whose meaning is "forward/back in reading order".
+   The allowlist lives in src/lib/dir.ts. */
+:global([dir='rtl']) .mirror {
+  transform: scaleX(-1);
+}

@@ -1,0 +1,24 @@
+.region:empty {
+  display: none;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+  padding: var(--cw-space-12);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-alert-tint);
+}
+
+.icon {
+  flex-shrink: 0;
+  color: var(--cw-alert-text);
+}
+
+.text {
+  font-size: var(--cw-body-size);
+  font-weight: var(--cw-body-weight);
+  line-height: var(--cw-body-line);
+  color: var(--cw-alert-text);
+}

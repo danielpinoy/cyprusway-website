@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cyprusway-website",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-08-27",
+
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+
+    // Prerendered pages are written in directory form (dist/privacy/index.html), and
+    // the canonical URL is /privacy with no trailing slash. "drop-trailing-slash"
+    // serves that file at /privacy and redirects /privacy/ to it, so there is one URL
+    // per page rather than two.
+    "html_handling": "drop-trailing-slash",
+
+    // "single-page-application" would answer 200 with the SPA shell for every unknown
+    // path — a soft 404, and a regression on the live site, which 404s today. Every
+    // phase-1 route is prerendered, so nothing needs an SPA fallback. Unmatched
+    // requests fall through to src/worker.ts, which returns a real 404.
+    "not_found_handling": "none",
+
+    // The asset layer's own .html handling redirects /privacy.html with a 307, and a
+    // permanent URL change wants a 301. Running the Worker first for .html paths lets
+    // it own those redirects, including the four pages that were deleted and have no
+    // asset to match.
+    "run_worker_first": ["/*.html"]
+  },
+
+  "observability": { "enabled": true }
+}

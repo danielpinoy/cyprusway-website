@@ -1,0 +1,70 @@
+.wrap {
+  position: relative;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-4);
+  padding: var(--cw-space-8);
+  border-radius: var(--cw-radius-sm);
+  transition: background-color var(--cw-transition);
+}
+
+.light .trigger {
+  color: var(--cw-white);
+}
+
+.dark .trigger {
+  color: var(--cw-navy);
+}
+
+.light .trigger:hover {
+  background-color: color-mix(in srgb, var(--cw-white) 14%, transparent);
+}
+
+.dark .trigger:hover {
+  background-color: color-mix(in srgb, var(--cw-navy) 8%, transparent);
+}
+
+.code {
+  font-size: var(--cw-button-sm-size);
+  font-weight: var(--cw-button-sm-weight);
+  line-height: var(--cw-button-sm-line);
+}
+
+/* Logical inset so the menu hangs from the correct edge under RTL. */
+.menu {
+  position: absolute;
+  inset-block-start: calc(100% + var(--cw-space-8));
+  inset-inline-end: 0;
+  z-index: 1;
+  min-inline-size: 160px;
+  padding: var(--cw-space-4);
+  margin: 0;
+  list-style: none;
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+  box-shadow: var(--cw-shadow-lg);
+}
+
+.option {
+  display: block;
+  inline-size: 100%;
+  padding: var(--cw-space-8) var(--cw-space-12);
+  border-radius: var(--cw-radius-sm);
+  text-align: start;
+  font-size: var(--cw-body-size);
+  font-weight: var(--cw-body-weight);
+  color: var(--cw-black-2);
+  transition: background-color var(--cw-transition);
+}
+
+.option:hover {
+  background-color: var(--cw-sand);
+}
+
+.option[aria-checked='true'] {
+  font-weight: 700;
+  color: var(--cw-navy);
+}

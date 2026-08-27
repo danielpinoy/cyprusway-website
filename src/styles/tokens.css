@@ -1,0 +1,131 @@
+/* ============================================================
+   CyprusWay — design tokens
+
+   Taken from the Figma variable collection in file 9hIxD9uzRbYdm1YLPz0bAi
+   (union of the definitions exposed by nodes 3370-7099, 3390-8530, 3558-19485,
+   3558-19871, 3562-23804 and 3562-24665). NOT from the old css/style.css, whose
+   palette was built for the placeholder marketing site.
+
+   This is the only file in the repo that may contain a literal colour.
+   ============================================================ */
+
+:root {
+  /* --- Colour -------------------------------------------------------------
+     Figma name is given for each so a later variable sync can be mechanical. */
+
+  --cw-navy: #1b3b6b;          /* color/navy    — header band, footer, hero, dark button */
+  --cw-gold: #c49a10;          /* color/gold    — primary action, selected state */
+  --cw-sand: #f5f0e8;          /* color/sand    — page ground below the hero */
+  --cw-white: #ffffff;         /* color/white   — cards, chips, provider buttons */
+  --cw-grey-1: #d9e4f6;        /* color/grey-1  — muted text and rules ON navy */
+  --cw-grey-2: #afbacb;        /* color/grey-2  — DECORATIVE rules only, see note 2 */
+  --cw-grey-3: #5a6370;        /* color/grey-3  — body copy, and interactive borders */
+  --cw-black-1: #1b1c21;       /* color/black-1 — label ON gold, see note 1 */
+  --cw-black-2: #403d4a;       /* color/black-2 — headings inside the auth/interest cards */
+  --cw-alert: #f05d5d;         /* color/alert   — error banner text and icon */
+  --cw-success: #50a758;       /* color/success — defined in Figma, unused in phase 1 */
+  --cw-secondary-2: #65462e;   /* color/secondary-2 — defined in Figma, unused in phase 1 */
+  --cw-icon: #292929;          /* Icons Color   — icon default where nothing else applies */
+
+  /* Derived, not from Figma. Named so their derivation is visible at the use site. */
+  --cw-alert-tint: color-mix(in srgb, var(--cw-alert) 20%, transparent);
+  /* Note 3 — the alert red cannot be its own label colour.
+     The Figma error banner paints #f05d5d text and icon on a 20% tint of itself.
+     Composited over --cw-sand that tint is #f4d3cc, and #f05d5d on it measures
+     2.34:1 — for the label, against 4.5:1, and for the icon, against the 3:1 a
+     meaningful graphic needs. The same hue at 62% (#953a3a) measures 5.11:1 and
+     the banner still reads unmistakably red. The tint is unchanged. */
+  --cw-alert-text: color-mix(in srgb, var(--cw-alert) 62%, #000);
+  --cw-gold-tint: color-mix(in srgb, var(--cw-gold) 10%, var(--cw-white));
+  /* Note 4 — gold cannot be a link colour on a light ground.
+     #c49a10 on --cw-sand measures 2.32:1. The error frame's "Report the problem" link
+     is drawn in it. The same hue at 65% (#7f640a) measures 4.96:1 on sand and still
+     reads as the gold accent. Gold on --cw-navy is 4.23:1 and stays as drawn, since
+     it is used there for headings and icons, not for 13px links. */
+  --cw-gold-link: color-mix(in srgb, var(--cw-gold) 65%, #000);
+  --cw-scrim: color-mix(in srgb, var(--cw-navy) 88%, transparent);
+  --cw-skeleton-on-navy: color-mix(in srgb, var(--cw-navy) 82%, #000);
+  --cw-skeleton-on-sand: color-mix(in srgb, var(--cw-sand) 84%, var(--cw-grey-3));
+  --cw-on-navy-muted: color-mix(in srgb, var(--cw-grey-1) 72%, transparent);
+
+  /* Note 1 — nothing white goes on --cw-gold.
+     Measured against WCAG 2.1 contrast:
+       #ffffff on #c49a10 = 2.63:1   fails AA at any size
+       #1b3b6b on #c49a10 = 4.23:1   misses 4.5:1 for the 13px button label
+       #1b1c21 on #c49a10 = 6.46:1   passes
+     The Figma header draws a white "Sign In" label on gold. We use --cw-black-1.
+     Ruled 27 Aug (plan Q8), same class of decision as the selected-chip label.
+
+     Note 2 — --cw-grey-2 cannot bound an interactive control.
+       #afbacb on #ffffff = 1.96:1   below the 3:1 WCAG 1.4.11 requires for the
+                                     visible boundary of a UI component
+       #5a6370 on #ffffff = 6.08:1
+     So interactive borders (chips, inputs, provider buttons) use --cw-grey-3, and
+     --cw-grey-2 is kept for decorative rules where nothing depends on seeing it. */
+
+  --cw-border-interactive: var(--cw-grey-3);
+  --cw-border-decorative: var(--cw-grey-2);
+
+  /* --- Radius ------------------------------------------------------------- */
+  --cw-radius-sm: 8px;         /* radius/sm   — buttons, chips, inputs */
+  --cw-radius-md: 12px;        /* radius/md   — media, small cards */
+  --cw-radius-lg: 24px;        /* radius/lg   — the auth and interests cards */
+  --cw-radius-pill: 100px;     /* radius/pill — interest chips, tags */
+
+  /* --- Spacing -------------------------------------------------------------
+     Figma exposes four of these as variables (marked *); the rest are raw numbers
+     in the frames. Marked so a later variable sync knows which are authoritative. */
+  --cw-space-4: 4px;
+  --cw-space-8: 8px;           /* * space/8  */
+  --cw-space-12: 12px;         /* * space/12 */
+  --cw-space-16: 16px;
+  --cw-space-24: 24px;         /* * space/24 */
+  --cw-space-32: 32px;         /* * space/32 */
+  --cw-space-40: 40px;
+  --cw-space-48: 48px;
+  --cw-space-64: 64px;
+
+  /* --- Type ----------------------------------------------------------------
+     Figma specifies SF Pro, which cannot be licensed for the web. Inter Variable is
+     its standard metric-near substitute and, being variable, renders the 510 and 590
+     weights the design uses literally rather than rounding them to 500/600.
+     Playfair Display is gone: nothing in the new design is a serif. */
+  --cw-font: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
+    'Helvetica Neue', Arial, sans-serif;
+
+  --cw-h1-size: 36px;      --cw-h1-line: 40px;   --cw-h1-weight: 700;  --cw-h1-track: 0;
+  --cw-h2-size: 24px;      --cw-h2-line: 1.2;    --cw-h2-weight: 700;  --cw-h2-track: 0;
+  --cw-h3-size: 20px;      --cw-h3-line: 24px;   --cw-h3-weight: 700;  --cw-h3-track: 0;
+  --cw-h4-size: 18px;      --cw-h4-line: 1.3;    --cw-h4-weight: 700;  --cw-h4-track: 0;
+  --cw-h5-size: 16px;      --cw-h5-line: 1.5;    --cw-h5-weight: 510;  --cw-h5-track: 0;
+  --cw-h6-size: 12px;      --cw-h6-line: 1.6;    --cw-h6-weight: 700;  --cw-h6-track: 0.25px;
+  --cw-subtitle-size: 14px; --cw-subtitle-line: 1.8; --cw-subtitle-weight: 510; --cw-subtitle-track: 0.15px;
+  --cw-body-size: 13px;    --cw-body-line: 20px; --cw-body-weight: 510; --cw-body-track: 0;
+  --cw-button-size: 13px;  --cw-button-line: 16px; --cw-button-weight: 590; --cw-button-track: 0;
+  --cw-button-sm-size: 12px; --cw-button-sm-line: 14px; --cw-button-sm-weight: 590; --cw-button-sm-track: 0;
+  --cw-small-size: 12px;   --cw-small-line: 16px; --cw-small-weight: 400; --cw-small-track: 0.1px;
+  --cw-input-size: 14px;   --cw-input-line: 24px; --cw-input-weight: 400; --cw-input-track: 0.15px;
+
+  /* Prose sizes. The Figma has no long-form page, so the legal and about pages use a
+     larger body than the 13px dense-UI Body token — 13px is unreadable at length. */
+  --cw-prose-size: 16px;
+  --cw-prose-line: 1.7;
+
+  /* --- Layout --------------------------------------------------------------
+     The frames are 1440 wide with 120px margins, giving a 1200 content column. */
+  --cw-content: 1200px;
+  --cw-content-prose: 720px;
+  --cw-gutter: clamp(16px, 4vw, 24px);
+  --cw-header-height: 80px;
+
+  /* --- Elevation and motion ----------------------------------------------- */
+  --cw-shadow-sm: 0 1px 3px rgb(27 59 107 / 8%);
+  --cw-shadow-md: 0 4px 24px rgb(27 59 107 / 10%);
+  --cw-shadow-lg: 0 8px 40px rgb(27 59 107 / 16%);
+  --cw-transition: 160ms ease;
+
+  --cw-z-header: 100;
+  --cw-z-drawer: 200;
+  --cw-z-cookie: 300;
+  --cw-z-modal: 400;
+}

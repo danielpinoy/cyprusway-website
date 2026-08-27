@@ -1,0 +1,70 @@
+/* Long-form pages. The Figma has no prose page, so this is derived: the 13px Body
+   token is a dense-UI size and unreadable at length, so prose uses its own scale. */
+
+.prose {
+  font-size: var(--cw-prose-size);
+  line-height: var(--cw-prose-line);
+  color: var(--cw-black-2);
+}
+
+.prose h1 {
+  margin-block-end: var(--cw-space-8);
+  font-size: var(--cw-h1-size);
+  line-height: var(--cw-h1-line);
+  font-weight: var(--cw-h1-weight);
+  color: var(--cw-navy);
+}
+
+.prose h2 {
+  margin-block: var(--cw-space-40) var(--cw-space-12);
+  font-size: var(--cw-h3-size);
+  line-height: var(--cw-h3-line);
+  font-weight: var(--cw-h3-weight);
+  color: var(--cw-navy);
+}
+
+/* The line under an h1 is the standfirst on every one of these pages. */
+.prose h1 + p {
+  margin-block-end: var(--cw-space-32);
+  font-size: var(--cw-subtitle-size);
+  line-height: var(--cw-subtitle-line);
+  letter-spacing: var(--cw-subtitle-track);
+  color: var(--cw-grey-3);
+}
+
+.prose p {
+  margin-block-end: var(--cw-space-16);
+}
+
+.prose ul,
+.prose ol {
+  margin-block-end: var(--cw-space-16);
+  padding-inline-start: var(--cw-space-24);
+}
+
+.prose li {
+  margin-block-end: var(--cw-space-8);
+}
+
+.prose a {
+  color: var(--cw-navy);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.prose strong {
+  font-weight: 700;
+}
+
+.contactCard {
+  margin-block-start: var(--cw-space-24);
+  padding: var(--cw-space-24);
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+}
+
+.contactNote {
+  margin-block-end: 0;
+  font-size: var(--cw-subtitle-size);
+  color: var(--cw-grey-3);
+}

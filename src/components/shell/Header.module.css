@@ -1,0 +1,135 @@
+.header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--cw-z-header);
+  background-color: var(--cw-navy);
+  color: var(--cw-white);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+  inline-size: 100%;
+  max-inline-size: var(--cw-content);
+  min-block-size: var(--cw-header-height);
+  margin-inline: auto;
+  padding-inline: var(--cw-gutter);
+  padding-block: var(--cw-space-16);
+}
+
+.brand {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+/* Centred in the frame; below 900px the drawer carries navigation instead. */
+.nav {
+  display: none;
+  flex: 1;
+  justify-content: center;
+  gap: var(--cw-space-24);
+}
+
+@media (min-width: 900px) {
+  .nav {
+    display: flex;
+  }
+}
+
+.navItem {
+  color: var(--cw-white);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-4);
+  margin-inline-start: auto;
+}
+
+@media (min-width: 640px) {
+  .inner {
+    gap: var(--cw-space-16);
+  }
+
+  .actions {
+    gap: var(--cw-space-12);
+  }
+}
+
+@media (min-width: 900px) {
+  .actions {
+    margin-inline-start: 0;
+  }
+}
+
+.iconButton,
+.inertIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: var(--cw-radius-sm);
+  color: var(--cw-white);
+  transition: background-color var(--cw-transition);
+}
+
+.iconButton:hover:not([disabled]) {
+  background-color: color-mix(in srgb, var(--cw-white) 14%, transparent);
+}
+
+.iconButton[disabled],
+.inertIcon {
+  opacity: 0.55;
+}
+
+.signIn {
+  padding-block: var(--cw-space-12);
+  padding-inline: var(--cw-space-16);
+}
+
+@media (min-width: 640px) {
+  .signIn {
+    padding-block: var(--cw-space-16);
+    padding-inline: var(--cw-space-40);
+  }
+}
+
+/* Initials stand in for the photo the frame draws — `users` has no avatar column. */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--cw-white) 18%, transparent);
+  color: var(--cw-white);
+  font-size: var(--cw-button-sm-size);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: background-color var(--cw-transition);
+}
+
+.avatar:hover {
+  background-color: color-mix(in srgb, var(--cw-white) 28%, transparent);
+}
+
+/* Below 640px the header cannot hold the wordmark, three icon controls, a gold button
+   and a menu button without overflowing — measured at 360px, the actions row alone was
+   241px wide in a 345px viewport. Search and the language control are both in the
+   drawer, so they are dropped here rather than shrunk into unusable targets.
+
+   Kept last in the file deliberately: .iconButton also sets `display`, and these two
+   have equal specificity, so source order is what decides. */
+.wideOnly {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .wideOnly {
+    display: inline-flex;
+  }
+}

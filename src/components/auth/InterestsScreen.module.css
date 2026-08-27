@@ -1,0 +1,86 @@
+/* Geometry from Figma node 3558-19871: 522px card, 48px padding, 8px chip grid gap,
+   40px chip height with an 8px inset, a 24px circular image and a 10px gap.
+   The frame happens to group the chips 3/3/3/2 at 1440px; that is an artefact of a
+   426px row, not a rule, so they wrap naturally at every width. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-24);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cw-space-4);
+  text-align: center;
+}
+
+.title {
+  font-size: var(--cw-h2-size);
+  line-height: var(--cw-h2-line);
+  font-weight: var(--cw-h2-weight);
+  color: var(--cw-black-2);
+}
+
+.subtitle {
+  font-size: var(--cw-body-size);
+  font-weight: var(--cw-body-weight);
+  line-height: var(--cw-body-line);
+  color: var(--cw-grey-3);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--cw-space-8);
+  padding-inline-end: var(--cw-space-16);
+  border: 1px solid var(--cw-border-interactive);
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-white);
+  color: var(--cw-black-2);
+  font-size: var(--cw-body-size);
+  font-weight: var(--cw-body-weight);
+  line-height: var(--cw-body-line);
+  transition: border-color var(--cw-transition), background-color var(--cw-transition);
+}
+
+.chip:hover:not([disabled]) {
+  border-color: var(--cw-black-2);
+}
+
+/* Selected: a 2px gold border and a gold tint carry the state. The label stays
+   near-black — gold on white is 2.63:1 with this palette. aria-pressed carries the
+   state non-visually, so nothing depends on seeing the colour. */
+.chip[aria-pressed='true'] {
+  border-width: 2px;
+  border-color: var(--cw-gold);
+  background-color: var(--cw-gold-tint);
+  padding: 7px;
+  padding-inline-end: 15px;
+  font-weight: 590;
+}
+
+.chip[disabled] {
+  opacity: 0.6;
+}
+
+.chipImage {
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}

@@ -1,0 +1,55 @@
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+}
+
+.logomark {
+  inline-size: 56px;
+  block-size: 22px;
+  flex-shrink: 0;
+}
+
+.text {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .logomark {
+    inline-size: 74px;
+    block-size: 29px;
+  }
+
+  .text {
+    font-size: 20px;
+  }
+}
+
+.way {
+  color: var(--cw-gold);
+}
+
+/* On sand and white grounds. */
+.dark .logomark,
+.dark .cyprus {
+  color: var(--cw-navy);
+}
+
+/* On the navy header, footer and hero. */
+.light .logomark,
+.light .cyprus {
+  color: var(--cw-white);
+}
+
+/* Below 480px the header row cannot hold the lockup, a gold button and a menu control
+   at once — measured. The logomark alone still identifies the brand, and the link's
+   aria-label carries the name for anyone not seeing it. */
+@media (max-width: 479px) {
+  .compact .text {
+    display: none;
+  }
+}

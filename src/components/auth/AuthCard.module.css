@@ -1,0 +1,41 @@
+/* Geometry from Figma node 3558-19485: 418px card, 24px side padding, 24px between
+   the logo and the heading, 32px between the header stack and the actions, 12px
+   between the two buttons. The email/password block is not built, so the card is
+   shorter than the frame; the vertical padding is trimmed from 48 to 40 at >=640px
+   so 96px of padding is not 26% of a much shorter card. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-32);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cw-space-24);
+  text-align: center;
+}
+
+.title {
+  font-size: var(--cw-h3-size);
+  line-height: var(--cw-h3-line);
+  font-weight: var(--cw-h3-weight);
+  color: var(--cw-black-2);
+  text-wrap: balance;
+}
+
+.subtitle {
+  margin-block-start: calc(var(--cw-space-24) * -1 + var(--cw-space-4));
+  font-size: var(--cw-body-size);
+  font-weight: var(--cw-body-weight);
+  line-height: var(--cw-body-line);
+  color: var(--cw-grey-3);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-12);
+}

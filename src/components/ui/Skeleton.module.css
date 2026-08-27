@@ -1,0 +1,49 @@
+.skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.navy {
+  background-color: var(--cw-skeleton-on-navy);
+}
+
+.sand {
+  background-color: var(--cw-skeleton-on-sand);
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--cw-white) 18%, transparent) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.6s infinite;
+}
+
+/* The shimmer sweeps along the writing direction. */
+:global([dir='rtl']) .skeleton::after {
+  animation-name: shimmer-rtl;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes shimmer-rtl {
+  to {
+    transform: translateX(-200%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    display: none;
+  }
+}

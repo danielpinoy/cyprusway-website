@@ -1,0 +1,60 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--cw-z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--cw-space-16);
+  overflow-y: auto;
+  /* A scrim over the live page, not the Figma frame's photo. The card now opens over
+     the command centre, which carries its own imagery; a second background competing
+     with the hero is worse than a scrim, and the frame's photo is of Split, Croatia. */
+  background-color: var(--cw-scrim);
+}
+
+.card {
+  position: relative;
+  inline-size: 100%;
+  max-block-size: calc(100dvh - var(--cw-space-32));
+  overflow-y: auto;
+  padding: var(--cw-space-32) var(--cw-space-24);
+  border-radius: var(--cw-radius-lg);
+  background-color: var(--cw-sand);
+  box-shadow: var(--cw-shadow-lg);
+}
+
+.auth {
+  max-inline-size: 418px;
+}
+
+.interests {
+  max-inline-size: 522px;
+}
+
+@media (min-width: 640px) {
+  .auth {
+    padding: var(--cw-space-40) var(--cw-space-24);
+  }
+
+  .interests {
+    padding: var(--cw-space-48);
+  }
+}
+
+/* A corner affordance, not layout — logical inset so it lands top-left under RTL. */
+.close {
+  position: absolute;
+  inset-block-start: var(--cw-space-16);
+  inset-inline-end: var(--cw-space-16);
+  display: inline-flex;
+  padding: var(--cw-space-4);
+  border-radius: var(--cw-radius-sm);
+  color: var(--cw-grey-3);
+  transition: color var(--cw-transition), background-color var(--cw-transition);
+}
+
+.close:hover {
+  color: var(--cw-black-2);
+  background-color: color-mix(in srgb, var(--cw-grey-2) 30%, transparent);
+}

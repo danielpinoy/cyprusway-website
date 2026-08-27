@@ -1,0 +1,25 @@
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-12);
+  font-size: var(--cw-button-size);
+  font-weight: var(--cw-button-weight);
+  line-height: var(--cw-button-line);
+  text-decoration: none;
+}
+
+.link {
+  transition: opacity var(--cw-transition);
+}
+
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/* Reduced emphasis, not a disabled control: there is nothing to activate, so it is
+   not focusable and carries no interactive role. */
+.pending {
+  opacity: 0.55;
+  cursor: default;
+}
