@@ -11,7 +11,7 @@
   align-items: center;
   gap: var(--cw-space-8);
   inline-size: 100%;
-  max-inline-size: var(--cw-content);
+  max-inline-size: var(--cw-content-outer);
   min-block-size: var(--cw-header-height);
   margin-inline: auto;
   padding-inline: var(--cw-gutter);

@@ -33,7 +33,7 @@ export function InterestsScreen({
 }: {
   user: User;
   titleId: string;
-  onSaved: () => void;
+  onSaved: (interests: readonly InterestSlug[]) => void;
 }) {
   const t = useT();
   const [selected, setSelected] = useState<readonly InterestSlug[]>([]);
@@ -53,7 +53,7 @@ export function InterestsScreen({
     setFailed(false);
     try {
       await saveInterests(user.id, selected);
-      onSaved();
+      onSaved(selected);
     } catch {
       /* The screen stays open with the selection intact so it can be retried —
          a zero-row update is treated as failure, not as a silent success. */

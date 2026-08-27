@@ -22,6 +22,17 @@ export function useDialog<T extends HTMLElement>(
 ): void {
   const restoreFocusTo = useRef<HTMLElement | null>(null);
 
+  /* onClose is held in a ref, and deliberately NOT an effect dependency.
+     Both call sites pass a fresh arrow on every render — Layout passes
+     `() => setMenuOpen(false)`, AuthGate passes `() => setInterestsDismissed(true)` —
+     so depending on it re-ran the whole open sequence on every parent render: focus
+     was pulled back to the dialog's first item and the scroll lock was removed and
+     re-added. Reproduced by changing the language from inside the open drawer with
+     focus on the last link: focus jumped back to the first navigation row.
+     Only `open` and `dismissible` describe the dialog's state, so only they drive it. */
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   const focusables = useCallback((): HTMLElement[] => {
     const surface = ref.current;
     if (!surface) return [];
@@ -45,7 +56,7 @@ export function useDialog<T extends HTMLElement>(
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape' && dismissible) {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab') return;
@@ -79,5 +90,5 @@ export function useDialog<T extends HTMLElement>(
       if (trigger && document.contains(trigger)) trigger.focus();
       else if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     };
-  }, [open, dismissible, onClose, focusables, ref]);
+  }, [open, dismissible, focusables, ref]);
 }

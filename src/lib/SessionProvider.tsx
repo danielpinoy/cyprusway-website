@@ -17,7 +17,7 @@ import {
   readAuthParams,
   signOut as signOutRequest,
 } from './auth';
-import { fetchOnboardingCompleted } from './profile';
+import { fetchProfile } from './profile';
 import { getSupabase } from './supabase';
 
 /**
@@ -54,10 +54,13 @@ interface SessionValue {
   authFailed: boolean;
   /** True between resolving a session and the interests write succeeding. */
   needsOnboarding: boolean;
+  /** The person's interest slugs. Empty for a guest, and legitimately empty for a
+   *  signed-in user who skipped the step in the app. */
+  interests: string[];
   openAuth: (mode: AuthMode) => void;
   closeAuth: () => void;
   authMode: AuthMode | null;
-  completeOnboarding: () => void;
+  completeOnboarding: (interests: string[]) => void;
   signOut: () => Promise<void>;
   retry: () => void;
 }
@@ -72,6 +75,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [authFailed, setAuthFailed] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [interests, setInterests] = useState<string[]>([]);
+
+  /* Dev-only: `?interests=beach_coast,ancient_ruins` overrides the profile's interests, so
+     the Top Recommendations ranking can be exercised for any combination without a real
+     sign-in and without editing anyone's profile. Read after mount; stripped from
+     production. Pairs with `?debug=rank`. */
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const raw = new URLSearchParams(window.location.search).get('interests');
+    if (raw == null) return;
+    setInterests(raw.split(',').map((s) => s.trim()).filter(Boolean));
+  }, []);
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
   const [attempt, setAttempt] = useState(0);
 
@@ -127,11 +142,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         /* A failed profile read is a shell-load failure, not an auth rejection, so it
            surfaces as the page's error state rather than the card's banner. Either
            way it never falls through to onboarding. */
-        const completed = await fetchOnboardingCompleted(session.user.id);
+        const profile = await fetchProfile(session.user.id);
         if (cancelled) return;
 
         setUser(session.user);
-        setNeedsOnboarding(!completed);
+        setNeedsOnboarding(!profile.onboardingCompleted);
+        setInterests(profile.interests);
         setStatus('ready');
       } catch {
         if (!cancelled) setStatus('error');
@@ -153,7 +169,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       const result = getSupabase().auth.onAuthStateChange((_event, session) => {
         if (!mounted.current) return;
         setUser(session?.user ?? null);
-        if (!session) setNeedsOnboarding(false);
+        if (!session) {
+          setNeedsOnboarding(false);
+          setInterests([]);
+        }
       });
       subscription = result.data.subscription;
     } catch {
@@ -173,14 +192,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setAuthFailed(false);
   }, []);
 
-  const completeOnboarding = useCallback(() => {
+  /* Takes the selection rather than refetching: the interests screen just wrote it, so
+     Top Recommendations can re-rank on the next render instead of after a round trip. */
+  const completeOnboarding = useCallback((selected: string[]) => {
     setNeedsOnboarding(false);
+    setInterests(selected);
   }, []);
 
   const signOut = useCallback(async () => {
     await signOutRequest();
     setUser(null);
     setNeedsOnboarding(false);
+    setInterests([]);
   }, []);
 
   const retry = useCallback(() => {
@@ -194,6 +217,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       user,
       authFailed,
       needsOnboarding,
+      interests,
       authMode,
       openAuth,
       closeAuth,
@@ -206,6 +230,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       user,
       authFailed,
       needsOnboarding,
+      interests,
       authMode,
       openAuth,
       closeAuth,

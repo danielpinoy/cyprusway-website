@@ -37,13 +37,26 @@ export function isMirroredGlyph(icon: LucideIcon): boolean {
 }
 
 /**
- * Horizontal scrolling that behaves the same in both directions.
+ * Scroll a rail **in reading order**: a positive distance always means "further along",
+ * in both directions.
  *
- * `element.scrollLeft` is signed inconsistently across engines under RTL, which is the
- * classic way a carousel ends up scrolling backwards in one language. `scrollBy` takes
- * a logical-relative delta and is direction-aware everywhere, so rails use this and
- * never do `scrollLeft` arithmetic. Phase 2 inherits the rule rather than rediscovering it.
+ * `ScrollToOptions.left` is a PHYSICAL x delta, not a logical one. Phase 1 wrote this
+ * helper assuming otherwise — the comment claimed `scrollBy` was direction-aware — and it
+ * was wrong, which only surfaced when phase 2 gave it a rail to scroll.
+ *
+ * Measured in Chrome, in an isolated RTL scroller with a range of -632..0:
+ *
+ *     at scrollLeft 0 (the start)   scrollBy({left: +100}) -> 0     (clamped, no movement)
+ *                                   scrollBy({left: -100}) -> -100  (moves forward)
+ *
+ * So under RTL `scrollLeft` runs from `-(scrollWidth - clientWidth)` at the far end to `0`
+ * at the start, and moving forward means decreasing it. Never read or write `scrollLeft`
+ * directly either — its sign convention differs across engines.
+ *
+ * `direction` is read from the element rather than the document so a rail inside a
+ * locally-reversed subtree still behaves.
  */
 export function scrollByInline(element: HTMLElement, distance: number): void {
-  element.scrollBy({ left: distance, behavior: 'smooth' });
+  const rtl = getComputedStyle(element).direction === 'rtl';
+  element.scrollBy({ left: rtl ? -distance : distance, behavior: 'smooth' });
 }

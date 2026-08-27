@@ -86,6 +86,37 @@ export const stringsEn = {
   ui_cookie_decline: 'Decline',
   ui_cookie_label: 'Cookie consent',
 
+
+  /* --- Homepage rails (phase 2) ------------------------------------------ */
+  ui_rail_previous: 'Previous',
+  ui_rail_next: 'Next',
+  ui_rail_top_recommendations: 'Top Recommendations',
+  ui_rail_tours: 'See Cyprus before you go',
+  ui_rail_popular: 'Popular at the moment',
+  ui_rail_food_wine: 'Food & Wine Picks',
+  ui_rail_saved: 'Saved Places',
+  ui_categories_title: 'Categories',
+  ui_home_ready: 'Recommendations loaded',
+  ui_tour_badge: '360° Tour',
+
+  /* --- Continue your trip ------------------------------------------------- */
+  ui_trip_continue: 'Continue',
+  ui_trip_active: 'Active trip',
+  /* {current} and {total} are substituted; word order is the translator's to choose. */
+  ui_trip_day: 'Day {current} of {total}',
+  ui_trip_untitled: 'Continue planning your trip',
+  ui_trip_untitled_region: 'Continue planning your trip to {region}',
+
+  /* --- Book with Pete ----------------------------------------------------- */
+  ui_bwp_title: 'Book with Pete',
+  ui_bwp_lede: 'Tell Pete what you need and get matched with the right local option',
+  ui_bwp_question: 'Where are you going?',
+  /* The frame says "Choose as many as apply". The API takes exactly one region, so the
+     chips are single-select and the hint says so. */
+  ui_bwp_hint: 'Choose one',
+  ui_bwp_continue: 'Continue',
+  ui_bwp_unavailable: "Booking options aren't available on the web yet.",
+
   /* --- Page metadata (<title> and meta description) ---------------------- */
   ui_meta_home_title: 'CyprusWay — Discover Cyprus',
   ui_meta_home_desc:

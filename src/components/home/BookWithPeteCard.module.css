@@ -1,0 +1,131 @@
+.card {
+  position: relative;
+  flex: 1 1 340px;
+  overflow: hidden;
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-gold);
+}
+
+.body {
+  position: relative;
+  z-index: 1;
+  max-inline-size: 370px;
+  padding: var(--cw-space-24);
+}
+
+/* Every piece of copy on this card is --cw-black-1, not the frame's white and sand.
+   Measured on --cw-gold: white 2.63:1, sand 2.32:1 — the heading fails even the 3:1
+   large-text bar at 24px bold. See note 5 in styles/tokens.css. */
+.title {
+  font-size: var(--cw-h2-size);
+  line-height: var(--cw-h2-line);
+  font-weight: var(--cw-h2-weight);
+  color: var(--cw-black-1);
+}
+
+.lede {
+  margin-block-start: 3px;
+  max-inline-size: 265px;
+  font-size: var(--cw-body-size);
+  font-weight: var(--cw-body-weight);
+  line-height: var(--cw-body-line);
+  color: var(--cw-black-1);
+}
+
+.question {
+  margin-block-start: var(--cw-space-24);
+  font-size: var(--cw-h4-size);
+  line-height: var(--cw-h4-line);
+  font-weight: var(--cw-h4-weight);
+  color: var(--cw-black-1);
+}
+
+.hint {
+  font-size: var(--cw-subtitle-size);
+  font-weight: var(--cw-subtitle-weight);
+  line-height: var(--cw-subtitle-line);
+  letter-spacing: var(--cw-subtitle-track);
+  color: var(--cw-black-1);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-8);
+  margin-block: var(--cw-space-12);
+  padding: 0;
+  list-style: none;
+}
+
+/* A near-black scrim over the gold gives #896e16, on which white measures 4.88:1. */
+.chip {
+  padding: var(--cw-space-8) var(--cw-space-12);
+  border: 1px solid color-mix(in srgb, var(--cw-sand) 60%, transparent);
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-scrim-on-gold);
+  color: var(--cw-white);
+  font-size: var(--cw-body-size);
+  font-weight: var(--cw-body-weight);
+  line-height: var(--cw-body-line);
+  transition: background-color var(--cw-transition), color var(--cw-transition);
+}
+
+.chip:hover {
+  background-color: color-mix(in srgb, var(--cw-black-1) 50%, transparent);
+}
+
+/* Selected: sand fill, navy label — 9.8:1, and the same treatment as the Continue button
+   so the two read as one family. */
+.chip[aria-pressed='true'] {
+  background-color: var(--cw-sand);
+  border-color: var(--cw-sand);
+  color: var(--cw-navy);
+  font-weight: 700;
+}
+
+.continue {
+  padding-block: var(--cw-space-16);
+  padding-inline: var(--cw-space-40);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-sand);
+  color: var(--cw-navy);
+  font-size: var(--cw-button-size);
+  font-weight: var(--cw-button-weight);
+  line-height: var(--cw-button-line);
+}
+
+.continue[disabled] {
+  opacity: 0.6;
+}
+
+.unavailable {
+  margin-block-start: var(--cw-space-8);
+  max-inline-size: 300px;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  color: var(--cw-black-1);
+}
+
+/* Decorative; hidden on narrow screens where the copy needs the whole card. */
+.pete {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .pete {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-end: -24px;
+    display: block;
+    inline-size: auto;
+    block-size: 108%;
+    object-fit: contain;
+    pointer-events: none;
+  }
+}
+
+/* Under RTL the illustration would sit over the copy; mirroring it keeps Pete looking
+   into the card rather than off the edge. */
+:global([dir='rtl']) .pete {
+  transform: scaleX(-1);
+}

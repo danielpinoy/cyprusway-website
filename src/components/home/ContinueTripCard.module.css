@@ -1,0 +1,92 @@
+.card {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--cw-space-12);
+  inline-size: 384px;
+  max-inline-size: 100%;
+  min-block-size: 130px;
+  overflow: hidden;
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+  cursor: default;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+  min-inline-size: 0;
+  padding-block: var(--cw-space-12);
+  padding-inline: var(--cw-space-16) 0;
+}
+
+.title {
+  font-size: var(--cw-h5-size);
+  font-weight: 700;
+  line-height: var(--cw-h5-line);
+  color: var(--cw-navy);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--cw-space-8);
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  color: var(--cw-grey-3);
+}
+
+/* The darkened gold: the raw token on white is 2.6:1 and this dot carries meaning. */
+.dot {
+  inline-size: 5px;
+  block-size: 5px;
+  border-radius: 50%;
+  background-color: var(--cw-gold-link);
+}
+
+.day {
+  padding-block: 1px;
+  padding-inline: var(--cw-space-8);
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-sand);
+  color: var(--cw-navy);
+  font-weight: 700;
+}
+
+/* Inert — no trip surface exists on the web yet. */
+.continue {
+  margin-block-start: auto;
+  align-self: flex-start;
+  padding-block: var(--cw-space-8);
+  padding-inline: var(--cw-space-16);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-sand);
+  color: var(--cw-grey-3);
+  font-size: var(--cw-button-size);
+  font-weight: var(--cw-button-weight);
+  line-height: var(--cw-button-line);
+  opacity: 0.7;
+  cursor: default;
+}
+
+.cover {
+  flex-shrink: 0;
+  align-self: stretch;
+  inline-size: 168px;
+  block-size: auto;
+  object-fit: cover;
+}
+
+@media (min-width: 520px) {
+  .cover {
+    inline-size: 208px;
+  }
+}

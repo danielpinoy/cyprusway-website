@@ -1,0 +1,59 @@
+/* Dev-only. Deliberately plain: it is a diagnostic, not part of the design system. */
+.panel {
+  max-inline-size: var(--cw-content-outer);
+  margin-inline: auto;
+  margin-block-start: var(--cw-space-32);
+  padding: var(--cw-space-16);
+  border: 2px dashed var(--cw-alert);
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+  font-size: var(--cw-small-size);
+  color: var(--cw-black-2);
+}
+
+.heading {
+  margin-block-end: var(--cw-space-12);
+  font-size: var(--cw-h5-size);
+  color: var(--cw-alert-text);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--cw-space-4) var(--cw-space-16);
+  margin-block-end: var(--cw-space-16);
+}
+
+.facts dt {
+  font-weight: 700;
+}
+
+.facts dd {
+  margin: 0;
+  font-family: ui-monospace, monospace;
+}
+
+.table {
+  inline-size: 100%;
+  margin-block-end: var(--cw-space-16);
+  border-collapse: collapse;
+  font-family: ui-monospace, monospace;
+}
+
+.table caption {
+  padding-block-end: var(--cw-space-4);
+  font-weight: 700;
+  text-align: start;
+}
+
+.table th,
+.table td {
+  padding: 4px var(--cw-space-8);
+  border-block-end: 1px solid var(--cw-grey-2);
+  text-align: start;
+}
+
+.warn {
+  color: var(--cw-alert-text);
+  font-weight: 700;
+}

@@ -1,0 +1,67 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cw-space-8);
+  inline-size: 180px;
+  padding: var(--cw-space-24) var(--cw-space-12);
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+  text-align: center;
+  cursor: default;
+}
+
+.photo,
+.photoFallback {
+  inline-size: 68px;
+  block-size: 68px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.photoFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    160deg,
+    var(--cw-sand) 0%,
+    color-mix(in srgb, var(--cw-gold) 22%, var(--cw-sand)) 100%
+  );
+  color: color-mix(in srgb, var(--cw-navy) 45%, transparent);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* Gold tint with a navy label — 8.2:1. The gold itself as a label would be 2.6:1. */
+.tag {
+  padding-block: 2px;
+  padding-inline: var(--cw-space-12);
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-gold) 20%, var(--cw-white));
+  color: var(--cw-navy);
+  font-size: var(--cw-small-size);
+  font-weight: 700;
+  line-height: var(--cw-small-line);
+}
+
+.name {
+  font-size: var(--cw-h5-size);
+  font-weight: 700;
+  line-height: var(--cw-h5-line);
+  color: var(--cw-navy);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.region {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-4);
+  color: var(--cw-grey-3);
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+}

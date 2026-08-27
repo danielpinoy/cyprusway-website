@@ -18,17 +18,27 @@ import type { InterestSlug } from '../contracts/interests';
  * the error banner; it must not fall through to the sign-up card, because that path
  * ends with an existing paying user creating a duplicate account.
  */
-export async function fetchOnboardingCompleted(userId: string): Promise<boolean> {
+export interface Profile {
+  onboardingCompleted: boolean;
+  /** Drives the Top Recommendations re-rank. Empty is normal, not an error: measured,
+   *  4 of 11 completed users have `interests = '{}'` via the app's skip paths. */
+  interests: string[];
+}
+
+export async function fetchProfile(userId: string): Promise<Profile> {
   const { data, error } = await getSupabase()
     .from('users')
-    .select('onboarding_completed')
+    .select('onboarding_completed, interests')
     .eq('id', userId)
     .maybeSingle();
 
   if (error) throw error;
   if (!data) throw new Error('profile_row_missing');
 
-  return data.onboarding_completed === true;
+  return {
+    onboardingCompleted: data.onboarding_completed === true,
+    interests: Array.isArray(data.interests) ? (data.interests as string[]) : [],
+  };
 }
 
 /**

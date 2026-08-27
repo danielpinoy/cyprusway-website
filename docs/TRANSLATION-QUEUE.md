@@ -52,7 +52,7 @@ gets English, exactly as before.
 
 ---
 
-## The queue — 62 keys, English only
+## The queue — 83 keys, English only
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
@@ -145,6 +145,31 @@ description of each route.
 engines only ever see the English metadata; translating them changes what a visitor sees
 in their browser tab after the page has already loaded. If per-language URLs are ever
 adopted (plan Q1), that changes and these become the first thing to translate.
+
+### Homepage rails — 21, added in phase 2
+
+| Key | English | Context |
+|---|---|---|
+| `ui_rail_previous` · `ui_rail_next` | Previous · Next | Accessible names of the rail's scroll chevrons |
+| `ui_rail_top_recommendations` | Top Recommendations | Rail heading |
+| `ui_rail_tours` | See Cyprus before you go | Rail heading. **Never renders today** — no 360° tours exist — so this is the lowest priority string in the file |
+| `ui_rail_popular` | Popular at the moment | Rail heading. Deliberately *not* "trending" or "this week": nothing measures popularity, and the rail is a rotating slice of an editorial score. Do not translate it into something that claims recency |
+| `ui_rail_food_wine` | Food & Wine Picks | Rail heading |
+| `ui_rail_saved` | Saved Places | Rail heading, signed-in only |
+| `ui_categories_title` | Categories | Section heading over the eleven interest tiles |
+| `ui_home_ready` | Recommendations loaded | Visually hidden `role="status"`, announced once when the rails replace the skeleton |
+| `ui_tour_badge` | 360° Tour | Pill on a tour card |
+| `ui_trip_continue` | Continue | On the trip card. **Inert** — there is no trip surface on the web |
+| `ui_trip_active` | Active trip | Pill on a trip that is running today |
+| `ui_trip_day` | Day {current} of {total} | **Has placeholders.** `{current}` and `{total}` are substituted; put them where your language needs them, and keep both |
+| `ui_trip_untitled` | Continue planning your trip | Fallback title when the trip row's name was blanked |
+| `ui_trip_untitled_region` | Continue planning your trip to {region} | **Has a placeholder.** `{region}` is a translated destination name from the catalogue, e.g. "Ayia Napa & Protaras" |
+| `ui_bwp_title` | Book with Pete | **Pete is a character name — do not translate it.** The app treats it the same way |
+| `ui_bwp_lede` | Tell Pete what you need and get matched with the right local option | |
+| `ui_bwp_question` | Where are you going? | |
+| `ui_bwp_hint` | Choose one | **Changed from the design**, which says "Choose as many as apply". The API takes exactly one region, so the chips are single-select |
+| `ui_bwp_continue` | Continue | Disabled — see below |
+| `ui_bwp_unavailable` | Booking options aren't available on the web yet. | Sits under the disabled Continue. `affiliate_routes` is empty, so every possible answer today is "unavailable" |
 
 ---
 

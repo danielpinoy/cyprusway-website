@@ -12,6 +12,18 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
  * fragment; see readAuthParams() in ./auth for why that difference matters.
  */
 
+export class MissingCredentialsError extends Error {
+  constructor() {
+    super(
+      'Supabase credentials are missing. VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are ' +
+        'inlined by Vite at build time. Locally: cp .env.example .env and fill in the anon ' +
+        'key. In production: set both in the Cloudflare build environment. ' +
+        '`npm run check:env` verifies both, including that the key is a well-formed JWT.',
+    );
+    this.name = 'MissingCredentialsError';
+  }
+}
+
 let client: SupabaseClient | null = null;
 
 export function getSupabase(): SupabaseClient {
@@ -21,13 +33,12 @@ export function getSupabase(): SupabaseClient {
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
-    /* Almost always a deployment built without the Cloudflare build-environment
-       variables set. Vite inlines VITE_* at build time, so this cannot be fixed at
-       runtime — fail loudly rather than let every auth call return a confusing 401. */
-    throw new Error(
-      'Supabase credentials are missing. VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY ' +
-        'must be set in the build environment.',
-    );
+    /* Vite inlines VITE_* at build time, so this cannot be fixed at runtime: locally it
+       means no .env, and in production it means a deployment built without the Cloudflare
+       build-environment variables. Thrown as a named class so callers can tell a
+       configuration problem from a data problem — the generic error page looks identical
+       for both, and that has cost real time twice. */
+    throw new MissingCredentialsError();
   }
 
   client = createClient(url, anonKey, {

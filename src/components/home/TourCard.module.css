@@ -1,0 +1,66 @@
+.card {
+  position: relative;
+  inline-size: 384px;
+  max-inline-size: 100%;
+  block-size: 210px;
+  overflow: hidden;
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-navy);
+  cursor: default;
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* The same two-zone scrim as PlaceCard, for the same measured reason: white text sits at
+   both ends of an arbitrary photograph. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--cw-navy) 72%, transparent) 0%,
+    color-mix(in srgb, var(--cw-navy) 0%, transparent) 32%,
+    color-mix(in srgb, var(--cw-navy) 0%, transparent) 50%,
+    color-mix(in srgb, var(--cw-navy) 95%, transparent) 100%
+  );
+}
+
+.body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  block-size: 100%;
+  padding: var(--cw-space-16);
+}
+
+.badge {
+  align-self: flex-start;
+  padding-block: 2px;
+  padding-inline: var(--cw-space-12);
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-navy) 82%, transparent);
+  color: var(--cw-white);
+  font-size: var(--cw-small-size);
+  font-weight: 700;
+  line-height: var(--cw-small-line);
+}
+
+.name {
+  font-size: var(--cw-h4-size);
+  line-height: var(--cw-h4-line);
+  font-weight: var(--cw-h4-weight);
+  color: var(--cw-white);
+}
+
+.region {
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  color: var(--cw-grey-1);
+}

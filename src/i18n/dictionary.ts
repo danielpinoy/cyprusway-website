@@ -41,8 +41,27 @@ export async function loadDictionary(code: LanguageCode): Promise<Dictionary> {
   return LOADERS[code]();
 }
 
-/** Resolve a key, falling back to English. The vanilla switcher did the same, so a
- *  key with no translation renders English rather than disappearing. */
-export function translate(dictionary: Dictionary, key: TranslationKey): string {
-  return dictionary[key] ?? en[key];
+/** Values substituted into a string's {placeholders}. */
+export type TranslationParams = Readonly<Record<string, string | number>>;
+
+/**
+ * Resolve a key, falling back to English. The vanilla switcher did the same, so a key
+ * with no translation renders English rather than disappearing.
+ *
+ * `{name}` placeholders are substituted so a translator can put the number where their
+ * language needs it — "Day 2 of 4" is not word order every language shares. Deliberately
+ * the whole of the interpolation: no plurals, no dates, no nesting. When the command
+ * centre needs those, Intl.PluralRules and Intl.DateTimeFormat cover them without a
+ * dependency.
+ */
+export function translate(
+  dictionary: Dictionary,
+  key: TranslationKey,
+  params?: TranslationParams,
+): string {
+  const value = dictionary[key] ?? en[key];
+  if (!params) return value;
+  return value.replace(/\{(\w+)\}/g, (match, name: string) =>
+    name in params ? String(params[name]) : match,
+  );
 }

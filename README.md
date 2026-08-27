@@ -3,10 +3,16 @@
 The web client for CyprusWay, served at [cyprusway.eu](https://cyprusway.eu). React + Vite +
 TypeScript, deployed to Cloudflare Workers.
 
-This is **phase 1**: the foundation and the auth flow. The command centre's content —
-recommendations, saved places, trip continuation, tours, categories, Ask Pete — is not built,
-because most of the data behind it does not exist yet. See `docs/WEB-PHASE-1-PLAN.md` for what
-was decided and why, and `docs/BACKEND-HANDOFF.md` for what another repo has to do next.
+**Phase 1** built the shell and the auth flow; **phase 2** built the homepage's rails. What
+is deliberately *not* built, and what would unpark each thing, is `docs/PARKED.md` — read
+that before assuming something was forgotten. `docs/WEB-PHASE-1-PLAN.md` and
+`docs/PHASE-2-PLAN.md` carry the decisions and their reasons; `docs/BACKEND-HANDOFF.md` is
+what another repo has to do next.
+
+Not built, on purpose: search (no client-reachable endpoint), the place detail page (no
+frame yet), and Ask Pete on web (needs a ruling on the shared per-uid thread). **Cards are
+therefore non-interactive** — they render, they do not navigate, and they say so by having
+no pointer cursor, no hover state and no place in the tab order.
 
 ---
 
@@ -14,13 +20,28 @@ was decided and why, and `docs/BACKEND-HANDOFF.md` for what another repo has to 
 
 ```bash
 npm install
-cp .env.example .env      # then fill in VITE_SUPABASE_ANON_KEY
+npm run setup:env         # then fill in VITE_SUPABASE_ANON_KEY
 npm run dev               # http://localhost:5173
 ```
+
+**Never `cp .env.example .env` over an existing file, and never delete `.env` to "clean up".**
+The example's key is blank, so the copy silently replaces a working file with a broken one,
+and the resulting failure looks like a data outage rather than a config problem.
+`npm run setup:env` refuses to overwrite. `.env` is gitignored (`.gitignore:5-6`) and has never
+been tracked on any branch, so it cannot be staged, committed, or removed by a branch switch —
+there is nothing to clean up before committing.
 
 The anon key is public by design — it identifies the project and is constrained by RLS, not by
 secrecy — but it lives in an env file so it is configured per environment rather than compiled
 in. Get it from the Supabase dashboard: Project Settings → API → anon public.
+
+**If the homepage shows "Cyprus is still there" with no failed network request, it is the
+`.env`, not the database.** `npm run dev` and `npm run build` both run `npm run check:env`
+first and refuse to start with the reason; in development the page itself says so instead of
+showing the designed error state. The check tests the *shape* of the key, not just that the
+line exists — a doubled or truncated paste looks fine and fails at request time with
+"Invalid API key". **Vite reads `.env` once, at startup**, so editing it while the dev server
+is running changes nothing: restart it.
 
 ## Scripts
 
@@ -44,6 +65,9 @@ be reviewed against Figma without breaking the network or completing a real OAut
 | `?state=error` | The full-page error takeover (`3558-21474`) |
 | `?card=signin` · `?card=signup` · `?card=interests` | The auth card in either mode, or the interests screen. Saving from the interests preview fails into the error banner, because there is no session to write with — that is real behaviour, not a mock |
 | `?dir=rtl` | Forces right-to-left without adding a sixth language, for checking against `3558-20716` |
+| `&as=user` | With `?state=loading`, renders the signed-in skeleton — otherwise unreachable without a real sign-in. Presentational only; it does not fake a session |
+| `?interests=beach_coast,ancient_ruins` | Overrides the profile's interests, so Top Recommendations can be exercised for any combination without signing in or editing anyone's profile |
+| `?debug=rank` | Shows what the Top Recommendations sort received and what it did with it — interests, mapped categories, per-interest match counts, and why each card was picked. Pairs with `?interests=` |
 
 `?mode=signin` and `?mode=signup` are **not** dev-only — they make the auth card linkable.
 
@@ -111,6 +135,30 @@ empty and fall back to English, which is the same fallback the vanilla switcher 
 of what needs translating, with context, is `docs/TRANSLATION-QUEUE.md`.
 
 `t()` is typed against the English shape, so a mistyped key is a compile error.
+
+### The homepage rails
+
+One request feeds four of them: `fetchPlaces()` reads all 181 published places in 13.8 KB
+gzipped, and `src/lib/rails.ts` derives Top Recommendations, Popular, Categories and Food &
+Wine from it in memory. Its module comment carries the measured rank bands and card counts.
+
+Two rules worth knowing before changing anything there:
+
+- **A rail whose query is empty renders nothing** — no heading, no empty state, no
+  placeholder cards. That is why "See Cyprus before you go" is absent: `virtual_tour` is
+  null on 181 of 181 rows. The rail is built and appears the day one lands.
+- **Top Recommendations gives every interest a card before giving any interest a second
+  one.** Filtering would show a rail of pure backfill to the six interests that have fewer
+  than four scored, photographed places; a plain re-rank was measurably too weak to see —
+  three interests reaching six of eighteen categories displaced exactly one card and
+  produced no beaches at all. So the rail is filled in rounds, one card per interest per
+  round, strongest first, then backfilled by prominence. Use `?debug=rank` to see it decide.
+  The interest → category map is `src/contracts/interestCategories.ts`; read its header
+  before touching it.
+
+Popular draws a session-stable shuffle of prominence ranks 9–30 — a deliberate ruling, not a
+placeholder, because nothing in the database measures popularity. The seed lives in
+`sessionStorage`, so the order survives re-renders and reloads and re-rolls in a new tab.
 
 ### Auth
 

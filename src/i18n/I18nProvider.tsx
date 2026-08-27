@@ -22,12 +22,13 @@ import {
   translate,
   type Dictionary,
   type TranslationKey,
+  type TranslationParams,
 } from './dictionary';
 
 interface I18nValue {
   lang: LanguageCode;
   dir: Direction;
-  t: (key: TranslationKey) => string;
+  t: (key: TranslationKey, params?: TranslationParams) => string;
   setLanguage: (code: LanguageCode) => void;
 }
 
@@ -99,7 +100,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     () => ({
       lang,
       dir,
-      t: (key: TranslationKey) => translate(dictionary, key),
+      t: (key: TranslationKey, params?: TranslationParams) => translate(dictionary, key, params),
       setLanguage,
     }),
     [lang, dir, dictionary, setLanguage],
@@ -115,6 +116,6 @@ export function useI18n(): I18nValue {
 }
 
 /** Shorthand for the common case. */
-export function useT(): (key: TranslationKey) => string {
+export function useT(): (key: TranslationKey, params?: TranslationParams) => string {
   return useI18n().t;
 }

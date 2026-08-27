@@ -1,0 +1,61 @@
+.section {
+  flex: 1 1 340px;
+}
+
+.title {
+  margin-block-end: var(--cw-space-16);
+  font-size: var(--cw-h3-size);
+  line-height: var(--cw-h3-line);
+  font-weight: var(--cw-h3-weight);
+  color: var(--cw-navy);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 520px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* A warm tile so it separates from the sand page ground without a border.
+   Navy on it measures 10.4:1. */
+.tile {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+  min-block-size: 72px;
+  padding: var(--cw-space-12);
+  border-radius: var(--cw-radius-md);
+  background-color: color-mix(in srgb, var(--cw-gold) 8%, var(--cw-white));
+  cursor: default;
+}
+
+.mark {
+  flex-shrink: 0;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.label {
+  font-size: var(--cw-body-size);
+  font-weight: 700;
+  line-height: var(--cw-body-line);
+  color: var(--cw-navy);
+  text-wrap: balance;
+}

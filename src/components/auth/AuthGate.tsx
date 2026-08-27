@@ -79,9 +79,10 @@ export function AuthGate() {
         <InterestsScreen
           user={interestsUser}
           titleId={TITLE_ID}
-          /* Q5: there is no browse surface in phase 1, so saving closes the card and
-             leaves the visitor on the command centre, signed in. */
-          onSaved={completeOnboarding}
+          /* No browse surface exists, so saving closes the card and leaves the visitor
+             on the command centre, signed in — with Top Recommendations re-ranked by the
+             selection they just made, without a refetch. */
+          onSaved={(selected) => completeOnboarding([...selected])}
         />
       </Modal>
     );

@@ -1,0 +1,87 @@
+/* Mirrors HomeContent's geometry so nothing jumps when the real rails replace it.
+   There is no hero half: the hero is not skeletoned — see HomeSkeleton.tsx. */
+.content {
+  background-color: var(--cw-sand);
+}
+
+.inner {
+  inline-size: 100%;
+  max-inline-size: var(--cw-content-outer);
+  margin-inline: auto;
+  padding-inline: var(--cw-gutter);
+  padding-block: var(--cw-space-16) var(--cw-space-64);
+}
+
+.personal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-24);
+  padding-block-start: var(--cw-space-32);
+}
+
+.trips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+  flex: 0 1 384px;
+}
+
+.savedColumn {
+  flex: 1 1 480px;
+  min-inline-size: 0;
+}
+
+.rail {
+  margin-block-start: var(--cw-space-48);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cw-space-16);
+  margin-block-end: var(--cw-space-16);
+}
+
+.row {
+  display: flex;
+  gap: var(--cw-space-24);
+  overflow: hidden;
+}
+
+.row > * {
+  flex-shrink: 0;
+}
+
+.split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-24);
+  margin-block-start: var(--cw-space-48);
+}
+
+.categories {
+  flex: 1 1 340px;
+}
+
+.split > :last-child {
+  flex: 1 1 340px;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--cw-space-8);
+}
+
+@media (min-width: 520px) {
+  .tiles {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .tiles {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

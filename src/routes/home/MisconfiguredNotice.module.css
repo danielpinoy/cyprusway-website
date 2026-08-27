@@ -1,0 +1,73 @@
+/* Dev-only diagnostic. Plain on purpose — it is not part of the design system. */
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 100dvh;
+  padding: var(--cw-gutter);
+  background-color: var(--cw-sand);
+}
+
+.card {
+  inline-size: 100%;
+  max-inline-size: 640px;
+  padding: var(--cw-space-32);
+  border: 2px dashed var(--cw-alert);
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+}
+
+.tag {
+  font-size: var(--cw-small-size);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cw-alert-text);
+}
+
+.title {
+  margin-block: var(--cw-space-8) var(--cw-space-16);
+  font-size: var(--cw-h3-size);
+  line-height: var(--cw-h3-line);
+  color: var(--cw-navy);
+}
+
+.body {
+  margin-block-end: var(--cw-space-16);
+  font-size: var(--cw-prose-size);
+  line-height: var(--cw-prose-line);
+  color: var(--cw-black-2);
+}
+
+.steps {
+  /* reset.css strips markers from any ol carrying a class; these steps are numbered for
+     a reason, so they are put back. */
+  list-style: decimal;
+  margin-block-end: var(--cw-space-16);
+  padding-inline-start: var(--cw-space-24);
+  font-size: var(--cw-prose-size);
+  line-height: var(--cw-prose-line);
+  color: var(--cw-black-2);
+}
+
+.steps li {
+  margin-block-end: var(--cw-space-8);
+}
+
+.card code {
+  padding: 2px var(--cw-space-4);
+  border-radius: 4px;
+  background-color: var(--cw-sand);
+  font-family: ui-monospace, monospace;
+  font-size: 0.9em;
+}
+
+.retry {
+  padding-block: var(--cw-space-12);
+  padding-inline: var(--cw-space-24);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-navy);
+  color: var(--cw-white);
+  font-size: var(--cw-button-size);
+  font-weight: var(--cw-button-weight);
+}
