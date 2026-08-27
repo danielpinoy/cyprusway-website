@@ -14,6 +14,7 @@
   --cream: #FFFAF5;
   --terracotta: #B8653B;
   --olive: #5B6E4F;
+  --alert: #F05D5D;
   --text: #1f2d33;
   --text-light: #4a5a61;
   --text-muted: #6b7679;
@@ -24,6 +25,7 @@
   --shadow-lg: 0 8px 40px rgba(12,53,71,0.12);
   --radius: 8px;
   --radius-lg: 12px;
+  --radius-xl: 24px;
   --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   --content: 1100px;
@@ -1429,4 +1431,356 @@ section { padding: 4rem 0; }
   overflow: hidden;
   clip: rect(0,0,0,0);
   border: 0;
+}
+
+/* ========================================
+   Onboarding — Account Card & Interests
+   Injected by js/onboarding.js, so none of
+   this markup exists in the HTML files.
+   Mobile-first; at 640px+ the sizes match the
+   Figma frames (418px auth, 522px interests).
+   ======================================== */
+
+/* --- Overlay --- */
+.onb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000; /* above the cookie banner's 9999 */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: var(--navy);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.onb-overlay.is-open { display: flex; }
+
+/* Scrim, same technique as .hero-editorial::before */
+.onb-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(12,53,71,0.75);
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--navy) 88%, transparent) 0%,
+    color-mix(in srgb, var(--navy) 62%, transparent) 100%);
+}
+
+body.onb-lock { overflow: hidden; }
+
+/* --- Card --- */
+.onb-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 1.75rem 1.25rem;
+  background: var(--sand);
+  /* --radius-xl, not --radius-lg: with 24px padding and 8px
+     buttons inside, a concentric outer corner wants ~32px.
+     12px reads pinched at this size. Modal-only token. */
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body);
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+.onb-card--auth { max-width: 418px; }
+.onb-card--interests { max-width: 522px; }
+
+.onb-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* --- Close --- */
+.onb-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.onb-close svg { display: block; width: 100%; height: 100%; }
+.onb-close:hover { color: var(--navy); }
+
+/* --- Heading block --- */
+.onb-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+}
+.onb-head .wordmark {
+  margin: 0 0 1.25rem;
+  font-size: 1.25rem;
+}
+.onb-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  line-height: 1.3;
+  color: var(--navy);
+}
+.onb-subtitle {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* --- Provider buttons --- */
+.onb-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.onb-provider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--navy);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.onb-provider:hover:not([disabled]) {
+  border-color: var(--navy);
+  box-shadow: var(--shadow-sm);
+}
+.onb-provider[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.onb-provider-icon {
+  display: flex;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+.onb-provider-icon svg { display: block; width: 100%; height: 100%; }
+
+/* --- Error banner --- */
+.onb-alert-region:empty { display: none; }
+.onb-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  background: #F4D3CC;
+  background: color-mix(in srgb, var(--alert) 20%, transparent);
+}
+.onb-alert-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  color: var(--alert);
+}
+.onb-alert-icon svg { display: block; width: 100%; height: 100%; }
+.onb-alert-text {
+  color: var(--alert);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+/* --- Interest chips --- */
+.onb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.onb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 8px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.onb-chip:hover { border-color: var(--text-muted); }
+
+/* Selected: gold border + gold tint carry the state without
+   relying on colour alone. Label stays navy — gold on white
+   is 2.1:1 and unreadable at this size. */
+.onb-chip[aria-pressed="true"] {
+  padding: 7px; /* holds the 40px height against the 2px border */
+  border: 2px solid var(--gold);
+  color: var(--navy);
+  font-weight: 600;
+  background: #FEF5E6;
+  background: color-mix(in srgb, var(--gold) 10%, var(--white));
+}
+.onb-chip-img {
+  display: block;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* --- Submit row --- */
+.onb-submit-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.onb-btn {
+  flex: 1 1 140px;
+  min-width: 140px;
+  /* Tight at 360px so both labels stay on one line;
+     roomier once there is space for it. */
+  padding: 1rem 0.75rem;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+.onb-btn--secondary { background: var(--navy); color: var(--white); }
+.onb-btn--secondary:hover:not([disabled]) {
+  background: color-mix(in srgb, var(--navy) 85%, #000);
+}
+.onb-btn--primary { background: var(--gold); color: var(--navy); }
+.onb-btn--primary:hover:not([disabled]) {
+  background: color-mix(in srgb, var(--gold) 92%, #000);
+}
+/* Figma's empty state dims the row to 60%; the disabled
+   attribute drives it here so it reaches keyboards too. */
+.onb-btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --- Loading --- */
+.onb-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 0;
+  color: var(--text-muted);
+  text-align: center;
+}
+.onb-loading p { margin: 0; font-size: 0.9rem; }
+.onb-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-light);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: onbSpin 0.8s linear infinite;
+}
+@keyframes onbSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Focus rings ---
+   The first visible keyboard affordance on the site. --- */
+.onb-close:focus-visible,
+.onb-provider:focus-visible,
+.onb-chip:focus-visible,
+.onb-btn:focus-visible,
+.nav-signin:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+/* --- Header sign-in trigger --- */
+.nav-signin {
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--navy);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.nav-signin:hover { color: var(--terracotta); }
+
+/* Matches the underline slide on .nav-links a */
+.nav-links .nav-signin { position: relative; }
+.nav-links .nav-signin::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--terracotta);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-links .nav-signin:hover::before { transform: scaleX(1); }
+
+.mobile-nav .nav-signin {
+  display: block;
+  width: 100%;
+  padding: 0.85rem 0;
+  text-align: left;
+}
+
+@media (min-width: 640px) {
+  .onb-card--auth { padding: 2.5rem 1.5rem; }
+  .onb-card--interests { padding: 3rem; }
+  .onb-title { font-size: 1.35rem; }
+  .onb-btn { padding: 1rem 1.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onb-provider,
+  .onb-chip,
+  .onb-btn,
+  .onb-close,
+  .nav-links .nav-signin::before {
+    transition: none;
+  }
+  /* Kept, slowed — a frozen ring would imply nothing is happening */
+  .onb-spinner { animation-duration: 2.4s; }
+}
+
+/* --- Hero sign-up CTA (index.html) --- */
+.hero-editorial .hero-content .hero-cta {
+  margin-bottom: 1.5rem;
+  animation: heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
 }

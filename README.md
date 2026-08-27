@@ -71,9 +71,45 @@ When `stripeEnabled` is `false`, signed-in users see a styled "coming soon" pane
 │   ├── config.js          — feature flags (single place to enable Stripe, promos)
 │   ├── main.js            — scroll reveals, animations
 │   ├── i18n.js            — 5-language translation dictionary
-│   ├── lang.js            — language switcher
-│   ├── auth.js            — Supabase Google sign-in (premium page)
+│   ├── lang.js            — language switcher (+ data-i18n-attr, CW.i18n API)
+│   ├── supabase-client.js — the one shared Supabase client; loads the SDK on demand
+│   ├── onboarding.js      — sign-in card, interests screen, OAuth return leg
+│   ├── auth.js            — session + premium status (premium page)
 │   ├── stripe.js          — Stripe checkout (gated behind config flag)
 │   └── cookie-consent.js  — GDPR cookie banner
 └── images/
-    └── (7 stock photos)
+    ├── (7 stock photos)
+    └── interests/         — 11 chip thumbnails for the interests screen
+
+## 9. Onboarding Card
+
+Google and Apple sign-in only — no email, no password, no guest. The card is built in
+JavaScript and injected on demand, so it is not pasted into any HTML file. Open it from
+any element carrying `data-cw-auth`:
+
+```html
+<button type="button" data-cw-auth="signin">Sign in</button>
+<button type="button" data-cw-auth="signup">Get started</button>
+```
+
+`?mode=signin` on any page opens it in sign-in mode on load, so the flow is linkable
+without a second page.
+
+`js/onboarding.js` also owns the OAuth return leg. After a provider sends someone back it
+decides where they land, keyed on `users.onboarding_completed`:
+
+| State | Result |
+|---|---|
+| No session, no URL fragment | nothing — a normal visitor |
+| Session, `onboarding_completed = false` | the interests screen |
+| Session, `onboarding_completed = true` | signed in, no onboarding |
+| `#error=` in the fragment, or an unresolvable session | the error banner |
+
+It never falls through to the sign-up card when a session cannot be resolved.
+
+The Supabase SDK (~120KB) is fetched only when it is actually needed: on a `data-cw-auth`
+click, or on load when an auth fragment or a stored session is present. `premium.html`
+keeps its own `<script>` tag because that page needs the client at first paint.
+
+Adding the card to a new page needs `config.js`, `i18n.js`, `lang.js`,
+`supabase-client.js` and `onboarding.js` in the script block — see any existing page.

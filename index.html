@@ -61,6 +61,7 @@
         </li>
         <li><a href="about.html" data-i18n="nav_about">About</a></li>
 
+        <li><button type="button" class="nav-signin" data-cw-auth="signin" data-i18n="onb_signin_trigger">Sign in</button></li>
       </ul>
       <ul class="mobile-nav">
         <li><a href="index.html">Home</a></li>
@@ -68,6 +69,7 @@
         <li><a href="destinations.html">Destinations</a></li>
         <li><a href="about.html">About</a></li>
 
+        <li><button type="button" class="nav-signin" data-cw-auth="signin" data-i18n="onb_signin_trigger">Sign in</button></li>
       </ul>
     </nav>
   </div>
@@ -80,6 +82,9 @@
     <h1>CyprusWay</h1>
     <p class="hero-tagline" data-i18n="hero_tagline">Your companion for discovering Cyprus</p>
     <p class="hero-desc" data-i18n="hero_desc">Explore curated places across the island, preview them in 360&deg; before you go, plan your perfect trip, and arrange your bookings &mdash; all in one app.</p>
+    <p class="hero-cta">
+      <button type="button" class="btn btn-primary" data-cw-auth="signup" data-i18n="onb_signup_trigger">Get started</button>
+    </p>
     <p class="hero-languages" data-i18n="hero_languages">English &middot; Polski &middot; Deutsch &middot; &Epsilon;&lambda;&lambda;&eta;&nu;&iota;&kappa;ά &middot; Svenska</p>
   </div>
 </section>
@@ -319,6 +324,8 @@
 <script defer src="js/cookie-consent.js"></script>
 <script defer src="js/i18n.js"></script>
 <script defer src="js/lang.js"></script>
+<script defer src="js/supabase-client.js"></script>
+<script defer src="js/onboarding.js"></script>
 <script defer src="js/main.js"></script>
 </body>
 </html>

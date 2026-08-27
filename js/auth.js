@@ -1,28 +1,18 @@
 /* ========================================
-   CyprusWay — Supabase Auth Integration
-   Google sign-in. Premium tracking.
+   CyprusWay — Premium Page Auth
+   Session state and premium status for
+   premium.html. Sign-in itself belongs to
+   js/onboarding.js — the button here just
+   carries data-cw-auth and opens that card.
    ======================================== */
 
 (function () {
   'use strict';
 
-  /* --- Init Supabase --- */
-  var config = window.CW && window.CW.config;
-  var supabase = window.supabase;
-  if (!supabase) {
-    console.warn('Supabase SDK not loaded');
-    return;
-  }
-
-  var client = supabase.createClient(
-    config ? config.supabaseUrl : 'https://knvjmsnwzskbageetbam.supabase.co',
-    config ? config.supabaseAnonKey : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtudmptc253enNrYmFnZWV0YmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NTE0MzIsImV4cCI6MjA5NDUyNzQzMn0.jaZ91wRrCyb2Ud5KpNQOaPgCPGd0fXyoW68Kp16HfK0'
-  );
-
-  window.CW = window.CW || {};
-  window.CW.supabase = client;
-
-  /* --- State --- */
+  /* --- State ---
+     The client comes from js/supabase-client.js so the whole
+     site shares one instance and one token refresh loop. */
+  var client = null;
   var currentUser = null;
 
   /* --- UI Elements --- */
@@ -31,7 +21,6 @@
       signedOutBlock: document.getElementById('auth-signed-out'),
       signedInBlock: document.getElementById('auth-signed-in'),
       userDisplay: document.getElementById('auth-user-display'),
-      signInBtn: document.getElementById('auth-sign-in-btn'),
       signOutBtn: document.getElementById('auth-sign-out-btn'),
       upgradeBtn: document.getElementById('auth-upgrade-btn'),
       premiumBadge: document.getElementById('auth-premium-badge'),
@@ -103,42 +92,25 @@
 
   /* --- Check premium from users table --- */
   function checkPremium() {
-    if (!currentUser) return Promise.resolve(false);
+    if (!currentUser || !client) return Promise.resolve(false);
 
     return client
       .from('users')
       .select('is_premium')
       .eq('id', currentUser.id)
-      .single()
+      .maybeSingle()
       .then(function (res) {
         if (res.error) return false;
-        return res.data && res.data.is_premium === true;
+        return !!(res.data && res.data.is_premium === true);
       })
       .catch(function () {
         return false;
       });
   }
 
-  /* --- Sign In --- */
-  function signIn() {
-    var ui = getUI();
-    if (ui.errorMsg) ui.errorMsg.style.display = 'none';
-
-    client.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin + window.location.pathname
-      }
-    }).then(function (res) {
-      if (res.error && ui.errorMsg) {
-        ui.errorMsg.textContent = 'Sign-in failed. Please try again.';
-        ui.errorMsg.style.display = 'block';
-      }
-    });
-  }
-
   /* --- Sign Out --- */
   function signOut() {
+    if (!client) return;
     client.auth.signOut().then(function () {
       currentUser = null;
       updateUI();
@@ -147,31 +119,17 @@
 
   /* --- Check current session on load --- */
   function checkSession() {
-    client.auth.getSession().then(function (res) {
-      if (res.data && res.data.session) {
-        currentUser = res.data.session.user;
-      } else {
-        currentUser = null;
-      }
+    return client.auth.getSession().then(function (res) {
+      currentUser = (res.data && res.data.session) ? res.data.session.user : null;
       updateUI();
     });
   }
-
-  /* --- Auth state listener --- */
-  client.auth.onAuthStateChange(function (event, session) {
-    if (session) {
-      currentUser = session.user;
-    } else {
-      currentUser = null;
-    }
-    updateUI();
-  });
 
   /* --- Redeem promo code --- */
   function redeemPromoCode() {
     var ui = getUI();
     var code = ui.promoInput && ui.promoInput.value.trim();
-    if (!code) return;
+    if (!code || !client) return;
 
     if (ui.promoMessage) { ui.promoMessage.style.display = 'none'; }
     if (ui.promoRedeemBtn) { ui.promoRedeemBtn.disabled = true; ui.promoRedeemBtn.textContent = 'Redeeming...'; }
@@ -219,15 +177,11 @@
     if (ui.promoRedeemBtn) { ui.promoRedeemBtn.disabled = false; ui.promoRedeemBtn.textContent = 'Redeem'; }
   }
 
-  /* --- Wire buttons --- */
+  /* --- Wire buttons ---
+     The sign-in button is not wired here: it carries
+     data-cw-auth="signin" and onboarding.js owns the click. */
   function wireButtons() {
     var ui = getUI();
-    if (ui.signInBtn) {
-      ui.signInBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        signIn();
-      });
-    }
     if (ui.signOutBtn) {
       ui.signOutBtn.addEventListener('click', function (e) {
         e.preventDefault();
@@ -243,8 +197,10 @@
   }
 
   /* --- Public API --- */
+  window.CW = window.CW || {};
   window.CW.auth = {
     getSession: function () {
+      if (!client) return Promise.resolve(null);
       return client.auth.getSession().then(function (res) {
         return res.data.session || null;
       });
@@ -257,7 +213,28 @@
   /* --- Init --- */
   function init() {
     wireButtons();
-    checkSession();
+
+    if (!window.CW.getSupabase) {
+      console.warn('Supabase client module not loaded');
+      return;
+    }
+
+    window.CW.getSupabase().then(function (c) {
+      client = c;
+
+      client.auth.onAuthStateChange(function (event, session) {
+        currentUser = session ? session.user : null;
+        updateUI();
+      });
+
+      return checkSession();
+    }).catch(function () {
+      var ui = getUI();
+      if (ui.errorMsg) {
+        ui.errorMsg.textContent = 'We couldn\'t reach the sign-in service. Please try again.';
+        ui.errorMsg.style.display = 'block';
+      }
+    });
   }
 
   if (document.readyState === 'loading') {

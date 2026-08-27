@@ -27,18 +27,33 @@
     applyTranslations(code);
     updateSwitcherLabel(code);
     updateDropdownActive(code);
+    document.dispatchEvent(new CustomEvent('cw:lang', { detail: { lang: code } }));
   }
 
-  /* --- Apply translations to DOM --- */
-  function applyTranslations(code) {
-    var els = document.querySelectorAll('[data-i18n]');
+  /* --- Look up a single key --- */
+  function translate(key, code) {
+    var t = window.CW && window.CW.t;
+    if (!t || !t[key]) return '';
+    return t[key][code || getLang()] || t[key]['en'] || '';
+  }
+
+  /* --- Apply translations to DOM ---
+     root defaults to the document; onboarding.js passes its
+     card so injected markup can translate itself. */
+  function applyTranslations(code, root) {
+    var scope = root || document;
+    var els = scope.querySelectorAll('[data-i18n]');
     els.forEach(function (el) {
       var key = el.getAttribute('data-i18n');
-      var t = CW.t;
-      if (!t[key]) return;
-      var val = t[key][code];
-      if (!val) val = t[key]['en'];
+      var val = translate(key, code);
       if (!val) return;
+
+      /* Translate into an attribute instead of the text */
+      var attr = el.getAttribute('data-i18n-attr');
+      if (attr) {
+        el.setAttribute(attr, val);
+        return;
+      }
 
       /* Handle <input> / <textarea> placeholders */
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
@@ -96,6 +111,16 @@
     updateSwitcherLabel(code);
     updateDropdownActive(code);
   }
+
+  /* --- Public API ---
+     Script-injected UI (the onboarding card) needs to translate
+     itself after it is built, and to re-translate on a switch. */
+  window.CW = window.CW || {};
+  window.CW.i18n = {
+    apply: function (root) { applyTranslations(getLang(), root); },
+    t: function (key) { return translate(key); },
+    lang: getLang
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

@@ -53,7 +53,13 @@
   function wireSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(function (link) {
       link.addEventListener('click', function (e) {
-        var target = document.querySelector(this.getAttribute('href'));
+        /* The language switcher builds its items as href="#", and
+           lang.js runs before this, so they get wired here too.
+           querySelector('#') throws — bail before it does. */
+        var href = this.getAttribute('href');
+        if (!href || href === '#') return;
+
+        var target = document.querySelector(href);
         if (target) {
           e.preventDefault();
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
