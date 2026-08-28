@@ -59,6 +59,13 @@ function and every auth-failure shape is confirmed, but no signed-in stream has 
 — that needs a real user JWT, and none was held. Nothing about it should be described as
 confirmed until the first signed-in run.
 
+**Two things the backend fixed the same day, so nothing here mirrors a server number.**
+`mike` now sends `daily_cap` and `quota_day` on `meta` and on the 429, and migration 0047
+moved both daily limiters to the Cyprus calendar day. The web reads both off the wire and
+computes neither — in particular it never derives "today in Cyprus", which decision-log
+entry 64 lists as the first item in that change's blast radius. Absence of either field is
+treated as unknown rather than as five or as today.
+
 ### What phase 3 deliberately did **not** unpark: "View All" on the rails
 
 Phase 2 removed the frames' five "View All" links because they had nowhere to go, and wrote
@@ -384,6 +391,90 @@ Pete. But it is a guess, and the brief's answer was that the owner does not know
 **What unparks it.** A defined behaviour. If it is attachments, it needs a backend first.
 
 **Owner.** Design.
+
+### `retrieval_state = 'failed'` is silent, and the client is the wrong place to fix it
+
+**What.** `failed` means retrieval was attempted and did not complete. Four paths in `mike`
+produce it, all of them returning null out of `runRetrieval`:
+
+| path | log line |
+|---|---|
+| the embedding call returned a non-2xx | `retrieval embed failed: HTTP <status>` |
+| the embedding call threw or hit its 1500 ms abort | `retrieval embed error: <e>` |
+| `match_places_pete` lost its 1000 ms race | `retrieval rpc failed: timeout` |
+| `match_places_pete` returned an error | `retrieval rpc failed: <message>` |
+
+All four are `console.error` in the edge function, so they are in the Supabase edge logs
+and nowhere else. On the row it appears as `retrieval_state = 'failed'` with
+`retrieved_place_ids` **null** — distinct from `empty`, which is `[]`.
+
+**Why it matters more than the missing chips.** A failed retrieval is not a cosmetic gap:
+the answer was generated **ungrounded**, and ungrounded is the state in which Pete has been
+recorded inventing a CyprusWay listing that does not exist ("Stin Yialo Tavern", checked
+against all 181 rows). The chips are the symptom; the grounding is the loss.
+
+**The observed cause is cold start.** The backend's own probe records two silent failures in
+one day, both "the first request after an idle period, against a 1500 ms embed and 1000 ms
+RPC budget", and notes that the injection rate is therefore "understated by an unknown
+amount". A third instance has since been seen from the web. The embedding call is the first
+outbound request after a cold boot, and the deploy report measured cold TTFB at 3831 ms
+against 1180–2463 ms warm.
+
+**Why not surface it in the interface.** A reader cannot act on "retrieval failed", and no
+honest copy exists for it — "this answer may be less grounded" is worse than silence.
+Distinguishing it client-side would also mean reading `retrieval_state` on every restored
+turn to render nothing. It belongs where the rate is countable: an alert on the `failed`
+share, and a look at whether the two budgets are too tight for a cold start.
+
+**What unparks it.** A backend decision on the timeouts, and a `failed`-rate alert. The
+client already treats null and `[]` identically and cannot throw on either — proved by
+`toPlaceIds`, which exists as a named pure function for exactly that reason.
+
+**Owner.** Backend.
+
+### Whether a turn retrieved anything is only visible as chips
+
+**What.** `meta.places` arrives once, with the turn. `ai_messages` persists the same
+decision as `retrieved_place_ids` (0027) and `retrieval_state` (0042) — `injected`,
+`empty`, `disabled`, `failed` or `place_context` — and the row owner can read both. The web
+now restores chips from `retrieved_place_ids` on load, so an answer that retrieved keeps
+its links; but it does not, and should not, show a reader *why* an answer has no chips.
+
+**Why that is worth writing down.** Retrieval is the minority outcome: the backend's own
+post-deploy run measured **3 `injected`, 7 `empty` across ten live turns**. So "Pete named a
+place and there is no chip under it" is the normal case, not a symptom — the model answers
+from general knowledge and the retriever found nothing within 0.45. Before chips were
+restored on load, that state was indistinguishable from a client bug, and one reported
+sighting cost a round of investigation to tell apart.
+
+**What unparks it.** A dev-only inspector reading `retrieval_state`, in the shape of phase
+2's `?debug=rank`. Not built: it would be the fifth thing on this screen and the question it
+answers is now visible from the chips themselves on any reload — except for `failed`, which
+has its own entry above and is not the client's to report.
+
+**Owner.** Web, low priority.
+
+### The daily counter before the first turn of a session
+
+**What.** On a cold open the web reads `ai_queries_today` and `ai_queries_reset_at` off
+`public.users`, because `mike` reports the allowance only at the end of a turn and there is
+no read-only quota endpoint. `ai_queries_reset_at` names the Cyprus day a count belongs to,
+but nothing on the wire has yet said which day it is *now* — so the count is shown and
+marked uncertain, and an uncertain count deliberately does **not** disable the composer.
+
+**Why that is the right way round, and not a gap to close by computing the day.** The two
+errors are not symmetrical. Locking somebody whose Cyprus day has already rolled over
+strands them until they reload. Letting somebody at the cap press send costs a refusal the
+server makes before it spends anything, returns their question to the box, and carries the
+`quota_day` that makes every later read certain. The uncertain window is one request long
+and closes itself.
+
+**What would close it properly.** A read-only quota endpoint, or `quota_day` reachable
+without spending a turn. Neither exists, and calling `consume_ai_query` to find out would
+spend an allowance to display it.
+
+**Owner.** Backend, and low priority — the current behaviour is correct, just briefly
+unconfident.
 
 ### Chrome does not re-map logical border radii when `dir` changes at runtime
 

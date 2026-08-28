@@ -8,6 +8,13 @@ Everything in §0 was run against the deployed function or read out of the deplo
 commit, not inferred. Where the brief and the deployment disagree, the deployment is
 recorded here and the disagreement is in §16.
 
+> **Superseded on 28 August 2026, after the backend shipped.** `mike` now emits
+> `daily_cap` and `quota_day`, and migration 0047 moved both limiters to the Cyprus
+> calendar day. §2 and §3 were written against the state before that and have been
+> rewritten in place; §16.2 and Q3 are resolved. §16.1 was confirmed from the backend
+> side. What the code does is the version below — the two documents are not allowed to
+> disagree.
+
 ---
 
 ## 0 · What I checked, and what came back
@@ -92,11 +99,16 @@ data: {"type":"error","code":"stream_failed","message":"Stream failed"}
 ```json
 { "type": "meta", "message_id": 42, "model": "gpt-4.1-mini",
   "input_tokens": 318, "output_tokens": 204,
-  "remaining": 4, "is_premium": false, "places": [ … ] }
+  "remaining": 4, "is_premium": false,
+  "daily_cap": 5, "quota_day": "2026-08-28",
+  "places": [ … ] }
 ```
 
-`remaining` is the allowance left **after** this message; `-1` means premium. `places` is
-always present and always an array, capped server-side at `MIKE_PLACE_REF_CAP = 3`.
+`remaining` is the allowance left **after** this message; `-1` means premium.
+`daily_cap` and `quota_day` were added on 28 August and ride on the 429 as well —
+both **omitted rather than guessed** when the server does not know them, so absence means
+unknown (§2, §3). `places` is always present and always an array, capped server-side at
+`MIKE_PLACE_REF_CAP = 3`.
 `message_id`, `model` and the token counts exist for the server's cost analysis; the web
 will not model them, on the app's stated principle that a type is a claim about what was
 validated.
@@ -105,8 +117,9 @@ validated.
 
 1. **Ours:** `{"error":"<snake_case>","detail":"<prose>"}`. Codes: `method_not_allowed`,
    `unauthorized`, `invalid_request`, `account_required`, `place_not_found`,
-   `rate_limited`, `upstream`. The 429 carries `remaining` and `is_premium` as siblings.
-   `detail` names internal steps and is never rendered.
+   `rate_limited`, `upstream`. The 429 carries `remaining`, `is_premium`, and since
+   28 August `daily_cap` and `quota_day` beside them. `detail` names internal steps and is
+   never rendered.
 2. **Mid-stream, on a 200:** `{"type":"error","code":"stream_failed"}`.
 3. **The gateway's, not ours:** `{"code":"…","message":"…"}` — no `error`, no `detail`.
    With `verify_jwt = true` this is what a browser sees for *most* auth failures.
@@ -116,93 +129,68 @@ languages.
 
 ---
 
-## 2 · The daily cap — the change has not landed
+## 2 · The daily cap — emitted since 28 August
 
-**Checked, not assumed.** `MIKE_FREE_DAILY_CAP` appears exactly twice in the function: as
-the env read at `index.ts:76`, and at `index.ts:237` as the `daily_cap` argument to the
-`consume_ai_query` RPC. It is **not in the `meta` event**, it is not in any other
-response, the `cyprusway-directus` working tree is clean, and
-`git log --all -S"daily_cap"` across every branch turns up nothing that would add it.
-The post-deploy delta (§0.2) does not add it either.
+**Resolved.** `mike` now sends `daily_cap` on `meta` **and on the 429**
+(`index.ts` header note, `rate-limit.ts`), so the denominator is read rather than
+mirrored. The client computes nothing.
 
-**So the fallback case applies.** The web will carry:
+What that changed in the code:
 
-```ts
-/**
- * TODO(contracts): mike does not report the cap. `meta` carries `remaining` and
- * `is_premium` and nothing else about the allowance, so the denominator in
- * "3 of 5 today" is a MIRROR of the server's MIKE_FREE_DAILY_CAP — if that secret
- * is changed, this goes stale silently and the counter lies.
- *
- * Expected field: `meta.daily_cap` (number). The moment it exists, delete this
- * constant and read it — the whole reason it is written like this, rather than as a
- * bare 5, is that a second hardcoded copy of a server constant is the thing worth
- * not having.
- */
-const ASSUMED_FREE_DAILY_CAP = 5;
-```
+- **`ASSUMED_FREE_DAILY_CAP` survives, demoted.** It is no longer "the number, because the
+  server will not say" — it is the placeholder on the counter pill before the first
+  response of the session, and the fallback for a `mike` old enough not to send the field.
+  Both are narrow, and the constant keeps its comment saying which.
+- **The floors stay as a guard, not as the mechanism.** `cap = used + remaining` and `used`
+  is at least 1 after a turn, so `remaining + 1` is a lower bound; the counter row's `used`
+  is another. A `daily_cap` below either would be describing a state that cannot exist, so
+  the larger value wins. It costs nothing and it is now the exception path rather than the
+  expectation.
+- **Both fields are validated, never defaulted.** The server omits a key it does not know,
+  so the readers return `null` for anything that is not an integer > 0 or a `YYYY-MM-DD`
+  string. Absence means unknown. It does not mean five, and it does not mean today.
 
-and it will **self-correct upward** the way the app does, because one thing the server
-does report constrains the cap:
-
-```ts
-// After a successful turn cap = used + remaining and used is at least 1, so
-// `remaining + 1` is a floor on the real cap. From the counter row, `used` itself is
-// a floor. Neither can be wrong in the other direction and neither costs a request.
-capFromRemaining = (previous, remaining) => Math.max(previous ?? ASSUMED, remaining + 1);
-capFromUsed = (used) => Math.max(ASSUMED, used);
-```
-
-That is not a substitute for the server emitting it — a *lowered* cap is still invisible
-— but it turns one of the two failure directions into a non-event.
-
-**Counter semantics — the frame counts used, not remaining.** The limit frame reads
-"5 of 5 today" in red, so the first number is questions *used*: `used = cap − remaining`.
-Read as "remaining" it would say "0 of 5" at the limit. Getting this backwards inverts
-the whole pill, so it is written down. The visible string stays as drawn; the pill gets
-an accessible name that removes the ambiguity ("5 of 5 questions used today").
+**Counter semantics are unchanged and were confirmed:** the first number is questions
+*used*, `cap − remaining`. The limit frame reads "5 of 5".
 
 ---
 
-## 3 · The reset boundary — and a conflict with entry 64
+## 3 · The reset boundary — Cyprus, and the client no longer computes it
 
-The brief says entry 64 rules the reset follows the **Cyprus calendar day**. I could not
-verify that, and what is deployed does something else.
+**Resolved, in the place I said it belonged.** Migration 0047 replaced `CURRENT_DATE` with
+`(now() AT TIME ZONE 'Asia/Nicosia')::date` in both limiters and both column defaults, and
+`mike` now returns **`quota_day`** — the value the RPC actually wrote to
+`users.ai_queries_reset_at` on that call, not a second computation of the rule. It rides on
+`meta` and on the 429.
 
-- **`meta` does not carry a reset time.** No `resets_at`, no `reset_at`, nowhere in any
-  function.
-- **The RPC uses `CURRENT_DATE`.** `0031_consume_ai_query_no_user.sql` compares and
-  writes `ai_queries_reset_at < CURRENT_DATE`. `CURRENT_DATE` is evaluated in the
-  database's timezone; **no migration sets one**, so it is Supabase's default, UTC.
-- **The app agrees it is UTC**, in as many words: *"Apply the same midnight-UTC rule the
-  RPC uses"*, `new Date().toISOString().slice(0, 10)`.
-- **Entry 64 could not be read, because the copy in the app repo stops at 49.**
-  `cyprusway-app/docs/CyprusWay_Decision_Log_v3_0.md` and
-  `cyprusway-directus/docs/CyprusWay_Decision_Log_v3_0.md` are byte-identical, 1299 lines
-  each, and their last entry is 49. Entry 50 exists only as a draft file. Entries 50 to 64
-  are somewhere neither checkout can see.
+**Entry 64 is readable now** and says the same thing, including the part I could not have
+guessed: the ruling covers *both* limiters, because `consume_trip_generation` is a separate
+function on separate columns and moving one alone re-opens the divergence that 0031 and
+entry 43 already document. It also names the first item in the blast radius as
+`askPete.ts:476` in the app — the client-side UTC copy of the rule — which is exactly the
+line the web had inherited.
 
-  **That stale copy has now cost something twice.** Phase 3 could not verify the entry that
-  ruled `viewpoints-landmarks` out of `nature_trails` and had to re-derive it from the
-  catalogue; phase 4 could not verify the reset-boundary ruling and had to re-derive it from
-  the migration. Both times the answer came out right, and both times the checking was work
-  that a current log would have made unnecessary. It is the cheapest fix on this list.
+So the web now does this, and it is the whole design:
 
-Midnight UTC is **03:00 in Cyprus** under EEST and 02:00 under EET. So for three hours
-every night a Cyprus user's allowance has already reset while a Cyprus-calendar client
-would still say zero — or the reverse, depending which side you implement.
+- **`fetchQuota` does not compute a day.** It reads `ai_queries_today`,
+  `ai_queries_reset_at` and `is_premium`, and it takes the last `quota_day` the server sent
+  this session. With a server day, a row from an earlier one is known to be spent and reads
+  zero. Without one, the count is reported as-is and marked **not certain**.
+- **An uncertain count never locks the composer.** This is the part worth keeping if
+  anything here is revisited. The two errors are not symmetrical: locking somebody whose
+  Cyprus day has rolled over strands them until they reload, while letting somebody at the
+  cap press send costs a refusal the server makes *before* it spends anything — and that
+  refusal carries `quota_day`, which settles the question for the rest of the session. The
+  cold-open window is therefore self-closing.
+- **Nothing names an hour.** The copy is "Pete is back tomorrow", which is true under a
+  Cyprus day and needs no arithmetic. The boundary *could* be named now, but naming it
+  means computing the next Cyprus midnight in the browser — the precise thing
+  `quota_day` exists to stop a client doing. Preferring what the server says over what the
+  client can work out is the rule; here what the server says is the day, and the day is
+  what the correction uses.
 
-**What I will do.** Mirror the app exactly: compare `ai_queries_reset_at` against the UTC
-date, purely to stop a stale counter reading zero after rollover, and **make no
-user-facing claim about when the reset happens**. The copy is "Pete is back tomorrow",
-not a time and not a countdown. A screen that names an hour it cannot substantiate is
-worse than one that does not mention it.
-
-**And a correction, if entry 64 is real:** this cannot be fixed in a client. If the reset
-should follow the Cyprus day, the change belongs in `consume_ai_query`
-(`(now() AT TIME ZONE 'Asia/Nicosia')::date`), because a client applying a Cyprus-day
-rule against a server applying a UTC one would show five prompts available while the
-server refuses them. **→ Q3.**
+The one-time effect entry 64 records — anyone in the 21:00–24:00 UTC window on switch day
+getting an extra day's allowance — needs nothing from the client.
 
 ---
 
@@ -675,7 +663,7 @@ the prerender pass writing outside `dist` for an unsafe slug — was fixed and i
 
 ## 16 · Disagreements
 
-**16.1 `verify_jwt` is true, not false.** The brief says the function is deployed with
+**16.1 `verify_jwt` is true, not false. — CONFIRMED from the backend side.** The brief says the function is deployed with
 `verify_jwt = false`. It is not: the gateway rejected my header-less probe with
 `UNAUTHORIZED_NO_AUTH_HEADER` before the function ran, `config.toml` line 42 says `true`,
 and the deploy commit says it deployed honouring that. It changes nothing about what I
@@ -685,9 +673,11 @@ failure arrives in, and a client that only handled `{"error":…}` would read th
 order. Worth correcting in case the intent was to open the function to anonymous callers,
 because that has not happened.
 
-**16.2 The reset boundary is UTC, not the Cyprus day.** §3. I could not find entry 64 in
-either repo — both decision logs stop at 49 — and everything I *can* read says midnight
-UTC. If entry 64 is real, the client is the wrong place to fix it.
+**16.2 The reset boundary is UTC, not the Cyprus day. — RESOLVED, and the fix landed
+where I said it belonged.** Migration 0047 moved both limiters to
+`(now() AT TIME ZONE 'Asia/Nicosia')::date` and `mike` now sends `quota_day`. Entry 64 is
+readable now, in `docs/reference/curated/CyprusWay_Decision_Log_v3_4.md`, and it names the
+app's client-side UTC copy of the rule as the first item in the blast radius. See §3.
 
 **16.3 The limit banner cannot ship as drawn.** §9.1. White on gold is 2.63:1. This is not
 a preference; it is the tenth of a family that has produced nine failures, on the one
@@ -704,7 +694,11 @@ phase-1 token that has been sitting unused since it was created.
 
 ## 17 · Questions
 
-**Q1 — A user JWT, so the first live stream is verified rather than assumed.**
+**Q1 — ANSWERED: build against the contract as read; the owner drives the first stream.**
+Nothing here holds a token, and the stream stays "not verified until the first signed-in
+run" in the client's own header and in `PARKED.md`. The original question follows.
+
+**Q1 —**
 Everything in §1 is read from the deployed source and confirmed against the deploy digest,
 and the transport is probed — but I have not driven an authenticated stream, and I will not
 create an account to mint a token. The cheapest close: paste a session access token, or run
@@ -714,17 +708,21 @@ shot, whether `meta` on the live build carries anything the source does not, and
 say so — I will build against the contract as read and verify on the first signed-in run,
 and I will not claim the stream is verified until then.**
 
-**Q2 — Should the web's language switcher write `public.users.preferred_language`?**
+**Q2 — ANSWERED: yes, signed-in only, from the explicit switcher only, and the control
+says what it does.** A line inside the menu, "Also changes the app", shown only when signed
+in. The original question follows.
+
+**Q2 —**
 §12. Today it does not, so a Greek interface can carry English answers. Writing it fixes
 that in one `update` — and also changes the language of the app on the user's phone,
 because it is one shared row. My recommendation is yes, for signed-in users only, from the
 explicit switcher only. But it is a cross-device side effect from a control that does not
 advertise one, so it is yours.
 
-**Q3 — Entry 64: is the reset the Cyprus day or midnight UTC?** §3. If Cyprus, the fix is
-`consume_ai_query`, not the client, and it is a backend ticket rather than phase-4 work. I
-will build the UTC mirror either way, since that is what the server does today, and make no
-user-facing claim about the hour.
+**Q3 — ANSWERED, then shipped.** Cyprus, and the fix was `consume_ai_query` rather than
+the client — migration 0047, both limiters, plus `quota_day` on the wire so no client has
+to compute the day at all. The UTC mirror this section originally promised was never built;
+what shipped reads the day off the wire and treats its absence as unknown. §3.
 
 **Q4 — The `+`: is it the place-context affordance?** §14. If it is "ask Pete about this
 place", the mechanism already exists (`place_id`), it is verified before the allowance is
@@ -732,6 +730,7 @@ consumed, and it would make `meta.places` populate on the echo path as well as r
 If it is attachments, there is no backend for it and it stays parked. If you do not know
 either, it stays omitted — that is the default and it needs no answer.
 
-**Q5 — Does the counter pill count questions used, or questions left?** §2. I read the
-frames as *used* because the limit state says "5 of 5", which only works that way. Confirm,
-because reading it backwards inverts the number on every render.
+**Q5 — ANSWERED: used.** "5 of 5" confirms it. §2.
+
+**Q4 — ANSWERED: omitted and flagged.** The owner could not determine what the `+` is
+either. `PARKED.md` records what it would need. §14.

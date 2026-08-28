@@ -42,6 +42,11 @@
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
+  /* The asset is the full standing cutout the Book with Pete card uses — 560x745, head
+     at the top. Cropped to a 40px disc the default centre lands on the map he is
+     holding, which reads as an empty navy circle. Anchoring the crop to the top of the
+     image frames the cap and the face, which is what an avatar has to show. */
+  object-position: 50% 0%;
 }
 
 .botColumn {

@@ -243,7 +243,9 @@ function Notice({ spec, text }: { spec: NoticeSpec; text: string }) {
 function PeteAvatar() {
   return (
     <span className={styles.avatar} aria-hidden="true">
-      <img src="/images/pete.webp" alt="" width={40} height={40} loading="lazy" />
+      {/* Not lazy: it is 40px, it is the first thing in the thread, and it is above the
+          fold on every render — deferring it only ever shows an empty disc first. */}
+      <img src="/images/pete.webp" alt="" width={40} height={40} decoding="async" />
     </span>
   );
 }

@@ -8,10 +8,11 @@ import { Icon } from '../../components/ui/Icon';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useSession } from '../../lib/SessionProvider';
 import {
+  applyLimit,
   ASSUMED_FREE_DAILY_CAP,
-  capFromRemaining,
   currentAccessToken,
   fetchHistory,
+  fetchPlaceRefs,
   fetchQuota,
   MESSAGE_MAX_LENGTH,
   rejectedBeforeRecording,
@@ -58,7 +59,7 @@ function nextId(prefix: string): string {
 }
 
 export default function AskPete() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { user, status: sessionStatus, openAuth } = useSession();
   const location = useLocation();
   const userId = user?.id ?? null;
@@ -94,9 +95,19 @@ export default function AskPete() {
     }
   }, [location.state]);
 
+  /**
+   * The last `quota_day` the server sent, in a ref rather than state.
+   *
+   * It is an input to reading the counter, not something rendered, and it must be
+   * readable by the read it feeds without adding a dependency that re-runs it. Once the
+   * server has named a day, a counter row from an earlier one is known to be spent —
+   * which is the whole of the rollover correction, with nothing computed on this side.
+   */
+  const serverDay = useRef<string | null>(null);
+
   const refreshQuota = useCallback(async () => {
     if (!userId) return;
-    const next = await fetchQuota(userId);
+    const next = await fetchQuota(userId, serverDay.current);
     if (next) setQuota(next);
   }, [userId]);
 
@@ -112,13 +123,22 @@ export default function AskPete() {
     setHistoryResolved(false);
 
     void (async () => {
-      const [history, nextQuota] = await Promise.all([fetchHistory(userId), fetchQuota(userId)]);
+      const [history, nextQuota] = await Promise.all([
+        fetchHistory(userId),
+        fetchQuota(userId, serverDay.current),
+      ]);
       if (cancelled) return;
 
       /* null means the read FAILED. Start empty rather than asserting an empty history
          that was never confirmed — and leave `historyResolved` false, so the greeting
          does not claim a fresh start on the strength of a failed query. */
       if (history) {
+        /* One extra read, only when a restored turn actually injected something, so the
+           chips survive a reload instead of being an artefact of the live stream. */
+        const ids = history.flatMap((message) => message.placeIds);
+        const refs = await fetchPlaceRefs(ids, lang);
+        if (cancelled) return;
+
         setItems(
           history.map((message) => ({
             kind: message.role === 'assistant' ? 'answer' : 'user',
@@ -126,7 +146,9 @@ export default function AskPete() {
             at: message.at,
             text: message.content,
             streaming: false,
-            places: [],
+            places: message.placeIds
+              .map((id) => refs.get(id))
+              .filter((place): place is MikePlace => place !== undefined),
           })) as ChatItem[],
         );
         setHistoryResolved(true);
@@ -137,6 +159,13 @@ export default function AskPete() {
     return () => {
       cancelled = true;
     };
+    /* `lang` is read inside for the name projection but is deliberately NOT a dependency:
+       re-running this on a language change would replace `items` wholesale and could
+       clobber a turn that is still streaming. It buys nothing today either — place names
+       are English on all 181 rows, so the projection falls back to English whatever the
+       language is. If names are ever translated, the right fix is to re-resolve the chip
+       names rather than to reload the thread. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   /* Abort any live read on unmount. The server persists both messages after the stream
@@ -158,7 +187,18 @@ export default function AskPete() {
   }
 
   const isPremium = quota?.isPremium === true;
-  const exhausted = quota != null && !quota.isPremium && quota.used >= quota.cap;
+  /**
+   * Only ever from a count the server stands behind.
+   *
+   * An uncertain count — the cold-open read, before anything on the wire has named the
+   * day — does NOT lock the composer. The asymmetry is the reason: locking somebody whose
+   * Cyprus day has already rolled over leaves them stuck until they reload, while letting
+   * somebody at the cap press send costs a refusal that the server makes before it spends
+   * anything, returns their question to the box, and carries the `quota_day` that settles
+   * the question for the rest of the session.
+   */
+  const exhausted =
+    quota != null && quota.certain && !quota.isPremium && quota.used >= quota.cap;
   /* Not a bare 5: the only copy of that number lives in askPete.ts with the TODO
      explaining what would delete it. */
   const cap = quota?.cap ?? ASSUMED_FREE_DAILY_CAP;
@@ -229,14 +269,8 @@ export default function AskPete() {
               : item,
           ),
         );
-        if (meta.isPremium) {
-          setQuota({ used: 0, cap, isPremium: true });
-        } else {
-          setQuota((previous) => {
-            const nextCap = capFromRemaining(previous?.cap ?? null, meta.remaining);
-            return { used: nextCap - meta.remaining, cap: nextCap, isPremium: false };
-          });
-        }
+        if (meta.quotaDay) serverDay.current = meta.quotaDay;
+        setQuota((previous) => applyLimit(previous, meta));
       },
     });
 
@@ -258,6 +292,13 @@ export default function AskPete() {
     }
 
     if (outcome.kind === 'aborted') return;
+
+    /* A 429 reports the allowance the same way a successful turn does, so the limit state
+       becomes certain here rather than waiting for a re-read. */
+    if (outcome.kind === 'quota') {
+      if (outcome.limit.quotaDay) serverDay.current = outcome.limit.quotaDay;
+      setQuota((previous) => applyLimit(previous, { ...outcome.limit, remaining: 0 }));
+    }
 
     /* The turn failed. Drop the empty answer placeholder — an empty bubble beside Pete's
        face is a silence he did not choose. */

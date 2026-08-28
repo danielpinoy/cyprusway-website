@@ -1,4 +1,5 @@
 import { getSupabase } from './supabase';
+import type { LanguageCode } from '../i18n/languages';
 
 /**
  * Client for the `mike` edge function — Pete, the Cyprus assistant.
@@ -28,6 +29,16 @@ import { getSupabase } from './supabase';
  *           show what Pete actually remembers. It is a view of the server's state, never
  *           an input to it, and it is shared with the phone.
  *
+ * QUOTA     Since 2026-08-28 the server reports both halves of the counter and the
+ *           client computes neither:
+ *             `daily_cap`  the denominator, previously a mirror of a secret
+ *             `quota_day`  the Cyprus calendar day the RPC counted against — the value
+ *                          it wrote to users.ai_queries_reset_at, not a second
+ *                          computation of the rule (migration 0047, decision-log 64)
+ *           Both ride on `meta` AND on the 429, and both are **omitted rather than
+ *           guessed** when the server does not know them. Absence therefore means
+ *           unknown; it never means today, and it never means five.
+ *
  * RESPONSE  200 text/event-stream. Every event is written by one helper,
  *           `data: ${JSON.stringify(payload)}\n\n`, and the stream ends `data: [DONE]`.
  *             {"type":"text","content":"<delta>"}          many
@@ -54,37 +65,34 @@ import { getSupabase } from './supabase';
 const MIKE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mike`;
 
 /**
- * TODO(contracts): `mike` does not report the cap. Checked, not assumed —
- * `MIKE_FREE_DAILY_CAP` appears exactly twice in the function, as the env read and as
- * the `daily_cap` argument to `consume_ai_query` at index.ts:237, and it is in no
- * response. So the denominator in "3 of 5 today" is a MIRROR of a server secret: change
- * `MIKE_FREE_DAILY_CAP` and this goes stale silently while the counter keeps claiming a
- * number nobody is enforcing.
+ * The denominator to show before the server has said one, and only until then.
  *
- * The expected field is `meta.daily_cap` (number). The moment it exists, delete this and
- * read it. It is written as a named, documented mirror rather than a bare `5` precisely
- * because a second undocumented copy of a server constant is the thing worth not having.
+ * `meta.daily_cap` and the 429's `daily_cap` landed on 2026-08-28, so this is no longer
+ * the expectation — it is the cold-open placeholder for the counter pill, replaced by the
+ * real number on the first response of the session. It survives for exactly two cases:
+ * the pill rendered before anyone has sent anything, and a deployment of `mike` old enough
+ * not to send the field.
  *
- * One of the two failure directions is closed by the two floors below.
+ * It is deliberately still one named constant with this comment attached rather than a
+ * bare `5` in a component, because a second undocumented copy of a server number is what
+ * this whole exchange was about.
  */
 export const ASSUMED_FREE_DAILY_CAP = 5;
 
 /**
- * Two lower bounds on the real cap that the server does give us, used to correct the
- * mirror upward when it is too low.
+ * Two lower bounds on the real cap, kept as a GUARD rather than as the mechanism.
  *
- * After a successful turn, `cap = used + remaining` and `used` is at least 1 — so
- * `remaining + 1` is a floor. From the counter row, `used` itself is a floor. Neither
- * can be wrong in the other direction, and neither costs a request.
- *
- * A cap that was LOWERED server-side is still invisible. Only `meta.daily_cap` fixes
- * that, which is why the TODO above is the real answer and this is a mitigation.
+ * `daily_cap` is the answer now. These still run underneath it, for the fallback path and
+ * as a cheap contradiction check: after a successful turn `cap = used + remaining` and
+ * `used` is at least 1, so `remaining + 1` is a floor; from the counter row, `used` itself
+ * is a floor. If a `daily_cap` ever arrived below one of these it would be describing a
+ * state that cannot exist, and taking the larger value is the safe reading.
  */
-export function capFromRemaining(previous: number | null, remaining: number): number {
+function capFromRemaining(previous: number | null, remaining: number): number {
   return Math.max(previous ?? ASSUMED_FREE_DAILY_CAP, remaining + 1);
 }
 
-export function capFromUsed(used: number): number {
+function capFromUsed(used: number): number {
   return Math.max(ASSUMED_FREE_DAILY_CAP, used);
 }
 
@@ -113,9 +121,8 @@ export const MAX_PLACE_REFS = 3;
 export interface MikePlace {
   id: number;
   slug: string;
-  /** Already localised server-side from the user's `preferred_language`, English fallback. */
+  /** Localised — server-side on a live turn, from `translations` when restored. */
   name: string;
-  category: string | null;
 }
 
 /**
@@ -128,8 +135,19 @@ export interface MikeMeta {
   /** Allowance left AFTER this message. -1 means premium/unlimited. */
   remaining: number;
   isPremium: boolean;
+  /** The real denominator. Null when the server did not send one — never defaulted. */
+  dailyCap: number | null;
+  /** The Cyprus day the count belongs to, YYYY-MM-DD. Null when unknown. */
+  quotaDay: string | null;
   /** Max 3. Always present on the wire; `[]` when there is nothing to show. */
   places: MikePlace[];
+}
+
+/** What a 429 tells us about the allowance. Same two optional fields as `meta`. */
+export interface LimitReport {
+  isPremium: boolean;
+  dailyCap: number | null;
+  quotaDay: string | null;
 }
 
 /**
@@ -149,7 +167,7 @@ export type AskPeteFailureKind =
 
 export type AskPeteOutcome =
   | { ok: true }
-  | { ok: false; kind: 'quota'; isPremium: boolean }
+  | { ok: false; kind: 'quota'; limit: LimitReport }
   | { ok: false; kind: Exclude<AskPeteFailureKind, 'quota'> };
 
 /**
@@ -178,16 +196,22 @@ export function rejectedBeforeRecording(kind: AskPeteFailureKind): boolean {
   );
 }
 
+/** A `daily_cap` that is actually a usable number, or null. Never a default. */
+function readCap(value: unknown): number | null {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null;
+}
+
+/** A `quota_day` that is actually a date, or null. Never today. */
+function readDay(value: unknown): string | null {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+}
+
 /** Reads an error body once, tolerating both envelope shapes. */
 async function readErrorBody(
   response: Response,
-): Promise<{ code: string | null; isPremium: boolean }> {
+): Promise<{ code: string | null; limit: LimitReport }> {
   try {
-    const body = (await response.json()) as {
-      error?: unknown;
-      code?: unknown;
-      is_premium?: unknown;
-    };
+    const body = (await response.json()) as Record<string, unknown>;
     /* `error` is ours; `code` is the Supabase gateway's. Reading both means one handler
        covers all three documented channels. */
     const code =
@@ -196,9 +220,18 @@ async function readErrorBody(
         : typeof body.code === 'string'
           ? body.code
           : null;
-    return { code, isPremium: body.is_premium === true };
+    return {
+      code,
+      limit: {
+        isPremium: body.is_premium === true,
+        /* The 429 carries these too, which is what makes the limit state certain without
+           a successful turn to learn them from. */
+        dailyCap: readCap(body.daily_cap),
+        quotaDay: readDay(body.quota_day),
+      },
+    };
   } catch {
-    return { code: null, isPremium: false };
+    return { code: null, limit: { isPremium: false, dailyCap: null, quotaDay: null } };
   }
 }
 
@@ -212,11 +245,11 @@ async function readErrorBody(
  */
 function toOutcome(
   status: number,
-  { code, isPremium }: { code: string | null; isPremium: boolean },
+  { code, limit }: { code: string | null; limit: LimitReport },
 ): AskPeteOutcome {
   switch (code) {
     case 'rate_limited':
-      return { ok: false, kind: 'quota', isPremium };
+      return { ok: false, kind: 'quota', limit };
     case 'account_required':
       return { ok: false, kind: 'account_required' };
     case 'invalid_request':
@@ -227,7 +260,7 @@ function toOutcome(
 
   switch (status) {
     case 429:
-      return { ok: false, kind: 'quota', isPremium };
+      return { ok: false, kind: 'quota', limit };
     case 403:
       return { ok: false, kind: 'account_required' };
     case 400:
@@ -248,12 +281,9 @@ function toPlace(raw: unknown): MikePlace | null {
   if (typeof row.id !== 'number' || !Number.isInteger(row.id)) return null;
   if (typeof row.slug !== 'string' || !row.slug) return null;
   if (typeof row.name !== 'string' || !row.name) return null;
-  return {
-    id: row.id,
-    slug: row.slug,
-    name: row.name,
-    category: typeof row.category === 'string' ? row.category : null,
-  };
+  /* `category` is on the wire and is deliberately not modelled: the chip is a pin and a
+     name, nothing renders it, and a restored chip could not supply it consistently. */
+  return { id: row.id, slug: row.slug, name: row.name };
 }
 
 /**
@@ -269,6 +299,11 @@ function toMeta(raw: Record<string, unknown>): MikeMeta | null {
   return {
     remaining: raw.remaining,
     isPremium: raw.is_premium === true,
+    /* Validated, not cast, and null rather than defaulted. The server omits either field
+       when it does not know it, and inventing a value here would be re-introducing the
+       guess these two fields exist to remove. */
+    dailyCap: readCap(raw.daily_cap),
+    quotaDay: readDay(raw.quota_day),
     places: places.slice(0, MAX_PLACE_REFS),
   };
 }
@@ -435,11 +470,19 @@ export async function currentAccessToken(): Promise<string | null> {
 }
 
 export interface Quota {
-  /** Questions already asked today. */
+  /** Questions already asked on the day `day` names. */
   used: number;
-  /** The denominator. A mirror — see ASSUMED_FREE_DAILY_CAP. */
   cap: number;
   isPremium: boolean;
+  /** The Cyprus calendar day this count belongs to, YYYY-MM-DD, or null if unknown. */
+  day: string | null;
+  /**
+   * Whether `used` is known to be TODAY's count.
+   *
+   * False on a cold open: the row says which day it counted, and nothing on the wire has
+   * yet said which day it is now. See `fetchQuota`.
+   */
+  certain: boolean;
 }
 
 interface QuotaRow {
@@ -448,38 +491,74 @@ interface QuotaRow {
   is_premium: boolean;
 }
 
+/** Apply a report from `meta` or from a 429 to whatever the pill was showing. */
+export function applyLimit(
+  previous: Quota | null,
+  report: { remaining: number; isPremium: boolean; dailyCap: number | null; quotaDay: string | null },
+): Quota {
+  if (report.isPremium) {
+    return {
+      used: 0,
+      cap: report.dailyCap ?? previous?.cap ?? ASSUMED_FREE_DAILY_CAP,
+      isPremium: true,
+      day: report.quotaDay,
+      certain: true,
+    };
+  }
+
+  /* `daily_cap` is the answer; the floor under it is a guard against a value that would
+     describe an impossible state, not a second opinion. */
+  const cap = capFromRemaining(
+    report.dailyCap ?? previous?.cap ?? null,
+    report.remaining,
+  );
+
+  return {
+    used: Math.max(0, cap - report.remaining),
+    cap,
+    isPremium: false,
+    day: report.quotaDay,
+    /* The count came back with the turn, so it is this moment's count whether or not the
+       server told us which day that is. */
+    certain: true,
+  };
+}
+
 /**
- * Reads the daily counter.
+ * Reads the daily counter on a cold open.
  *
- * `mike` reports `remaining` only in the `meta` event at the end of a SUCCESSFUL turn.
- * Nothing arrives on a cold open, and nothing arrives when a turn fails — while the
- * allowance was already spent, before the OpenAI call. That gap is why the caller
- * re-reads this after every failure and not only on mount: otherwise the pill drifts
- * high, promising questions the server has already taken.
+ * `mike` reports the allowance only at the end of a turn, so nothing arrives before the
+ * first message and nothing arrives when a turn fails — while the allowance was already
+ * spent, before the OpenAI call. That gap is why the caller re-reads this after every
+ * failure and not only on mount.
  *
  * There is no read-only quota endpoint, and calling `consume_ai_query` to find out would
  * spend an allowance to display it. So this reads the counter columns straight off
  * `public.users` — the same row the RPC writes, under the existing "users can read own
  * profile" policy.
  *
- * THE RESET BOUNDARY. `consume_ai_query` resets lazily, so the row still holds
- * yesterday's tally until the next call rolls it over, and the same rule has to be
- * applied here or the pill claims zero left to somebody whose day has already turned.
- * The rule it applies is the one the RPC applies: `ai_queries_reset_at < CURRENT_DATE`,
- * evaluated in the database's timezone, which no migration sets and which Supabase
- * defaults to UTC.
+ * **THE DAY IS NOT COMPUTED HERE, AND THAT IS THE POINT.** Migration 0047 moved both
+ * limiters to the Cyprus calendar day, `(now() AT TIME ZONE 'Asia/Nicosia')::date`, and
+ * `ai_queries_reset_at` now holds the Cyprus day a count belongs to. The RPC resets
+ * lazily, so a row can still hold yesterday's tally — but working out whether it has gone
+ * stale needs today's date *in Cyprus*, and a client deriving that is the second copy of
+ * the rule that decision-log entry 64 lists as the first item in the blast radius. The
+ * previous version of this function did exactly that, in UTC, and would have told a Cyprus
+ * user they had nothing left every night between midnight and 03:00.
  *
- * That is NOT the Cyprus calendar day, and the difference is three hours every night.
- * The ruling is that the reset should follow Cyprus; the fix belongs in the RPC, not
- * here — a client applying a Cyprus-day rule to a server applying a UTC one would show
- * questions available that the server refuses. Raised as a backend defect. Until it
- * lands this mirrors the server, and NOTHING in the interface names an hour: the copy
- * says "back tomorrow", never a time and never a countdown.
+ * So: the day comes off the wire or not at all. `serverDay` is the last `quota_day` seen
+ * this session. With it, a row from an earlier day is known to be spent and the count
+ * reads zero. Without it the count is reported as-is and `certain` is false — and the
+ * caller must not lock the composer on an uncertain count, because the server is the
+ * authority, a refusal costs nothing, and a 429 carries the day that settles it.
  *
  * Returns null on any read failure; the caller keeps whatever it had rather than showing
  * a wrong number.
  */
-export async function fetchQuota(userId: string): Promise<Quota | null> {
+export async function fetchQuota(
+  userId: string,
+  serverDay: string | null = null,
+): Promise<Quota | null> {
   const { data, error } = await getSupabase()
     .from('users')
     .select('ai_queries_today, ai_queries_reset_at, is_premium')
@@ -491,15 +570,25 @@ export async function fetchQuota(userId: string): Promise<Quota | null> {
     return null;
   }
 
+  const day = readDay(data.ai_queries_reset_at);
+
   if (data.is_premium) {
-    return { used: 0, cap: ASSUMED_FREE_DAILY_CAP, isPremium: true };
+    return { used: 0, cap: ASSUMED_FREE_DAILY_CAP, isPremium: true, day, certain: true };
   }
 
-  const todayUtc = new Date().toISOString().slice(0, 10);
-  const raw = data.ai_queries_reset_at < todayUtc ? 0 : data.ai_queries_today;
-  const used = Math.max(0, raw);
+  const rolledOver = serverDay != null && day != null && day < serverDay;
+  const used = rolledOver ? 0 : Math.max(0, data.ai_queries_today);
 
-  return { used, cap: capFromUsed(used), isPremium: false };
+  return {
+    used,
+    /* No `daily_cap` on this path — it rides on `mike`'s responses, and this is
+       PostgREST. The placeholder stands until the first turn of the session, corrected
+       upward if the row already shows more used than it allows for. */
+    cap: capFromUsed(used),
+    isPremium: false,
+    day,
+    certain: serverDay != null,
+  };
 }
 
 export interface HistoryMessage {
@@ -508,6 +597,16 @@ export interface HistoryMessage {
   content: string;
   /** Epoch ms, from `ai_messages.created_at`. */
   at: number;
+  /**
+   * The places the server put in front of the model for this turn, from
+   * `ai_messages.retrieved_place_ids` (migration 0027).
+   *
+   * Empty means retrieval ran and matched nothing, or did not run — the two are
+   * distinguished by `retrieval_state` (0042), which this client does not need. Sliced to
+   * MAX_PLACE_REFS because the column persists every injected row (5) while the chip
+   * contract shows the nearest 3, and `match_places_pete` orders by ascending distance.
+   */
+  placeIds: number[];
 }
 
 interface HistoryRow {
@@ -515,6 +614,7 @@ interface HistoryRow {
   role: string;
   content: string;
   created_at: string;
+  retrieved_place_ids: number[] | null;
 }
 
 /**
@@ -539,7 +639,7 @@ interface HistoryRow {
 export async function fetchHistory(userId: string): Promise<HistoryMessage[] | null> {
   const { data, error } = await getSupabase()
     .from('ai_messages')
-    .select('id, role, content, created_at')
+    .select('id, role, content, created_at, retrieved_place_ids')
     .eq('user_id', userId)
     /* The CHECK on `role` also allows 'system'. `mike` writes only the two, but a system
        row must never be rendered as either speaker if one ever appears. */
@@ -560,6 +660,75 @@ export async function fetchHistory(userId: string): Promise<HistoryMessage[] | n
       role: row.role === 'assistant' ? ('assistant' as const) : ('user' as const),
       content: row.content,
       at: Date.parse(row.created_at),
+      placeIds: toPlaceIds(row.retrieved_place_ids),
     }))
     .reverse();
+}
+
+/**
+ * The persisted ids for one restored turn, normalised.
+ *
+ * A pure function with its own name because `retrieved_place_ids` has THREE meanings and
+ * two of them are not arrays (0027, and 0042's `retrieval_state` which splits them):
+ *
+ *   `[1, 2]`  retrieval ran and injected these
+ *   `[]`      retrieval ran and matched nothing
+ *   `null`    retrieval did not run, OR was attempted and FAILED
+ *
+ * All three produce no chips, and none of them may throw. `failed` is the one that means
+ * the feature did not work — it is not distinguishable here, and deliberately so: see
+ * docs/PARKED.md, the client is the wrong place to report it.
+ *
+ * Sliced to MAX_PLACE_REFS because the column persists every injected row (5) while the
+ * chip contract shows the nearest 3, and `match_places_pete` orders by ascending distance.
+ */
+export function toPlaceIds(raw: unknown): number[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((id): id is number => typeof id === 'number' && Number.isInteger(id) && id > 0)
+    .slice(0, MAX_PLACE_REFS);
+}
+
+/**
+ * Resolve persisted place ids back into chips.
+ *
+ * Why this exists: `meta.places` arrives once, with the turn, and the previous version of
+ * this screen kept it only in memory — so **every chip vanished on reload**, while the
+ * server had persisted exactly which places it injected. An answer that named Konnos Bay
+ * and linked to it before a refresh, and did not after, is indistinguishable from
+ * retrieval never having run. That ambiguity is the whole reason this is here.
+ *
+ * A targeted read, not the catalogue: at most `HISTORY_WINDOW / 2 * MAX_PLACE_REFS` ids,
+ * so nine rows rather than 181. `places_sync` is public-readable, which is what Explore
+ * already relies on.
+ *
+ * A place that has since been unpublished simply produces no chip — the same steady state
+ * the saved-places rail documents, not a failure.
+ */
+export async function fetchPlaceRefs(
+  ids: readonly number[],
+  lang: LanguageCode,
+): Promise<Map<number, MikePlace>> {
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return new Map();
+
+  const { data, error } = await getSupabase()
+    .from('places_sync')
+    .select(`id, slug, name:translations->${lang}->>name, fallback:translations->en->>name`)
+    .eq('status', 'published')
+    .in('id', unique)
+    .returns<{ id: number; slug: string | null; name: string | null; fallback: string | null }[]>();
+
+  if (error || !data) {
+    console.warn('[askPete] place refs read failed:', error?.message ?? 'no rows');
+    return new Map();
+  }
+
+  const out = new Map<number, MikePlace>();
+  for (const row of data) {
+    const name = row.name ?? row.fallback;
+    /* Same rule as a live chip: no slug, no chip. A null would compose /place/null. */
+    if (row.slug && name) out.set(row.id, { id: row.id, slug: row.slug, name });
+  }
+  return out;
 }
