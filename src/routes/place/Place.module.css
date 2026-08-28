@@ -1,0 +1,220 @@
+.page {
+  background-color: var(--cw-sand);
+}
+
+.inner {
+  inline-size: 100%;
+  max-inline-size: var(--cw-content-outer);
+  margin-inline: auto;
+  padding-inline: var(--cw-gutter);
+  padding-block: var(--cw-space-32);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cw-space-16);
+  margin-block-end: var(--cw-space-24);
+}
+
+.title {
+  font-size: var(--cw-h1-size);
+  line-height: var(--cw-h1-line);
+  font-weight: var(--cw-h1-weight);
+  color: var(--cw-navy);
+  text-wrap: balance;
+}
+
+.region {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-4);
+  margin-block-start: var(--cw-space-4);
+  font-size: var(--cw-subtitle-size);
+  color: var(--cw-grey-3);
+}
+
+.saveWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--cw-space-4);
+}
+
+.save {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+  padding-block: var(--cw-space-12);
+  padding-inline: var(--cw-space-24);
+  border: 1px solid var(--cw-border-interactive);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-white);
+  color: var(--cw-navy);
+  font-size: var(--cw-button-size);
+  font-weight: var(--cw-button-weight);
+  line-height: var(--cw-button-line);
+  transition: background-color var(--cw-transition), border-color var(--cw-transition);
+}
+
+.save:hover:not([disabled]) {
+  border-color: var(--cw-navy);
+}
+
+.save[aria-pressed='true'] {
+  border-width: 2px;
+  border-color: var(--cw-gold);
+  /* contrast: --cw-navy on --cw-gold-tint = 10.21 */
+  background-color: var(--cw-gold-tint);
+  padding-block: 11px;
+  padding-inline: 23px;
+  font-weight: 700;
+}
+
+/* contrast: --cw-gold-link on --cw-white = 5.63 (graphic) */
+.saveIconOn {
+  fill: var(--cw-gold-link);
+  color: var(--cw-gold-link);
+}
+
+.saveError {
+  max-inline-size: 28ch;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  color: var(--cw-alert-text);
+  text-align: end;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-24);
+  max-inline-size: var(--cw-content-prose);
+  margin-block-start: var(--cw-space-32);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+}
+
+.sectionTitle {
+  font-size: var(--cw-h4-size);
+  line-height: var(--cw-h4-line);
+  font-weight: var(--cw-h4-weight);
+  color: var(--cw-navy);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The badge's own `color` is deliberately not used as a fill. The 22 badges carry seven
+   distinct colours, and measured as a fill not one of the seven works with a single label
+   colour:
+
+     #06B6D4  white 2.43  navy 4.59      #7C3AED  white 5.70  navy 1.96
+     #0891B2  white 3.68  navy 3.03      #F59E0B  white 2.15  navy 5.19
+     #6366F1  white 4.47  navy 2.49      #FF6B35  white 2.84  navy 3.93
+     #64748B  white 4.76  navy 2.34
+
+   Five of seven fail with white, five of seven fail with navy, and the two sets are not
+   the same five — so per-badge colour needs a per-badge label decision, which is a
+   designer's call on a palette that has never been checked. This chip is navy on gold at
+   18%, and the same treatment the card's tag already ships.
+   contrast: --cw-navy on #f4edd4 = 9.50 */
+.badge {
+  padding-block: var(--cw-space-4);
+  padding-inline: var(--cw-space-12);
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-gold) 18%, var(--cw-white));
+  color: var(--cw-navy);
+  font-size: var(--cw-small-size);
+  font-weight: 700;
+  line-height: var(--cw-small-line);
+}
+
+.standfirst {
+  font-size: var(--cw-h5-size);
+  line-height: 1.6;
+  color: var(--cw-black-2);
+  text-wrap: pretty;
+}
+
+.prose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-16);
+  font-size: var(--cw-prose-size);
+  line-height: var(--cw-prose-line);
+  color: var(--cw-black-2);
+}
+
+.duration {
+  font-size: var(--cw-small-size);
+  color: var(--cw-grey-3);
+}
+
+.popular {
+  padding-block-end: var(--cw-space-64);
+}
+
+.skeletonTitle {
+  inline-size: 60%;
+  max-inline-size: 420px;
+  block-size: 40px;
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-skeleton-on-sand);
+}
+
+.skeletonGallery {
+  margin-block-start: var(--cw-space-24);
+  block-size: 420px;
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-skeleton-on-sand);
+}
+
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cw-space-12);
+  padding-block: var(--cw-space-64);
+  padding-inline: var(--cw-gutter);
+  background-color: var(--cw-sand);
+  text-align: center;
+}
+
+.notFoundTitle {
+  font-size: var(--cw-h2-size);
+  line-height: var(--cw-h2-line);
+  color: var(--cw-navy);
+}
+
+.notFoundBody {
+  max-inline-size: 46ch;
+  font-size: var(--cw-subtitle-size);
+  line-height: var(--cw-subtitle-line);
+  color: var(--cw-grey-3);
+  text-wrap: pretty;
+}
+
+.notFoundCta {
+  margin-block-start: var(--cw-space-8);
+  padding-block: var(--cw-space-16);
+  padding-inline: var(--cw-space-24);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-navy);
+  color: var(--cw-white);
+  font-size: var(--cw-button-size);
+  font-weight: var(--cw-button-weight);
+  text-decoration: none;
+}

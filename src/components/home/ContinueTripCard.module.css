@@ -44,7 +44,8 @@
   color: var(--cw-grey-3);
 }
 
-/* The darkened gold: the raw token on white is 2.6:1 and this dot carries meaning. */
+/* The darkened gold: the raw token on white is 2.63 and this dot carries meaning.
+   contrast: --cw-gold-link on --cw-white = 5.63 (graphic) */
 .dot {
   inline-size: 5px;
   block-size: 5px;

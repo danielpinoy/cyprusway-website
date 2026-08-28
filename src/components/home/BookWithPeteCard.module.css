@@ -3,6 +3,8 @@
   flex: 1 1 340px;
   overflow: hidden;
   border-radius: var(--cw-radius-md);
+  /* Every label on this card is --cw-black-1, never white — the phase-1 ruling for a
+     gold surface. contrast: --cw-black-1 on --cw-gold = 6.46 */
   background-color: var(--cw-gold);
 }
 
@@ -62,6 +64,7 @@
   padding: var(--cw-space-8) var(--cw-space-12);
   border: 1px solid color-mix(in srgb, var(--cw-sand) 60%, transparent);
   border-radius: var(--cw-radius-pill);
+  /* contrast: #ffffff on #896e16 = 4.88 */
   background-color: var(--cw-scrim-on-gold);
   color: var(--cw-white);
   font-size: var(--cw-body-size);

@@ -9,11 +9,14 @@ import NotFound from './routes/NotFound';
 import Privacy from './routes/Privacy';
 import Terms from './routes/Terms';
 import Home from './routes/home/Home';
+import Explore from './routes/explore/Explore';
+import Place from './routes/place/Place';
+import AskPete from './routes/ask-pete/AskPete';
 
 /**
- * Every route is prerendered (see scripts/prerender.mjs), so none of them is lazily
- * loaded: a dynamic import would render as a suspense fallback during the prerender
- * pass and ship an empty page.
+ * Every route is prerendered (see scripts/prerender.mjs) — including all 181 place pages —
+ * so none is lazily loaded: a dynamic import would render as a suspense fallback during the
+ * prerender pass and ship an empty page.
  *
  * `/` sits outside the shared layout because its error state replaces the whole shell
  * rather than rendering inside it.
@@ -23,7 +26,14 @@ export function App() {
     <I18nProvider>
       <SessionProvider>
         <Routes>
+          {/* `/`, `/explore`, `/place/:slug` and `/ask-pete` bring their own Layout,
+              because each has a state that replaces the whole shell — the error takeover,
+              the page-level not-found, or the signed-out panel. The content routes share
+              LayoutRoute. */}
           <Route path="/" element={<Home />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/place/:slug" element={<Place />} />
+          <Route path="/ask-pete" element={<AskPete />} />
           <Route element={<LayoutRoute />}>
             <Route path="/about" element={<About />} />
             <Route path="/faq" element={<Faq />} />

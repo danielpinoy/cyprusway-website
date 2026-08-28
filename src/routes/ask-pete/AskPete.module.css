@@ -1,0 +1,146 @@
+.page {
+  background-color: var(--cw-sand);
+  min-block-size: 70vh;
+  padding-block: var(--cw-space-40);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-16);
+  inline-size: min(702px, 100% - 2 * var(--cw-space-24));
+  margin-inline: auto;
+}
+
+.head {
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-h1-size);
+  line-height: var(--cw-h1-line);
+  font-weight: var(--cw-h1-weight);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.subtitle {
+  margin-block: var(--cw-space-8) 0;
+  font-size: 14px;
+  line-height: 1.8;
+  letter-spacing: 0.15px;
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+/* ---- The counter -----------------------------------------------------------
+   The frame puts an "Unlock Unlimited" link at the inline end of this row. It is not
+   here: `stripeEnabled` is false, so there is nothing to buy, and a dead gold link on
+   the one screen where somebody is already at a limit is worse than no link. Not
+   rendered disabled either. docs/PARKED.md. The whole row is absent for premium, which
+   is what frame 3571-37748 draws. */
+.counterRow {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.counter {
+  margin: 0;
+  padding-block: 2px;
+  padding-inline: var(--cw-space-4);
+  border-radius: 4px;
+  background-color: var(--cw-white);
+  /* contrast: --cw-black-1 on --cw-white = 17.01 */
+  color: var(--cw-black-1);
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  font-weight: 500;
+}
+
+/* At the cap. This is the loud signal, and the notice under the thread stays calm —
+   one alarm, one explanation. The frame turns the pill red here too.
+   contrast: --cw-alert-text on #f4d3cc = 5.11 */
+.counterSpent {
+  background-color: var(--cw-alert-tint);
+  color: var(--cw-alert-text);
+}
+
+/* ---- Thread ----------------------------------------------------------------
+   Scrolls on the BLOCK axis, where direction changes nothing — so this deliberately
+   does not reach for scrollByInline or inlineArrowStep. The horizontally scrolling
+   pieces on this screen are none; the starter chips wrap. */
+.scroller {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  max-block-size: min(58vh, 620px);
+  min-block-size: 240px;
+  padding-inline: 2px;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-12);
+  padding-block: var(--cw-space-16);
+}
+
+.skeletonBubble,
+.skeletonBubbleShort {
+  block-size: 72px;
+  border-radius: 24px;
+  border-start-start-radius: 0;
+  background-color: var(--cw-skeleton-on-sand);
+}
+
+.skeletonBubbleShort {
+  block-size: 48px;
+  inline-size: 60%;
+}
+
+/* ---- Signed out ------------------------------------------------------------
+   In place of the composer, never a disabled text box. */
+.signIn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-16);
+  padding: var(--cw-space-16);
+  border-radius: 12px;
+  background-color: var(--cw-white);
+}
+
+.signInMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
+  /* contrast: --cw-navy on #e8ebf0 = 9.32 */
+  color: var(--cw-navy);
+}
+
+.signInCopy {
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+}
+
+.signInTitle {
+  margin: 0;
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.signInBody {
+  margin-block: var(--cw-space-4) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}

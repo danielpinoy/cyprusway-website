@@ -68,3 +68,15 @@
   font-weight: 700;
   color: var(--cw-navy);
 }
+
+/* The line that stops the shared write being a surprise. Inside the menu, under the
+   options, so it is read at the moment of choosing rather than after. */
+.note {
+  padding-block: var(--cw-space-8);
+  padding-inline: var(--cw-space-12);
+  border-block-start: 1px solid color-mix(in srgb, var(--cw-grey-3) 25%, transparent);
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}

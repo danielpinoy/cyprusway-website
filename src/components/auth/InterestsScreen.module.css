@@ -63,7 +63,8 @@
 
 /* Selected: a 2px gold border and a gold tint carry the state. The label stays
    near-black — gold on white is 2.63:1 with this palette. aria-pressed carries the
-   state non-visually, so nothing depends on seeing the colour. */
+   state non-visually, so nothing depends on seeing the colour.
+   contrast: --cw-black-2 on --cw-gold-tint = 9.70 */
 .chip[aria-pressed='true'] {
   border-width: 2px;
   border-color: var(--cw-gold);

@@ -55,6 +55,19 @@
   opacity: 0.7;
 }
 
+.askSubmit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: var(--cw-space-4);
+  border: 0;
+  border-radius: var(--cw-radius-pill);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
 .askIcon {
   position: absolute;
   inset-block-start: 50%;
@@ -85,10 +98,27 @@
   border: 1px solid color-mix(in srgb, var(--cw-grey-1) 25%, transparent);
   border-radius: var(--cw-radius-sm);
   background-color: color-mix(in srgb, var(--cw-white) 6%, transparent);
-  /* Reduced emphasis: these name phase-2 surfaces and are not activatable. */
+}
+
+/* Reduced emphasis: My CyprusWay names a surface that does not exist and is not
+   activatable. Explore is a real link and carries full contrast. */
+.optionPending {
   opacity: 0.75;
 }
 
+.optionLink {
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--cw-transition), border-color var(--cw-transition);
+}
+
+.optionLink:hover {
+  border-color: color-mix(in srgb, var(--cw-gold) 60%, transparent);
+  background-color: color-mix(in srgb, var(--cw-white) 12%, transparent);
+}
+
+/* On the navy hero. A glyph, so 1.4.11's 3:1 applies rather than 4.5.
+   contrast: --cw-gold on --cw-navy = 4.23 (graphic) */
 .optionIcon {
   flex-shrink: 0;
   color: var(--cw-gold);

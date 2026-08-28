@@ -24,6 +24,18 @@ export const ROUTE_META: Readonly<Record<string, RouteMeta>> = {
     changefreq: 'weekly',
     priority: '1.0',
   },
+  '/explore': {
+    titleKey: 'ui_meta_explore_title',
+    descKey: 'ui_meta_explore_desc',
+    changefreq: 'weekly',
+    priority: '0.9',
+  },
+  '/ask-pete': {
+    titleKey: 'ui_meta_askpete_title',
+    descKey: 'ui_meta_askpete_desc',
+    changefreq: 'monthly',
+    priority: '0.8',
+  },
   '/about': {
     titleKey: 'ui_meta_about_title',
     descKey: 'ui_meta_about_desc',
@@ -61,6 +73,14 @@ export const NOT_FOUND_META = ROUTE_META['/404'] as RouteMeta;
 export const PRERENDER_PATHS: readonly string[] = Object.keys(ROUTE_META);
 
 export const SITE_ORIGIN = 'https://cyprusway.eu';
+
+/**
+ * Place pages are NOT in ROUTE_META: there are 181 of them and their slugs come from the
+ * catalogue, not from this file. scripts/prerender.mjs fetches them at build time and emits
+ * one page each; src/worker.ts serves the SPA shell for any `/place/*` that has no
+ * prerendered file, so a place published since the last deploy still opens.
+ */
+export const PLACE_PATH_PREFIX = '/place/';
 
 /**
  * The vanilla site's URLs. Every one 301s to its clean equivalent, from the Worker,

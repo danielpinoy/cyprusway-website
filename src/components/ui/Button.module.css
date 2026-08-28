@@ -26,13 +26,15 @@
 
 /* Gold. The label is --cw-black-1, never white: white on #c49a10 measures 2.63:1 and
    navy 4.23:1, both short of AA for a 13px label; black-1 measures 6.46:1.
-   See the note in styles/tokens.css. */
+   See the note in styles/tokens.css.
+   contrast: --cw-black-1 on --cw-gold = 6.46 */
 .primary {
   background-color: var(--cw-gold);
   color: var(--cw-black-1);
 }
 
 .primary:hover:not([disabled]) {
+  /* contrast: --cw-black-1 on #ac880e = 5.09 */
   background-color: color-mix(in srgb, var(--cw-gold) 88%, #000);
 }
 

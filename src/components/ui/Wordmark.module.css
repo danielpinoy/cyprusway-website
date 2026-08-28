@@ -29,6 +29,12 @@
   }
 }
 
+/* The brand name. WCAG 1.4.3 exempts text that is part of a logo, which is the only
+   reason this stands: on navy it is 4.23 and on the sand and white grounds below it is
+   2.32. The exemption is recorded rather than assumed, and it does NOT extend to any
+   other gold text on the site.
+   contrast: --cw-gold on --cw-navy = 4.23 (logotype)
+   contrast: --cw-gold on --cw-sand = 2.32 (logotype) */
 .way {
   color: var(--cw-gold);
 }

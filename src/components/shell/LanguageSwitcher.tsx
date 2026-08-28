@@ -3,6 +3,8 @@ import { Globe } from 'lucide-react';
 
 import { useI18n } from '../../i18n/I18nProvider';
 import { LANGUAGES } from '../../i18n/languages';
+import { useSession } from '../../lib/SessionProvider';
+import { savePreferredLanguage } from '../../lib/profile';
 import { Icon } from '../ui/Icon';
 import styles from './LanguageSwitcher.module.css';
 
@@ -11,9 +13,17 @@ import styles from './LanguageSwitcher.module.css';
  * not in the overlay menu — in a product with five languages and a switcher on every
  * page today. Building the design as drawn would have removed a shipped feature, so
  * the control lives here, beside search, which is where it lives now.
+ *
+ * **For a signed-in visitor it also writes `preferred_language`,** because that column is
+ * what `mike` reads to decide the language Pete answers in. Without the write, a Greek
+ * interface carried English answers. It is one shared row, so it changes the app on their
+ * phone too — which is why the menu says so in a line under the options rather than
+ * letting somebody discover it there. Signed-out visitors see neither the write nor the
+ * line: for them the preference really is local.
  */
 export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' | undefined }) {
   const { lang, setLanguage, t } = useI18n();
+  const { user } = useSession();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -62,6 +72,7 @@ export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' |
                 lang={language.code}
                 onClick={() => {
                   setLanguage(language.code);
+                  if (user) void savePreferredLanguage(user.id, language.code);
                   setOpen(false);
                 }}
               >
@@ -69,6 +80,11 @@ export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' |
               </button>
             </li>
           ))}
+          {user && (
+            <li role="none" className={styles.note}>
+              {t('ui_language_shared')}
+            </li>
+          )}
         </ul>
       )}
     </div>

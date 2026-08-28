@@ -1,5 +1,6 @@
 import { getSupabase } from './supabase';
 import type { InterestSlug } from '../contracts/interests';
+import type { LanguageCode } from '../i18n/languages';
 
 /* The profile row creates itself: the `on_auth_user_created` trigger fires inside
  * GoTrue's insert transaction, verified across 24 users with zero orphans. There is
@@ -67,4 +68,35 @@ export async function saveInterests(
 
   if (error) throw error;
   if (!data || data.length === 0) throw new Error('zero_rows_updated');
+}
+
+/**
+ * Persist the interface language onto the shared profile row.
+ *
+ * Why this exists at all: `mike` reads `public.users.preferred_language` and instructs the
+ * model "Respond in {language}". The web switcher wrote only `localStorage`, so a
+ * signed-in visitor who put the site into Greek got a Greek interface and Pete answering
+ * in whatever their app profile said — English, for anyone who had never opened the app.
+ * Greek chrome around English answers, in the same column, with no explanation.
+ *
+ * **It is one row, so it also changes the language of the app on their phone.** That is a
+ * real consequence of a control that looks local, and the switcher says so rather than
+ * letting it be a surprise. Called only from the explicit switcher and only for a
+ * signed-in visitor — never from the `localStorage` restore path, which is not a choice
+ * anybody just made.
+ *
+ * Best effort: a failure leaves the interface language changed and Pete's unchanged,
+ * which is exactly where the site was before this existed. It is logged, never rendered.
+ */
+export async function savePreferredLanguage(
+  userId: string,
+  language: LanguageCode,
+): Promise<void> {
+  const { error } = await getSupabase()
+    .from('users')
+    .update({ preferred_language: language })
+    .eq('id', userId)
+    .select('id');
+
+  if (error) console.warn('[profile] preferred_language write failed:', error.message);
 }

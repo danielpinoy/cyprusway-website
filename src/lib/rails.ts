@@ -39,14 +39,41 @@ export const POPULAR_BAND_START = 8; // inclusive, 0-based → rank 9
 export const POPULAR_BAND_END = 30; // exclusive, 0-based → rank 30
 
 /**
- * Published AND prominence-scored AND hero-bearing — 72 of 181 places today.
+ * The RAIL pool: published AND prominence-scored. 107 of 181 places.
  *
- * The hero filter follows the app's own ruling: "a photo card without a photo has no
- * designed state, so the filter IS the placeholder." Food & Wine Picks is the one rail
- * that deliberately does not use this pool.
+ * The photograph requirement was dropped in phase 3 — a place without one now gets a
+ * designed fallback card carrying its `short_description` instead of being excluded. That
+ * alone moved 35 places into view, five of them into Popular's band: Limassol Medieval
+ * Castle, Mount Olympus, Agios Neophytos Monastery, Fasouri Watermania and Pafos Zoo, all
+ * previously invisible for want of a picture.
+ *
+ * **The score requirement stays, and that is deliberate.** A rail puts four or six places
+ * above the entire catalogue; an unscored place has no claim to that slot. The score is the
+ * ranking. Explore uses a different rule for the opposite reason — see `explorePool` — and
+ * the difference is recorded in docs/PARKED.md so it is not "fixed" into consistency later.
  */
 export function renderablePool(places: readonly Place[]): Place[] {
-  return places.filter((place) => place.prominence != null && place.heroUrl != null);
+  return places.filter((place) => place.prominence != null);
+}
+
+/**
+ * The EXPLORE pool: published, full stop. All 181.
+ *
+ * Explore is a catalogue, not a ranking. `status = 'published'` is the editorial signal that
+ * a place is ready to be seen; `prominence` is an ordering signal that 74 rows are still
+ * waiting for, and withholding a published place from the browse grid because nobody has
+ * scored it yet hides content that exists.
+ *
+ * Measured 28 Aug, this is the difference between three empty filter chips and one: the 73
+ * places with neither a score nor a photograph are 37 tavernas, 10 bars, 9 amusement parks,
+ * 9 indoor playgrounds, 7 nightlife venues and 1 museum. Requiring a score returns Food and
+ * Nightlife to zero results.
+ *
+ * The rows arrive ordered `prominence.desc.nullslast, id.asc`, so scored places lead and
+ * unscored follow in a stable order. Nothing is ranked that has no rank.
+ */
+export function explorePool(places: readonly Place[]): Place[] {
+  return places.slice();
 }
 
 /**

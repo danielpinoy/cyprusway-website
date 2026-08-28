@@ -51,6 +51,10 @@ a:hover {
   box-shadow: 0 0 0 4px var(--cw-navy);
 }
 
+/* A 30% gold wash over whatever it lands on. Body copy is --cw-black-2 on white, which
+   is the common case and the one measured; the wash only ever lightens a ground, so a
+   darker ground is a smaller change than this.
+   contrast: --cw-black-2 on #ede1b7 = 8.09 */
 ::selection {
   background-color: color-mix(in srgb, var(--cw-gold) 30%, transparent);
 }

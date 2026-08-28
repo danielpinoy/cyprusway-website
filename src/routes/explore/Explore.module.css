@@ -1,0 +1,71 @@
+.page {
+  background-color: var(--cw-sand);
+  min-block-size: 60vh;
+}
+
+.inner {
+  inline-size: 100%;
+  max-inline-size: var(--cw-content-outer);
+  margin-inline: auto;
+  padding-inline: var(--cw-gutter);
+  padding-block: var(--cw-space-32) var(--cw-space-64);
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-12);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block: var(--cw-space-32) var(--cw-space-16);
+}
+
+.count {
+  font-size: var(--cw-h5-size);
+  font-weight: var(--cw-h5-weight);
+  color: var(--cw-navy);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--cw-space-24);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Five columns at the 1200 content width, per the frame's 220px cards. */
+@media (min-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.skeleton {
+  block-size: 251px;
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-skeleton-on-sand);
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+  margin-block-start: var(--cw-space-40);
+}

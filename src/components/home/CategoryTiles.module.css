@@ -40,8 +40,16 @@
   min-block-size: 72px;
   padding: var(--cw-space-12);
   border-radius: var(--cw-radius-md);
+  /* contrast: --cw-navy on #faf7ec = 10.39 */
   background-color: color-mix(in srgb, var(--cw-gold) 8%, var(--cw-white));
-  cursor: default;
+  text-decoration: none;
+  transition: background-color var(--cw-transition), transform var(--cw-transition);
+}
+
+.tile:hover {
+  /* contrast: --cw-navy on #f6efd9 = 9.69 */
+  background-color: color-mix(in srgb, var(--cw-gold) 16%, var(--cw-white));
+  transform: translateY(-1px);
 }
 
 .mark {

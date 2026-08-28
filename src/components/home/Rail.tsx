@@ -12,9 +12,9 @@ import styles from './Rail.module.css';
  *
  * Keyboard: the scroller is `role="group"` with a name and `tabindex="0"`, so it is
  * reachable and arrow-key scrollable. WCAG 2.1.1 requires a scrollable region to be
- * keyboard-operable whether or not its contents are — and in phase 2 its contents are
- * deliberately not, because the place detail page does not exist yet. The chevrons are
- * real buttons on top of that, not instead of it.
+ * keyboard-operable whether or not its contents are — which mattered most in phase 2, when
+ * the cards deliberately were not. They are links now. The chevrons are real buttons on top
+ * of the scroller, not instead of it.
  *
  * Direction: scrolling goes through `scrollByInline`, never `scrollLeft` arithmetic,
  * which is signed inconsistently across engines under RTL.
@@ -23,8 +23,11 @@ import styles from './Rail.module.css';
  * it inert with a "Coming soon" note — five times on one screen, alongside the header's
  * five pending nav items and the hero's two option cards. Repeating the same apology
  * twelve times is worse than not making the offer: the rail already scrolls to show
- * everything it has, and nothing is hidden behind the missing link. It comes back as a
- * real link when the browse surfaces do.
+ * everything it has, and nothing is hidden behind the missing link.
+ *
+ * Explore arrived in phase 3 and they have still not come back, because only some of them
+ * can point at it honestly — Food & Wine and Popular can, Top Recommendations is a
+ * personalised ranking that no Explore URL reproduces. See docs/PARKED.md.
  */
 export function Rail({
   titleKey,

@@ -1,0 +1,94 @@
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-12);
+  padding: var(--cw-space-16);
+  border-radius: 12px;
+  background-color: var(--cw-white);
+}
+
+.composer:focus-within {
+  outline: 2px solid var(--cw-gold);
+  outline-offset: 2px;
+}
+
+.input {
+  inline-size: 100%;
+  min-block-size: 48px;
+  max-block-size: 200px;
+  border: 0;
+  padding: 0;
+  background: none;
+  resize: none;
+  font: inherit;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.15px;
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+}
+
+/* The outline lives on the card, so the textarea's own is removed rather than doubled. */
+.input:focus {
+  outline: none;
+}
+
+.input::placeholder {
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+/* The frame's `+` would sit at the inline start of this row. It is omitted — no defined
+   behaviour, no equivalent in the app, and no request shape that could carry an
+   attachment. See Composer.tsx and docs/PARKED.md. The row keeps `space-between` so the
+   send button stays at the inline end, which is where it is drawn and where it mirrors
+   to under RTL. */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cw-space-8);
+}
+
+.count {
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  font-variant-numeric: tabular-nums;
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 32px;
+  block-size: 32px;
+  margin-inline-start: auto;
+  border: 0;
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-gold);
+  /* The arrow is a glyph, not text, so 4.5 does not apply — but it is the only content
+     of the control, so it is held to the 3:1 that WCAG 1.4.11 asks of a meaningful
+     graphic. contrast: --cw-black-1 on --cw-gold = 6.46, the phase-1 ruling for every
+     label on a gold surface. White would be 2.63 and is the family that has produced
+     ten failures across four phases. */
+  color: var(--cw-black-1);
+  cursor: pointer;
+  transition: background-color var(--cw-transition), opacity var(--cw-transition);
+}
+
+.send:hover:not(:disabled) {
+  /* contrast: --cw-black-1 on #a7830e = 4.78 */
+  background-color: color-mix(in srgb, var(--cw-gold) 85%, #000);
+}
+
+.send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

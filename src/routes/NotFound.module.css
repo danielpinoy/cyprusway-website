@@ -7,7 +7,11 @@
   font-size: var(--cw-h1-size);
   font-weight: 700;
   line-height: 1;
-  color: var(--cw-gold);
+  /* Was --cw-gold, which measures 2.32 on the sand ground — below even the 3:1 that
+     36px bold earns as large text. Found by scripts/check-contrast.mjs; it had shipped
+     since phase 1 as the largest thing on the page.
+     contrast: --cw-gold-link on --cw-sand = 4.96 */
+  color: var(--cw-gold-link);
 }
 
 .title {

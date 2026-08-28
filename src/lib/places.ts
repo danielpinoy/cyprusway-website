@@ -21,38 +21,68 @@ interface PlaceRow {
   slug: string;
   /** English only — `translations` carries `en` on 181 of 181 rows. */
   name: string | null;
+  /** Also English only. Median 166 characters — see the fallback card in PlaceCard. */
+  short: string | null;
+  /** EditorJS. Measured across all 181 rows: paragraph blocks only, one `text` field
+   *  each, no inline HTML, 1–2 blocks, 11–148 words. */
+  description: { blocks?: { type?: string; data?: { text?: string } }[] } | null;
   hero_image_url: string | null;
+  /** Never contains the hero; the two are separate images. Measured 28 Aug. */
+  gallery: unknown[] | null;
   virtual_tour: unknown | null;
   prominence: number | null;
+  visit_duration_minutes: number | null;
   destination: { slug: string; name: LocalisedName } | null;
   /** Every published place carries exactly one — measured: 0 with more, 0 with none. */
   categories: { slug: string; name: LocalisedName; icon: string | null }[] | null;
+  badges: { slug: string; name: LocalisedName; icon: string | null; color: string | null }[] | null;
+}
+
+export interface Badge {
+  slug: string;
+  name: LocalisedName;
+  icon: string | null;
+  color: string | null;
 }
 
 export interface Place {
   id: number;
   slug: string;
   name: string;
+  /** English only. Carries the fallback card and the detail page's standfirst. */
+  short: string | null;
+  /** The description's paragraphs, flattened to plain text. English only. */
+  description: string[];
   heroUrl: string | null;
+  /** Hero first, then gallery, deduped. 0 on 108 of 181 places; 2 is the commonest
+   *  non-zero value and only two places have six or more. */
+  images: string[];
   hasTour: boolean;
   prominence: number | null;
+  visitDurationMinutes: number | null;
   regionSlug: string | null;
   regionName: LocalisedName;
   categorySlug: string | null;
   categoryName: LocalisedName;
   /** Material icon name from the CMS, e.g. `restaurant`, `beach_access`. */
   categoryIcon: string | null;
+  badges: Badge[];
 }
 
 const SELECT = [
   'id',
   'slug',
   'name:translations->en->>name',
+  'short:translations->en->>short_description',
+  'description:translations->en->description',
   'hero_image_url',
+  'gallery',
   'virtual_tour',
   'destination',
   'categories',
+  'badges',
   'prominence',
+  'visit_duration_minutes',
 ].join(',');
 
 export async function fetchPlaces(): Promise<Place[]> {
@@ -73,20 +103,58 @@ export async function fetchPlaces(): Promise<Place[]> {
   return (data ?? []).map(toPlace);
 }
 
+/** Gallery entries are asset URLs; tolerate an object shape in case the sync changes. */
+function toImageUrl(entry: unknown): string | null {
+  if (typeof entry === 'string') return entry;
+  if (entry && typeof entry === 'object') {
+    const value = (entry as { url?: unknown }).url;
+    if (typeof value === 'string') return value;
+  }
+  return null;
+}
+
 function toPlace(row: PlaceRow): Place {
   const category = row.categories?.[0] ?? null;
+
+  /* Hero first, then the gallery, deduped. The hero is never inside the gallery today —
+     measured across every place that has both — but deduping costs nothing and stops a
+     future sync change from showing the same photograph twice. */
+  const images: string[] = [];
+  const seen = new Set<string>();
+  for (const candidate of [row.hero_image_url, ...(row.gallery ?? []).map(toImageUrl)]) {
+    if (typeof candidate === 'string' && candidate && !seen.has(candidate)) {
+      seen.add(candidate);
+      images.push(candidate);
+    }
+  }
+
   return {
     id: row.id,
     slug: row.slug,
     name: row.name ?? row.slug,
+    short: row.short,
+    /* Only `paragraph` blocks exist today and none carries inline HTML, so the text is
+       taken as text. Any future block type is skipped rather than rendered wrongly. */
+    description: (row.description?.blocks ?? [])
+      .filter((block) => block?.type === 'paragraph')
+      .map((block) => block?.data?.text ?? '')
+      .filter((text) => text.trim().length > 0),
     heroUrl: row.hero_image_url,
+    images,
     hasTour: row.virtual_tour != null,
     prominence: row.prominence,
+    visitDurationMinutes: row.visit_duration_minutes,
     regionSlug: row.destination?.slug ?? null,
     regionName: row.destination?.name ?? {},
     categorySlug: category?.slug ?? null,
     categoryName: category?.name ?? {},
     categoryIcon: category?.icon ?? null,
+    badges: (row.badges ?? []).map((b) => ({
+      slug: b.slug,
+      name: b.name,
+      icon: b.icon,
+      color: b.color,
+    })),
   };
 }
 

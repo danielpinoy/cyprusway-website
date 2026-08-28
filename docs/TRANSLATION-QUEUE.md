@@ -1,6 +1,6 @@
-# Translation queue — phase 1
+# Translation queue — phases 1 to 4
 
-The React shell introduces strings the vanilla dictionary never had. They ship in English
+The React rebuild introduces strings the vanilla dictionary never had. They ship in English
 only, and the other four languages fall back to English — the same fallback the vanilla
 switcher used, so nothing disappears; it just reads in the wrong language.
 
@@ -52,7 +52,7 @@ gets English, exactly as before.
 
 ---
 
-## The queue — 83 keys, English only
+## The queue — 141 keys, English only
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
@@ -88,7 +88,6 @@ so it is given.
 |---|---|---|
 | `ui_hero_sub` | Explore hand-picked places, get personalised guidance from Pete, and build a day-by-day trip around the Cyprus you want to experience. | **Copy owed in English first** — see below |
 | `ui_hero_ask_placeholder` | Ask me anything... | Placeholder of the disabled Ask Pete input |
-| `ui_hero_ask_unavailable` | Ask Pete is not available on the web yet. | Appended to that input's accessible name |
 | `ui_hero_explore_title` | Explore Now | Option card |
 | `ui_hero_explore_desc` | Browse hand-picked places right away. No questions asked. | |
 | `ui_hero_my_title` | My CyprusWay | Option card |
@@ -170,6 +169,89 @@ adopted (plan Q1), that changes and these become the first thing to translate.
 | `ui_bwp_hint` | Choose one | **Changed from the design**, which says "Choose as many as apply". The API takes exactly one region, so the chips are single-select |
 | `ui_bwp_continue` | Continue | Disabled — see below |
 | `ui_bwp_unavailable` | Booking options aren't available on the web yet. | Sits under the disabled Continue. `affiliate_routes` is empty, so every possible answer today is "unavailable" |
+
+### Explore — 14, added in phase 3
+
+| Key | English | Context |
+| --- | --- | --- |
+| `ui_explore_title` | Explore Cyprus | The page's `<h1>`. Visually hidden — the filter rows are the visible top of the page — so it is read, not seen |
+| `ui_explore_all_regions` · `ui_explore_all_interests` | All Regions · All Interests | The first chip in each filter row, the "no filter" state |
+| `ui_explore_region_filter` · `ui_explore_interest_filter` | Filter by region · Filter by interest | Accessible names of the two chip rows. Never visible |
+| `ui_explore_count` | {count} places | **Has a placeholder.** Shown when everything found is on screen |
+| `ui_explore_count_partial` | Showing {shown} of {count} places | **Has two placeholders.** Shown while Load More still has more to give. Keep both, in whatever order your language needs |
+| `ui_explore_load_more` | Load More | The button under the grid. Not infinite scroll — deliberately |
+| `ui_explore_empty_title` | No {interest} in {region} | **Has two placeholders,** both filled with strings already in this file: an interest name and a translated destination name from the catalogue. This is a *true statement about Cyprus* — there are no beaches in the Troodos mountains — so it should read as a fact, not as an apology |
+| `ui_explore_empty_title_any` | Nothing under {interest} yet | The same, with no region chosen |
+| `ui_explore_empty_suggestion` | There is more to see under {interest} here. | **Has a placeholder.** Offers an interest that does have places in that region; the suggestion is computed from the catalogue, so it can never point at another dead end |
+| `ui_explore_empty_untagged_title` | {interest} is not tagged on places yet | **A different empty state, about us and not about Cyprus.** `hidden_gems` reaches no CMS category, so it is empty everywhere. Saying "no hidden gems in Paphos" would be a lie; this says whose problem it is |
+| `ui_explore_empty_untagged_body` | The other ten interests are. This one needs the places themselves to be tagged before it can show anything. | Follows the line above. "Ten" is a literal count of the other interests — if the vocabulary changes, this string changes |
+| `ui_explore_clear` | Clear filters | |
+
+### Place page — 11, added in phase 3
+
+| Key | English | Context |
+| --- | --- | --- |
+| `ui_place_features` | Features | Heading over the badge chips. The CMS calls them badges; the page calls them features, because that is what the frame calls them and what they mean to a reader |
+| `ui_place_about` | About {name} | **Has a placeholder.** `{name}` is the place's English name — place names are English on all 181 rows and are not translated |
+| `ui_place_duration` | About {minutes} minutes | **Has a placeholder,** and "About" here means *approximately*, not *concerning* — a different word from `ui_place_about` in most languages |
+| `ui_place_gallery` | Photos | Accessible name of the thumbnail strip |
+| `ui_place_photo_of` | Photo {index} of {total} | **Has two placeholders.** The accessible name of one thumbnail |
+| `ui_place_save` · `ui_place_saved` | Save this place · Saved | The heart button's two states. Signed-in only — `saved_places` has no policy for `anon`, so a signed-out visitor never sees it |
+| `ui_place_save_failed` | We couldn't save this place. Please try again. | Under the button when the write fails |
+| `ui_place_not_found_title` | That place is not here | A slug that does not resolve. Deliberately not "404" and not "Oops" |
+| `ui_place_not_found_body` | The link may be out of date, or the place may have been withdrawn. Explore is a good place to start again. | Both causes are real: places are unpublished in Directus, and the page is also reachable by typo |
+| `ui_place_not_found_cta` | Explore Cyprus | The link out. Same words as `ui_explore_title`, and they can stay the same words |
+
+### Page metadata — 5 more, added in phase 3
+
+| Key | English | Context |
+| --- | --- | --- |
+| `ui_meta_explore_title` | Explore Cyprus — CyprusWay | |
+| `ui_meta_explore_desc` | Browse every place on CyprusWay by region and by what you like doing. | |
+| `ui_meta_place_title` | {name} — CyprusWay | **Has a placeholder.** The `<title>` of all 181 prerendered place pages |
+| `ui_meta_place_desc` | {name} — a place to visit in {region}, Cyprus. On CyprusWay. | **Has two placeholders.** Only used where the place has no `short_description`; where one exists, that is the meta description. Deliberately plain — inventing a superlative for a place nobody has written copy for would be worse than a flat sentence |
+| `ui_meta_place_desc_any` | {name} — a place to visit in Cyprus. On CyprusWay. | The same, where the place has no region |
+
+### Ask Pete — 29, added in phase 4
+
+**Pete's own replies are not here, and will never be here.** They are model output. `mike`
+reads `public.users.preferred_language` and instructs the model "Respond in {language}",
+with all five of this site's languages in its own table — so a reply arrives already in the
+reader's language, generated once, and there is no string to translate. The rule that
+follows from that: **everything in this table is chrome around an answer nobody translated,
+so the chrome has to be right.** If the interface is Polish and Pete answers in Polish, a
+half-translated frame around it is more jarring than an English one.
+
+Two related facts worth having in the same place. Pete also matches the language somebody
+writes in, whatever their profile says, so a Greek question gets a Greek answer even on an
+English interface. And since phase 4 the language switcher writes `preferred_language` for
+a signed-in visitor — which is what makes the interface and Pete agree, and which also
+changes the language of the app on their phone. The switcher says so.
+
+| Key | English | Context |
+| --- | --- | --- |
+| `ui_pete_title` · `ui_pete_subtitle` | Ask Pete · Cyprus travel assistant | Page heading. **Pete is a character name — do not translate it**, the same rule `ui_bwp_title` follows |
+| `ui_pete_greeting` | Hi! 👋 I am Pete — your local guide to Cyprus. What can I help with? | Client-side copy, never sent to the model. Shown only when the server confirmed an empty conversation — the thread is shared with the phone, so above a loaded one this would be a lie |
+| `ui_pete_starter_1` · `ui_pete_starter_2` · `ui_pete_starter_3` | Best beach near me · What should I do tonight? · Know about Cyprus history or culture? | The three suggestion chips. **These are sent to Pete verbatim when pressed**, so they must read as a natural question in your language, not as a label |
+| `ui_pete_counter` | {used} of {cap} today | **Has two placeholders.** `{used}` counts questions ASKED, not questions left — the frame's limit state reads "5 of 5" |
+| `ui_pete_counter_label` | {used} of {cap} questions used today | The same, spelled out for a screen reader, because "4 of 5 today" alone does not say which number is which |
+| `ui_pete_input_label` | Your question for Pete | Visually hidden label on the composer |
+| `ui_pete_placeholder` | Ask Pete anything specific, e.g. travelling with a toddler, need wheelchair access, celebrating... | The examples matter more than the wording: they teach that specific questions work better. Adapt them if a direct translation reads oddly |
+| `ui_pete_send` · `ui_pete_sending` | Send · Pete is answering | Accessible name of the send button, and the state while a request is out |
+| `ui_pete_disabled_quota` | you have used today's questions | **A sentence fragment, deliberately** — it is appended to the send button's name after a dash, as "Send — you have used today's questions" |
+| `ui_pete_said` · `ui_pete_you_said` | Pete said · You said | Visually hidden headings on every message, so a screen reader knows who is speaking without relying on which side of the column a bubble sits on |
+| `ui_pete_open_place` | Open {name} | **Has a placeholder.** Accessible name of a place chip. `{name}` is a place name from the catalogue, already localised by the server |
+| `ui_pete_signin_title` · `ui_pete_signin_body` · `ui_pete_signin_cta` | Pete needs a free account · Everything you save comes with you, on the web and in the app. · Create a free account | Replaces the composer for a signed-out visitor. `mike` refuses them outright, so this is the most common state this screen has |
+| `ui_pete_err_quota` | That's all {cap} for today. Pete is back tomorrow — your question is still in the box. | **Has a placeholder,** so the sentence cannot go stale if the cap changes. **Do not translate "tomorrow" into a time or an hour**: the reset boundary is a live backend question and the interface deliberately names no hour |
+| `ui_pete_err_account` | Ask Pete needs a free account. Everything you have saved comes with you. | |
+| `ui_pete_err_auth` | Your session expired. Sign in again to keep chatting. | |
+| `ui_pete_err_invalid` | Pete couldn't read that one, so nothing was used. Your question is still in the box. | "Nothing was used" is load-bearing: the server refused this before spending a question, and saying so is what stops a benign refusal reading as breakage |
+| `ui_pete_err_transport` | Couldn't reach Pete. Check your connection and try again. | |
+| `ui_pete_err_server` | Pete is having trouble right now. Try again in a moment. | |
+| `ui_pete_err_stream` | Pete stopped mid-answer. That one still counted, sorry. | Also load-bearing, in the other direction: the allowance is spent before the model is called, so this one really did cost a question. The apology is the honest part |
+| `ui_language_shared` | Also changes the app | Under the language options, for a signed-in visitor. The switcher writes the shared profile row, so it changes Pete's language on their phone too — this line is the only warning |
+| `ui_meta_askpete_title` | Ask Pete — CyprusWay | |
+| `ui_meta_askpete_desc` | Ask a local guide about Cyprus — beaches, food, history and what to do tonight. | |
 
 ---
 

@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { Link } from 'react-router';
 
 import { useT } from '../../i18n/I18nProvider';
 import {
@@ -26,8 +27,8 @@ import styles from './CategoryTiles.module.css';
  * the onboarding chips. Reusing it recovers some of the design's imagery for free and ties
  * this rail visually to the screen where the same eleven words were chosen.
  *
- * Non-interactive, like every other card in phase 2: there is no browse surface behind a
- * category yet.
+ * Each tile now leads to Explore, pre-filtered by that interest — the browse surface phase 2
+ * did not have.
  */
 export function CategoryTiles() {
   const t = useT();
@@ -41,16 +42,18 @@ export function CategoryTiles() {
 
       <ul className={styles.grid}>
         {INTEREST_SLUGS.map((slug) => (
-          <li key={slug} className={styles.tile}>
-            <img
-              className={styles.mark}
-              src={interestImage(slug)}
-              alt=""
-              width={32}
-              height={32}
-              loading="lazy"
-            />
-            <span className={styles.label}>{t(interestLabelKey(slug))}</span>
+          <li key={slug}>
+            <Link to={`/explore?interest=${slug}`} className={styles.tile}>
+              <img
+                className={styles.mark}
+                src={interestImage(slug)}
+                alt=""
+                width={32}
+                height={32}
+                loading="lazy"
+              />
+              <span className={styles.label}>{t(interestLabelKey(slug))}</span>
+            </Link>
           </li>
         ))}
       </ul>

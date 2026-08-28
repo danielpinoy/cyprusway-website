@@ -60,3 +60,21 @@ export function scrollByInline(element: HTMLElement, distance: number): void {
   const rtl = getComputedStyle(element).direction === 'rtl';
   element.scrollBy({ left: rtl ? -distance : distance, behavior: 'smooth' });
 }
+
+/**
+ * Which way an arrow key moves along an inline row: +1 forward, -1 back, 0 for a key that
+ * is neither.
+ *
+ * ArrowRight is not "next". Under RTL the row reads right to left, and the arrow that
+ * points along the text is the one that should advance — the same mistake `scrollByInline`
+ * documents above, in the one place a component handles keys itself instead of letting the
+ * browser scroll.
+ *
+ * `direction` is read from the element for the same reason: a row inside a locally
+ * reversed subtree still behaves.
+ */
+export function inlineArrowStep(key: string, element: HTMLElement | null): -1 | 0 | 1 {
+  if (key !== 'ArrowRight' && key !== 'ArrowLeft') return 0;
+  const rtl = element != null && getComputedStyle(element).direction === 'rtl';
+  return key === (rtl ? 'ArrowLeft' : 'ArrowRight') ? 1 : -1;
+}

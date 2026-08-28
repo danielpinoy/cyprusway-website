@@ -1,0 +1,247 @@
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-16);
+  padding-block: var(--cw-space-8);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+}
+
+.stamp {
+  margin: 0;
+  text-align: center;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+/* ---- Pete ------------------------------------------------------------------
+   The row starts at the inline start and the avatar leads it, so the whole thing
+   mirrors under RTL without a direction check. */
+.botRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cw-space-8);
+}
+
+.avatar {
+  flex-shrink: 0;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: var(--cw-radius-pill);
+  overflow: hidden;
+  background-color: var(--cw-navy);
+}
+
+.avatar img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.botColumn {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+  min-inline-size: 0;
+}
+
+.botBubble {
+  max-inline-size: 62ch;
+  padding: var(--cw-space-16);
+  border-radius: 24px;
+  /* The corner nearest the avatar is square, so the bubble points at its speaker. The
+     logical property is what makes that still true under RTL, where the avatar is on
+     the other side. */
+  border-start-start-radius: 0;
+  background-color: var(--cw-white);
+}
+
+.answerText {
+  margin: 0;
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+  font-size: 14px;
+  line-height: 24px;
+  white-space: pre-wrap;
+  text-wrap: pretty;
+}
+
+/* Three dots while the request is out and nothing has arrived. aria-hidden — the state
+   is announced as text, not as animation. */
+.typing {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding-block: var(--cw-space-4);
+}
+
+.typing span {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-grey-3);
+  animation: cw-pete-pulse 1.2s ease-in-out infinite;
+}
+
+.typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes cw-pete-pulse {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing span {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* ---- Place chips -----------------------------------------------------------
+   Verified rows from `meta.places`, never names parsed out of Pete's prose. */
+.places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.place {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 510;
+  text-decoration: underline;
+  /* The frame sets these in --cw-gold, which measures 2.63 on white and fails — the
+     tenth instance of the light-on-gold family that has produced nine failures across
+     three phases. --cw-gold-link was defined in phase 1 for exactly this case and has
+     been unused since. scripts/check-contrast.mjs now refuses unmeasured gold.
+     contrast: --cw-gold-link on --cw-white = 5.63 */
+  color: var(--cw-gold-link);
+}
+
+.place:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* ---- The visitor -----------------------------------------------------------
+   Mirrors of the Pete row: aligned to the inline end, square corner at end-end. */
+.userRow {
+  display: flex;
+  justify-content: flex-end;
+  padding-inline: var(--cw-space-16);
+}
+
+.userBubble {
+  max-inline-size: 52ch;
+  margin: 0;
+  padding-block: var(--cw-space-12);
+  padding-inline: var(--cw-space-16);
+  border-radius: 24px;
+  border-end-end-radius: 0;
+  background-color: color-mix(in srgb, #000 10%, transparent);
+  /* contrast: --cw-black-1 on #dcd8d1 = 11.98 */
+  color: var(--cw-black-1);
+  font-size: 14px;
+  line-height: 24px;
+  white-space: pre-wrap;
+}
+
+/* ---- Starters --------------------------------------------------------------
+   Real buttons. They stay live for a signed-out visitor: pressing one puts the question
+   in the box, so the intent survives signing in. */
+.starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.starter {
+  padding-block: var(--cw-space-8);
+  padding-inline: var(--cw-space-12);
+  border: 1px solid transparent;
+  border-radius: 24px;
+  background-color: var(--cw-white);
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+  font-size: 12px;
+  line-height: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--cw-transition), transform var(--cw-transition);
+}
+
+.starter:hover {
+  border-color: var(--cw-gold);
+  transform: translateY(-1px);
+}
+
+/* ---- Notices ---------------------------------------------------------------
+   Never a message from Pete: no avatar, no bubble, not in the position an answer
+   occupies. A timeout drawn beside his face reads as something he said. */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cw-space-8);
+  max-inline-size: 62ch;
+  margin-inline: auto;
+  padding: var(--cw-space-12);
+  border-radius: var(--cw-radius-sm);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+}
+
+.notice p {
+  margin: 0;
+}
+
+/* Two tones, and which is which is a ruling rather than decoration.
+
+   `info` is for the refusals the server makes at or before the quota gate — they cost
+   the visitor nothing, and their copy says so. Half of what made Pete look broken in the
+   app was benign refusals dressed as breakage, so the DAILY CAP is one of these: the
+   counter pill above carries the alarm in the alert family, exactly as the frame draws
+   it, and the sentence underneath stays calm and explains.
+
+   The frame instead draws the cap as a GOLD card with white text, in Pete's message
+   position, with his avatar and an "Unlock Unlimited" button. White on --cw-gold is
+   2.63 and fails; the upgrade action is parked (docs/PARKED.md); and what is left is a
+   statement about an account rather than something Pete said. So: a notice, not a bubble.
+
+   contrast: --cw-navy on #e4e2de = 8.61 */
+.info {
+  background-color: color-mix(in srgb, var(--cw-navy) 8%, transparent);
+  color: var(--cw-navy);
+}
+
+/* Something broke. contrast: --cw-alert-text on #f4d3cc = 5.11 */
+.alert {
+  background-color: var(--cw-alert-tint);
+  color: var(--cw-alert-text);
+}

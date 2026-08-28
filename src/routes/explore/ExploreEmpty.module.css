@@ -1,0 +1,34 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cw-space-12);
+  padding-block: var(--cw-space-64);
+  padding-inline: var(--cw-gutter);
+  text-align: center;
+}
+
+.title {
+  max-inline-size: 34ch;
+  font-size: var(--cw-h3-size);
+  line-height: var(--cw-h3-line);
+  font-weight: var(--cw-h3-weight);
+  color: var(--cw-navy);
+  text-wrap: balance;
+}
+
+.body {
+  max-inline-size: 46ch;
+  font-size: var(--cw-subtitle-size);
+  line-height: var(--cw-subtitle-line);
+  color: var(--cw-grey-3);
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--cw-space-12);
+  margin-block-start: var(--cw-space-8);
+}

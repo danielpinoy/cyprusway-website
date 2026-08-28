@@ -35,11 +35,12 @@ export interface NavItem {
   readonly icon?: LucideIcon;
 }
 
-/** The five items across the top of the Figma header. All phase 2. */
+/** The five items across the top of the Figma header. Explore landed in phase 3 and Ask
+ *  Pete in phase 4; the rest are still ahead. */
 export const PRIMARY_NAV: readonly NavItem[] = [
-  { id: 'explore', labelKey: 'ui_nav_explore', pending: true },
+  { id: 'explore', labelKey: 'ui_nav_explore', to: '/explore' },
   { id: 'my-cyprusway', labelKey: 'ui_nav_my_cyprusway', pending: true },
-  { id: 'ask-pete', labelKey: 'nav_ap', pending: true },
+  { id: 'ask-pete', labelKey: 'nav_ap', to: '/ask-pete' },
   { id: 'tours', labelKey: 'ui_nav_tours', pending: true },
   { id: 'build-trip', labelKey: 'ui_nav_build_trip', pending: true },
 ];
@@ -47,9 +48,9 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 /** The overlay drawer, Figma node 3562-23804. */
 export const MENU_NAV: readonly NavItem[] = [
   { id: 'home', labelKey: 'nav_home', to: '/', icon: Home },
-  { id: 'explore', labelKey: 'ui_nav_explore', pending: true, icon: Compass },
+  { id: 'explore', labelKey: 'ui_nav_explore', to: '/explore', icon: Compass },
   { id: 'my-cyprusway', labelKey: 'ui_nav_my_cyprusway', pending: true, icon: Sparkles },
-  { id: 'ask-pete', labelKey: 'nav_ap', pending: true, icon: MessageCircleQuestion },
+  { id: 'ask-pete', labelKey: 'nav_ap', to: '/ask-pete', icon: MessageCircleQuestion },
   /* The frame marks Book with Pete "PRO". The 14 Aug audit recorded that as inverted —
      `book-with-pete-route` is guest-reachable — so the badge is not carried. */
   { id: 'book-pete', labelKey: 'ui_menu_book_pete', pending: true, icon: BookMarked },

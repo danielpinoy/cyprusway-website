@@ -1,0 +1,84 @@
+.row {
+  position: relative;
+}
+
+.scroller {
+  display: flex;
+  gap: var(--cw-space-8);
+  overflow-x: auto;
+  padding: 4px;
+  margin: -4px;
+  scrollbar-width: thin;
+}
+
+.scroller > * {
+  flex-shrink: 0;
+}
+
+/* Border is --cw-grey-3, not --cw-grey-2: the boundary is the only thing identifying the
+   control, and grey-2 on white measures 1.96:1, under the 3:1 WCAG 1.4.11 requires. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+  min-block-size: 40px;
+  padding-block: var(--cw-space-8);
+  padding-inline: var(--cw-space-16);
+  border: 1px solid var(--cw-border-interactive);
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-white);
+  color: var(--cw-black-2);
+  font-size: var(--cw-body-size);
+  font-weight: var(--cw-body-weight);
+  line-height: var(--cw-body-line);
+  white-space: nowrap;
+  transition: background-color var(--cw-transition), border-color var(--cw-transition);
+}
+
+.chip:hover {
+  border-color: var(--cw-navy);
+}
+
+/* Selected: 2px gold border and a gold tint, label in navy. Gold as a label on white is
+   2.63:1 with this palette; aria-pressed carries the state non-visually, so nothing
+   depends on seeing the colour. Same ruling as the interests chips in phase 1.
+   contrast: --cw-navy on --cw-gold-tint = 10.21 */
+.chip[aria-pressed='true'] {
+  border-width: 2px;
+  border-color: var(--cw-gold);
+  background-color: var(--cw-gold-tint);
+  padding-block: 7px;
+  padding-inline: 15px;
+  color: var(--cw-navy);
+  font-weight: 700;
+}
+
+/* The count. Deliberately quiet — it informs the decision, it is not the label. */
+.count {
+  padding-block: 1px;
+  padding-inline: var(--cw-space-8);
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-sand);
+  color: var(--cw-grey-3);
+  font-size: var(--cw-small-size);
+  font-weight: 700;
+  line-height: var(--cw-small-line);
+}
+
+.chip[aria-pressed='true'] .count {
+  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
+  color: var(--cw-navy);
+}
+
+/* A chip that would return nothing. Dimmed and still pressable, never disabled: a disabled
+   chip hides that the category exists, and "we know about nightlife and have none yet" is a
+   different and more honest message than not offering it. Pressing it reaches an empty state
+   that explains which of the two reasons applies. */
+.empty {
+  border-style: dashed;
+  color: var(--cw-grey-3);
+}
+
+.empty .count {
+  color: var(--cw-grey-3);
+}

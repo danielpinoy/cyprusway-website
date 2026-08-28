@@ -10,17 +10,18 @@
     "predev": "node scripts/check-env.mjs",
     "dev": "vite",
     "prebuild": "node scripts/check-env.mjs",
-    "build": "npm run build:client && npm run build:server && npm run prerender && npm run check:css",
+    "build": "npm run build:client && npm run build:server && npm run prerender && npm run check:css && npm run check:contrast",
     "build:client": "vite build --outDir dist",
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist-ssr",
     "prerender": "node scripts/prerender.mjs",
     "check:css": "node scripts/check-logical-css.mjs",
+    "check:contrast": "node scripts/check-contrast.mjs",
     "typecheck": "tsc --noEmit",
     "preview": "wrangler dev",
     "deploy": "npm run build && wrangler deploy",
     "port-i18n": "node scripts/port-i18n.mjs",
     "check:env": "node scripts/check-env.mjs",
-    "setup:env": "node -e \"const f=require('fs');if(f.existsSync('.env')){console.log('.env already exists \u2014 left untouched');}else{f.copyFileSync('.env.example','.env');console.log('created .env from .env.example \u2014 now fill in VITE_SUPABASE_ANON_KEY');}\""
+    "setup:env": "node -e \"const f=require('fs');if(f.existsSync('.env')){console.log('.env already exists — left untouched');}else{f.copyFileSync('.env.example','.env');console.log('created .env from .env.example — now fill in VITE_SUPABASE_ANON_KEY');}\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",

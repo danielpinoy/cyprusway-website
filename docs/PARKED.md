@@ -14,6 +14,69 @@ Started 28 August 2026, during phase 2 planning.
 
 ---
 
+## Unparked
+
+Entries that were parked and have since been built. Kept, briefly, so the reasoning is not
+lost the moment it stops applying — and so nobody re-parks them.
+
+### The place detail page — built in phase 3
+
+Parked through phase 2 because no Figma frame existed. Frame `3487-21941` arrived with the
+phase-3 brief and the page is now at `/place/<slug>`: title, region, gallery, features,
+About, and a Popular rail.
+
+What it took with it: every card on the homepage was deliberately non-interactive because
+a dead click is worse than an honest static card. They are links now — `PlaceCard`,
+`SavedPlaceCard` and the category tiles alike.
+
+Three parts of that frame stayed behind and have their own entries below: **the map panel**,
+**the Virtual Tour panel**, and **the Tours / Hotels / Activities tabs**. The page ships
+Overview only, and with no tab bar — a tab bar with one tab is chrome that explains nothing.
+
+### Saved Places has no way to create a row — built in phase 3
+
+The rail has queried `saved_places` since phase 2 and has never had anything to show,
+because saving is a place-page action and there was no place page.
+
+The place page now carries a save button, so the rail is reachable: sign in, open a place,
+save it, and it appears on the homepage. The button is hidden entirely for a signed-out
+visitor rather than shown and then refused — `saved_places` has no policy for `anon`, so
+offering it would be an invitation to a 42501.
+
+### Ask Pete on web — built in phase 4
+
+Parked through phases 1 to 3 as "no destination". `/ask-pete` now exists, and the header,
+overlay-menu and footer entries point at it — three more "Coming soon" labels gone. The
+homepage hero's ask box is a real input that hands the question straight to Pete.
+
+What came with it, and what did not: the screen is the shared thread (`ai_conversations` is
+UNIQUE (user_id), so the web continues the phone's conversation and the counter is the same
+counter), the place chips are real links into the 181 place pages, and the streaming reader
+is written properly rather than ported. The upgrade path and the composer's `+` are below.
+
+**The streaming half is not verified.** The transport was probed against the deployed
+function and every auth-failure shape is confirmed, but no signed-in stream has been driven
+— that needs a real user JWT, and none was held. Nothing about it should be described as
+confirmed until the first signed-in run.
+
+### What phase 3 deliberately did **not** unpark: "View All" on the rails
+
+Phase 2 removed the frames' five "View All" links because they had nowhere to go, and wrote
+that they "come back as a real link when the browse surfaces do." Explore is now that
+surface, and they have still not come back — on purpose, because only some of them can go
+there honestly.
+
+*Food & Wine Picks* maps to `/explore?interest=local_food` and *Popular at the moment* to
+`/explore`. *Top Recommendations* does not map to anything: it is a personalised ranking, not
+a filter, and no Explore URL reproduces it. A "View All" on three rails and not on the fourth
+needs a designer to say whether that reads as deliberate or as breakage.
+
+**What unparks it.** A ruling on which rails get one. The links themselves are one line each.
+
+**Owner.** The owner.
+
+---
+
 ## Blocking a phase-2 feature
 
 ### `places_sync.interest_tags` — the column does not exist
@@ -167,7 +230,192 @@ empty for the people who picked them.
 
 **Owner.** Design, then web.
 
+
+### The frames assume content that does not exist — four places, two screens
+
+**What.** Across the Explore and place-detail frames, four separate pieces of the design
+describe a catalogue richer than the one in Directus. Collected here rather than scattered,
+because together they are a single question about where content effort goes.
+
+| The frame draws | The catalogue has | **[measured 28 Aug]** |
+|---|---|---|
+| A **six-thumbnail gallery** strip on the place page | **108 of 181 places have zero images.** 14 have one, 45 have exactly two, 12 have three to five. **Two places** have six or more | `hero_image_url` + `gallery`, deduped |
+| **"67 results found"** on Explore | Nothing produces 67. Unfiltered is 181 published, 107 scored, 72 scored-and-photographed | |
+| **Per-category tag colours** — gold Beaches, green Nature, navy Culture | Categories carry `{id, slug, icon, name}` and **no colour field**. Only badges have colours, and they are a different collection | The app hit this too and wrote a provisional map awaiting the designer |
+| **"Best time to visit"** with a line of editorial copy | `translations.en` carries exactly three fields on all 181 rows — `name`, `description`, `short_description`. There is no best-time column anywhere on `places_sync` | |
+
+**Why parked.** Each was built around rather than stubbed. The gallery renders 0, 1 or n
+images instead of padding to six; the result count shows the real number; tags use the
+measured navy chip rather than a third copy of a provisional palette; and the best-time
+section is not rendered at all.
+
+**What unparks them.** Photography for the gallery — it is the same backlog as the hero
+images. A designer's tag palette, which the app is also waiting on. And a CMS field plus copy
+for best-time-to-visit, which is a content decision before it is a schema one.
+
+**Owner.** Content and design.
+
+### Explore is a catalogue, the rails are a ranking — do not "fix" the inconsistency
+
+**What.** Two different renderable rules, on purpose:
+
+- **The homepage rails** show `published AND prominence IS NOT NULL`. A rail puts four or six
+  places above the whole catalogue; an unscored place has no claim to that slot. The score
+  *is* the ranking.
+- **Explore** shows `published`, full stop, ordered by prominence nulls-last. It is the
+  surface whose job is "show me what exists". `status = 'published'` is the editorial signal
+  that a place is ready to be seen; `prominence` is an ordering signal that 74 rows are still
+  waiting for.
+
+**Why this is recorded as a decision rather than left to be discovered.** It looks like an
+inconsistency and it is not, and the obvious "cleanup" in either direction is wrong:
+
+- Making Explore require a score hides **37 tavernas, 10 bars and 7 nightlife venues** —
+  every one of them unscored *and* unphotographed — and returns Food, Nightlife and Hidden
+  Gems to zero results. **[measured 28 Aug]**
+- Dropping the score requirement from the rails puts unranked places in a four-card rail
+  called Top Recommendations.
+
+**What unparks it.** Scoring the remaining 74 places makes the two rules converge on their
+own, at which point the split stops mattering and can be collapsed.
+
+**Owner.** Web. Recorded 28 Aug when Explore was built.
+
+### The map — Explore's List/Map toggle and the place page's map panel
+
+**What.** Both frames carry a map: a full-width panel on the place page, and a List/Map
+toggle above Explore's grid.
+
+**Why parked.** Decision Log entry 50 rules Mapbox for the app, but the web SDK is a different
+integration with its own key, its own billing and its own bundle cost, and the owner has ruled
+the web map separate work from the mobile one.
+
+Explore ships **List only, with no toggle** — a toggle with one reachable option is not a
+toggle, and a disabled "Map" is a control whose only function is to say it does not work. Same
+argument that removed phase 2's five inert "View All" labels. The place page simply has no map
+section.
+
+**What unparks it.** A decision on the web mapping provider and a key.
+
+**Owner.** Product, then web.
+
+### The Virtual Tour panel on the place page
+
+**What.** The frame draws a panel with a tour still, a play control and a gold "Get Premium
+Access" button.
+
+**Why parked.** `virtual_tour` is null on 181 of 181 published places and Stripe is off, so
+the panel would be a locked upsell for content that does not exist — the worst of both. Not
+greyed out and not labelled "coming soon": absent.
+
+**What unparks it. Itself.** Structured like the homepage tours rail: the panel is built and
+renders when a place has a tour. The day a tour row lands, it appears with no code change —
+and the paywall question becomes live at the same moment, which is a separate ruling.
+
+**Owner.** Content for the tours; product for the paywall.
+
+### Everything booking — and the CJ redirect hosts
+
+**What.** The place page's "Book directly" button and its Tours / Hotels / Activities tabs.
+
+**Why parked.** `affiliate_routes` holds zero rows in both Directus and Supabase, so every
+route resolution returns `unavailable`. The page ships Overview only, and **with no tab bar** —
+one tab is not a tab bar.
+
+This is the same park as the homepage's Book with Pete card, which is built with its Continue
+disabled for the same reason.
+
+**What unparks it.** Authored, territory-approved rows in `affiliate_routes`.
+
+**And the thing that breaks next, recorded here because it belongs with this park:** CJ
+rotates its redirect host across `anrdoezrs.net`, `dpbolvw.net`, `tkqlhce.com` and
+`jdoqocy.com`, and `book-with-pete-route`'s `HOST_ALLOWLIST` admits only the first. The moment
+routes are authored, any route CJ serves from one of the other three returns
+`unavailable / invalid_target_url`. Recorded in `CyprusWay_Decision_Log_v3_0.md:1289` and
+still open. See also `docs/BACKEND-HANDOFF.md` §4.
+
+**Owner.** Content for the routes; backend for the allowlist.
+
 ---
+
+### "Unlock Unlimited" — the upgrade path, in two places on the Ask Pete screen
+
+**What.** The frames put it twice on one screen: a gold underlined link with a padlock at
+the end of the counter row, and the primary gold button inside the limit-reached banner
+(`3558-17951` and `3571-37223`).
+
+**Why parked.** `stripeEnabled` is false. There is no purchase to make, so both are
+absent — **not rendered disabled**. A dead gold call to action on the one screen where
+somebody has just been told they have run out is worse than no call to action at all.
+
+**What unparks it.** Stripe being enabled.
+
+**Read this before rebuilding it, because two things are easy to get wrong.**
+
+1. **The limit state is the design's intended conversion moment.** It is not a leftover to
+   rediscover; it is where the frame does its selling, and it is the first thing to revisit
+   when there is something to sell. Phase 4 kept the *message* and dropped the *action*, so
+   what is there now is deliberately only half of what was drawn.
+2. **Do not restore the gold-and-white treatment. Measure it.** The banner as drawn is
+   white on `--cw-gold`, which is **2.63:1** and fails at any size — the tenth instance of
+   the family that has produced every contrast failure this project has found. The button
+   inside it, on `#816717`, measures 5.40 and is fine. `scripts/check-contrast.mjs` will
+   now refuse an unmeasured gold surface, so this cannot come back silently.
+
+**Owner.** Product, then design.
+
+### The composer's `+` — drawn, undefined
+
+**What.** A 32px `--cw-grey-1` circle with a Carbon Add-Large glyph at the inline start of
+the Ask Pete composer's action bar.
+
+**Why parked.** Nothing says what it does. There is no handler or variant in the frame; the
+app's composer has one control and has never had a plus; and `mike` accepts exactly
+`message` and `place_id` and **400s on any other key**, so there is no request shape an
+attachment could travel in. Building an upload behind it would be inventing a capability
+the backend refuses.
+
+**The one plausible reading, not acted on.** It could be the place-context affordance —
+"ask Pete about this place" — which would attach `place_id`. That mechanism is real, is
+verified before the daily allowance is consumed, and would make `meta.places` populate on
+the echo path as well as through retrieval. It would also give the place page a route into
+Pete. But it is a guess, and the brief's answer was that the owner does not know either.
+
+**What unparks it.** A defined behaviour. If it is attachments, it needs a backend first.
+
+**Owner.** Design.
+
+### Chrome does not re-map logical border radii when `dir` changes at runtime
+
+**What.** `I18nProvider` sets `document.documentElement.dir` when the language changes, so
+a future RTL language flips direction without a reload. Measured in Chrome on the Ask Pete
+thread, 28 Aug 2026: after flipping `dir` to `rtl`, the layout mirrors correctly — flex
+order, the avatar side, `padding-inline`, `max-inline-size` — but `border-start-start-radius`
+keeps its LTR mapping, so a bubble's square corner points away from its speaker.
+
+**It is a stale-cascade artifact, not a CSS mistake.** Proven three ways in the same page,
+at the same moment, with `direction: rtl` computed on the element:
+
+```
+existing stylesheet rule   border-start-start-radius: 0  ->  top-LEFT   (wrong)
+inline style, same decls   border-start-start-radius: 0  ->  top-right  (correct)
+NEW stylesheet rule        border-start-start-radius: 0  ->  top-right  (correct)
+```
+
+A rule parsed while the document was LTR keeps the mapping it was given. A rule parsed
+after the flip is correct — so a page **loaded** in an RTL language is fine, and only a
+runtime switch is affected.
+
+**Why it matters.** It is not limited to these bubbles: it applies to every logical
+longhand already in a stylesheet, across four phases of CSS written specifically so RTL
+would be a language file rather than a rewrite.
+
+**What unparks it.** Adding an RTL language. The likely fix is one line — reload the page
+when the *direction* changes, as opposed to the language — since switching between an LTR
+and an RTL language is a different layout rather than a repaint. That is a phase-1
+behaviour change and was not made unilaterally in phase 4.
+
+**Owner.** Whoever adds Hebrew.
 
 ## Content gaps
 
@@ -194,13 +442,24 @@ parks-playgrounds 0/5, adventure-parks 0/3** — and `animal-parks` 1/6, `waterp
 
 The earlier estimate of 72 heroless rows understated it by half.
 
-**Why parked.** Not a code problem. The homepage rails draw from *hero-bearing* places
-only, which the app already documents as the right call: "a photo card without a photo has
-no designed state, so the filter IS the placeholder." Food & Wine Picks is the one rail
-where a fallback tile is used instead, because its places are real even without a photo.
+**Why parked.** Not a code problem.
 
-**What unparks it.** Photography, in Directus. Tavernas first — 37 places, the entire food
-half of the homepage.
+**Phase 3 changed what it costs us, and the change is worth recording.** Through phase 2 the
+rails drew from *hero-bearing* places only, on the app's reasoning that "a photo card without
+a photo has no designed state, so the filter IS the placeholder." Phase 3 designed that state
+— a sand-to-gold card carrying the place's own `short_description` and category — and dropped
+the requirement. The photograph is no longer what decides whether a place can be seen.
+
+That inverted the diagnosis. **Prominence, not photography, is the binding constraint.**
+Of the 73 places with neither a score nor a picture, 37 are tavernas, 10 bars, 9
+amusement-parks, 9 indoor-playgrounds, 7 nightlife and 1 museum — and dropping only the
+photograph requirement surfaced 35 places and **zero tavernas**, because none of them is
+scored either. Photographing the tavernas without scoring them changes nothing on the
+homepage; Explore shows them today regardless, because it does not require either.
+
+**What unparks it.** Photography, in Directus — but score first. Tavernas are 37 places and
+the entire food half of the homepage, and they need a prominence value before a photograph
+buys them anything there.
 
 **Owner.** Content.
 
@@ -284,36 +543,6 @@ left them.
 filter with copy that says what it is.
 
 **Owner.** Backend.
-
-### The place detail page
-
-**What.** Somewhere for a place card to go.
-
-**Why parked.** No Figma frame exists; being handled separately by the owner.
-
-**Consequence, and it is visible:** every card on the homepage is **non-interactive** in
-phase 2 — rendered as `<article>`, no pointer cursor, no hover lift, not in the tab order,
-and the design's ↗ open badge is not drawn. A dead click is worse than an honest static
-card.
-
-**What unparks it.** A frame and a route. It also unparks *Saved Places* below, because
-saving is a place-page action.
-
-**Owner.** The owner.
-
-### Saved Places has no way to create a row
-
-**What.** The rail is built and queries `saved_places` for the four most recent.
-
-**Why parked (partly).** The table has never held a row, and **phase 2 ships no save
-affordance anywhere** — saving belongs to the place page. So the rail is unreachable in
-practice: it renders nothing, and nothing a visitor can do will change that.
-
-Built anyway because it is small, correct, and lights up the day saving exists.
-
-**What unparks it.** The place detail page.
-
-**Owner.** Follows the place page.
 
 ### Ask Pete on web
 
@@ -422,10 +651,17 @@ it. Both URLs 301 to `/` from the Worker, so it degrades to a wrong-but-not-brok
 
 ## Copy and translation
 
-### 62 English-only interface strings
+### 141 English-only interface strings
 
-**What.** The phase-1 shell introduced 62 `ui_*` strings that the vanilla dictionary never
-had. They render English in all five languages via the fallback the switcher already used.
+**What.** The rebuild has introduced 141 `ui_*` strings the vanilla dictionary never had —
+62 in phase 1, 21 in phase 2 for the homepage rails, 30 in phase 3 for Explore and the place
+page, and 29 in phase 4 for Ask Pete, less one phase-1 string that was deleted rather than
+translated because it said Ask Pete was unavailable on the web. They render English in all five
+languages via the fallback the switcher already used.
+
+**Pete's own replies are not in this count and never will be.** They are model output,
+generated once in one language — `mike` reads `preferred_language` and tells the model to
+answer in it — so there is nothing to translate and no key to add.
 
 **Why parked.** Translations are real work and are not invented. A wrong translation is
 invisible; a missing one is not.

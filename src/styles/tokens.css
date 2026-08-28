@@ -45,11 +45,14 @@
   --cw-gold-link: color-mix(in srgb, var(--cw-gold) 65%, #000);
   /* Note 5 — nothing light survives on --cw-gold, body copy included.
      The Book with Pete card paints its heading white and its body copy in --cw-sand,
-     both on gold. Measured: white 2.63:1, sand 2.32:1 — the heading fails even the 3:1
-     large-text threshold at 24px bold. All copy on a gold surface therefore uses
-     --cw-black-1 (6.46:1), the same ruling phase 1 made for the gold button's label.
-     The card's own chips are a separate surface: a 35% near-black scrim over the gold
-     gives #896e16, on which white measures 4.88:1. */
+     both on gold — the heading failing even the 3:1 large-text threshold at 24px bold:
+       contrast: #ffffff on #c49a10 = 2.63 (rejected)
+       contrast: #f5f0e8 on #c49a10 = 2.32 (rejected)
+     All copy on a gold surface therefore uses --cw-black-1, the same ruling phase 1 made
+     for the gold button's label. The card's own chips are a separate surface: a 35%
+     near-black scrim over the gold gives #896e16.
+       contrast: --cw-black-1 on --cw-gold = 6.46
+       contrast: #ffffff on #896e16 = 4.88 */
   --cw-scrim-on-gold: color-mix(in srgb, var(--cw-black-1) 35%, transparent);
   --cw-scrim: color-mix(in srgb, var(--cw-navy) 88%, transparent);
   --cw-skeleton-on-navy: color-mix(in srgb, var(--cw-navy) 82%, #000);
@@ -57,10 +60,11 @@
   --cw-on-navy-muted: color-mix(in srgb, var(--cw-grey-1) 72%, transparent);
 
   /* Note 1 — nothing white goes on --cw-gold.
-     Measured against WCAG 2.1 contrast:
-       #ffffff on #c49a10 = 2.63:1   fails AA at any size
-       #1b3b6b on #c49a10 = 4.23:1   misses 4.5:1 for the 13px button label
-       #1b1c21 on #c49a10 = 6.46:1   passes
+     Measured against WCAG 2.1, and re-derived on every build by
+     scripts/check-contrast.mjs so these three lines cannot go stale:
+       contrast: #ffffff on #c49a10 = 2.63 (rejected)   fails AA at any size
+       contrast: #1b3b6b on #c49a10 = 4.23 (rejected)   misses 4.5 for a 13px label
+       contrast: #1b1c21 on #c49a10 = 6.46               the one in use
      The Figma header draws a white "Sign In" label on gold. We use --cw-black-1.
      Ruled 27 Aug (plan Q8), same class of decision as the selected-chip label.
 

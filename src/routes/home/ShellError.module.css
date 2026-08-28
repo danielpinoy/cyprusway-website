@@ -53,6 +53,7 @@
   color: var(--cw-grey-3);
 }
 
+/* contrast: --cw-gold-link on --cw-sand = 4.96 */
 .report {
   color: var(--cw-gold-link);
   text-decoration: underline;

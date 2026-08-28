@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { fetchPlaces, type Place } from '../../lib/places';
 import { MissingCredentialsError } from '../../lib/supabase';
@@ -6,6 +6,7 @@ import { fetchSavedPlaceIds } from '../../lib/saved';
 import { fetchTrips, type Trip } from '../../lib/trips';
 import { useSession } from '../../lib/SessionProvider';
 import { SAVED_PLACES_COUNT } from '../../lib/rails';
+import { clearSeed, readSeed } from '../../lib/prerenderSeed';
 
 export type HomeDataStatus = 'loading' | 'ready' | 'error' | 'misconfigured';
 
@@ -26,6 +27,11 @@ export interface HomeData {
  * the visitor's interests and Popular on their session seed, neither of which exists at
  * build time.
  *
+ * **Unless the page came with a seed.** A prerendered place page carries its own row in the
+ * HTML, so it starts `ready` with that one place and never shows a skeleton for content the
+ * crawler can already see. See lib/prerenderSeed.ts. The fetch still runs — the seed is one
+ * row, and the Popular rail needs the rest.
+ *
  * Failure handling is deliberately asymmetric:
  *
  *  - **places fails → `error`.** Without places there is no homepage, so the full-page
@@ -39,15 +45,22 @@ export function useHomeData(): HomeData {
   const { user, status: sessionStatus } = useSession();
   const userId = user?.id ?? null;
 
-  const [status, setStatus] = useState<HomeDataStatus>('loading');
-  const [places, setPlaces] = useState<Place[]>([]);
+  const [places, setPlaces] = useState<Place[]>(() => readSeed() ?? []);
+  const [status, setStatus] = useState<HomeDataStatus>(() =>
+    readSeed() ? 'ready' : 'loading',
+  );
+  const seeded = useRef(readSeed() != null);
   const [savedIds, setSavedIds] = useState<number[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    setStatus('loading');
+    /* A seeded page already has its content on screen; flipping to `loading` would replace
+       the prerendered page with a skeleton for the length of one request. */
+    if (!seeded.current) setStatus('loading');
+    seeded.current = false;
+    clearSeed();
 
     void (async () => {
       try {

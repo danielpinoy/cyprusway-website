@@ -69,12 +69,14 @@
   inline-size: 36px;
   block-size: 36px;
   border-radius: 50%;
+  /* contrast: --cw-black-1 on --cw-gold = 6.46 */
   background-color: var(--cw-gold);
   color: var(--cw-black-1);
   transition: background-color var(--cw-transition);
 }
 
 .close:hover {
+  /* contrast: --cw-black-1 on #ac880e = 5.09 */
   background-color: color-mix(in srgb, var(--cw-gold) 88%, #000);
 }
 

@@ -6,8 +6,18 @@
   overflow: hidden;
   border-radius: var(--cw-radius-md);
   background-color: var(--cw-navy);
-  /* No pointer cursor and no hover transform: there is nothing to activate. */
-  cursor: default;
+  text-decoration: none;
+  transition: transform var(--cw-transition), box-shadow var(--cw-transition);
+}
+
+/* The place page exists now, so the card behaves like the link it is. */
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--cw-shadow-md);
+}
+
+.card:active {
+  transform: translateY(0);
 }
 
 .large {
@@ -20,6 +30,13 @@
   block-size: 251px;
 }
 
+/* Explore's grid: the card fills its column rather than being fixed-width, because the
+   grid reflows while the rails scroll. 220px at the 1200 breakpoint, per the frame. */
+.grid {
+  inline-size: 100%;
+  block-size: 251px;
+}
+
 .photo {
   position: absolute;
   inset: 0;
@@ -28,37 +45,10 @@
   object-fit: cover;
 }
 
-/* The fallback tile. Sand to gold rather than grey, with the category's initial as a
-   watermark: it reads as a designed card, not as an image that failed to load.
-   Navy on the gold end measures 8.24:1. */
-.fallback {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(
-    160deg,
-    var(--cw-sand) 0%,
-    color-mix(in srgb, var(--cw-gold) 22%, var(--cw-sand)) 100%
-  );
-}
-
-.fallbackMark {
-  font-size: 96px;
-  font-weight: 700;
-  line-height: 1;
-  color: color-mix(in srgb, var(--cw-navy) 12%, transparent);
-  user-select: none;
-}
-
-/* Contrast, measured. White text sits in two zones — top and bottom — and the photograph
-   underneath is arbitrary, so both zones carry a scrim strong enough for the worst case
-   (a pure white photograph):
+/* Contrast, measured. White text sits at both ends of an arbitrary photograph, so both
+   zones carry a scrim strong enough for the worst case (a pure white photograph):
      top    0.72 navy over white  -> #5b7294, white on it = 4.91:1
-     bottom 0.95 navy over white  -> near-solid navy, white on it > 12:1
-   The frame's 57%-to-tint gradient covers only the bottom and would leave the category
-   name at roughly 3:1 over a bright photograph. */
+     bottom 0.95 navy over white  -> near-solid navy, white on it > 12:1 */
 .scrim {
   position: absolute;
   inset: 0;
@@ -71,9 +61,21 @@
   );
 }
 
-/* The fallback tile is light, so the scrim would only muddy it. */
-.card:has(.fallback) .scrim {
-  display: none;
+/* ---- The card with no photograph -------------------------------------------
+   Not a grey box and not a fake image: a sand-to-gold ground carrying the place's own
+   words. Navy on the gold end measures 8.24 and on the sand end 9.82; the binding case
+   is the clamped blurb, which is navy at 78% over the gold end.
+   contrast: #495f7c on #eaddb8 = 4.84 */
+.noPhoto {
+  background: linear-gradient(
+    160deg,
+    var(--cw-sand) 0%,
+    color-mix(in srgb, var(--cw-gold) 22%, var(--cw-sand)) 100%
+  );
+}
+
+.noPhoto:hover {
+  box-shadow: var(--cw-shadow-md);
 }
 
 .body {
@@ -82,40 +84,65 @@
   flex: 1;
   flex-direction: column;
   justify-content: space-between;
+  gap: var(--cw-space-8);
   padding: var(--cw-space-16);
-  gap: var(--cw-space-16);
 }
 
 .category {
-  font-size: var(--cw-h4-size);
-  line-height: var(--cw-h4-line);
-  font-weight: var(--cw-h4-weight);
-  color: var(--cw-white);
-  text-wrap: balance;
-}
-
-.small .category {
-  font-size: var(--cw-small-size);
-  font-weight: 700;
-  line-height: var(--cw-small-line);
-  max-inline-size: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-4);
   align-self: flex-start;
   padding-block: 2px;
   padding-inline: var(--cw-space-12);
   border-radius: var(--cw-radius-pill);
-  /* The frame uses rgba(255,255,255,0.3) here. Over a bright photograph that pill is
-     effectively white, and white-on-white is unreadable — so the chip is navy at 82%,
-     which is at least 10:1 against white text over any photograph. */
+  font-size: var(--cw-small-size);
+  font-weight: 700;
+  line-height: var(--cw-small-line);
+  /* The frame tints this per category. Categories carry no colour field — only badges do —
+     and the app's stand-in palette is provisional with two of its three colours failing
+     against white (#71A850 measures 2.83:1). Navy at 82% is at least 10:1 over any
+     photograph, and is the one phase 2 already measured and shipped. */
   background-color: color-mix(in srgb, var(--cw-navy) 82%, transparent);
+  color: var(--cw-white);
 }
 
-.card:has(.fallback) .category {
+.large .category {
+  padding-inline: 0;
+  background: none;
+  font-size: var(--cw-h4-size);
+  font-weight: var(--cw-h4-weight);
+  line-height: var(--cw-h4-line);
+}
+
+.noPhoto .category {
+  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
   color: var(--cw-navy);
 }
 
-.card:has(.fallback) .small .category,
-.small.card:has(.fallback) .category {
-  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
+.categoryIcon {
+  flex-shrink: 0;
+}
+
+/* The place's own words, where the photograph would have been. Clamped so a long one
+   cannot push the name out of the card. */
+.blurb {
+  flex: 1;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  font-size: var(--cw-small-size);
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--cw-navy) 78%, transparent);
+}
+
+.large .blurb {
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
 }
 
 .footer {
@@ -138,6 +165,11 @@
   line-height: var(--cw-small-line);
 }
 
+.noPhoto .region {
+  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
+  color: var(--cw-navy);
+}
+
 .name {
   font-size: var(--cw-h4-size);
   line-height: var(--cw-h4-line);
@@ -150,17 +182,13 @@
   line-clamp: 2;
 }
 
-.small .name {
+.small .name,
+.grid .name {
   font-size: var(--cw-h5-size);
   font-weight: 700;
   line-height: var(--cw-h5-line);
 }
 
-.card:has(.fallback) .name,
-.card:has(.fallback) .region {
+.noPhoto .name {
   color: var(--cw-navy);
-}
-
-.card:has(.fallback) .region {
-  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
 }

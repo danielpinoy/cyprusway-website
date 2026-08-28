@@ -1,42 +1,61 @@
 import { MapPin } from 'lucide-react';
+import { Link } from 'react-router';
 
 import { useI18n } from '../../i18n/I18nProvider';
+import { categoryIcon } from '../../contracts/categoryIcons';
 import { directusImageSrcSet, directusImageUrl } from '../../lib/directusImage';
 import { localised, type Place } from '../../lib/places';
 import { Icon } from '../ui/Icon';
 import styles from './PlaceCard.module.css';
 
+export type PlaceCardSize = 'large' | 'small' | 'grid';
+
+const SLOTS: Record<PlaceCardSize, { width: number; height: number }> = {
+  large: { width: 282, height: 300 },
+  small: { width: 180, height: 251 },
+  grid: { width: 240, height: 251 },
+};
+
 /**
- * The place card, in the two sizes the frames use: 282×300 for Top Recommendations and
- * 180×251 for the smaller rails.
+ * The place card, in three sizes: 282×300 for Top Recommendations, 180×251 for the smaller
+ * rails, and a column-filling variant for Explore's grid (220×251 at the 1200 breakpoint).
  *
- * **Non-interactive, and visibly so.** The place detail page has no Figma frame and is
- * being handled separately, so there is nowhere to go: the card is an `<article>`, not a
- * link or a button — no pointer cursor, no hover lift, not in the tab order. The frame's
- * ↗ open badge is not drawn, because it is an affordance for an action that does not
- * exist. A dead click is worse than an honest static card.
+ * **It is a link now.** Phase 2 rendered it as an inert `<article>` because the place page
+ * did not exist; that treatment is gone, along with `cursor: default`. Its accessible name
+ * is the place name and its region, so a screen reader's link list reads "Nissi Beach, Ayia
+ * Napa & Protaras" rather than twenty links called "Beaches".
  *
- * **Two text slots, one field.** The frame's large card carries an editorial headline
- * ("Explore Crystal-Clear Waters") above the place name. There is no such field: a place
- * has `name`, an EditorJS `description`, and a `short_description` that is a full
- * sentence. The top slot therefore carries the **category name**, which is real data and
- * already translated into all five languages, and mirrors what the small card does with
- * its category pill.
+ * ## The card without a photograph
  *
- * **The gradient is one navy, not the frame's per-card tint.** The design tints each
- * card to suit its photograph (#099ebf on one, warm browns and greens on others). That
- * cannot be derived at runtime, and legibility must not depend on which photograph the
- * CMS happens to return — see the contrast note in PlaceCard.module.css.
+ * 108 of 181 published places have no image at all, so this is not an edge case — filter
+ * Explore to Food and every card on screen is one. Phase 2's treatment, a gradient with the
+ * category's initial as a large watermark, was designed for one or two cards inside a rail
+ * and does not survive twenty at once: identical tiles read as a rendering failure precisely
+ * because they are identical.
+ *
+ * So the fallback card carries **the words instead of the picture** — the place's
+ * `short_description`, which every unphotographed place has and which is exactly card-sized
+ * (median 166 characters, longest 192). Each tile then differs, and differs usefully: three
+ * lines about the pelican that has lived at the restaurant since 1967 tell a browser more
+ * than a stock photograph of a taverna would. It reads as an editorial card, which is what
+ * it is.
  */
-export function PlaceCard({ place, size }: { place: Place; size: 'large' | 'small' }) {
+export function PlaceCard({ place, size }: { place: Place; size: PlaceCardSize }) {
   const { lang } = useI18n();
 
   const region = localised(place.regionName, lang);
   const category = localised(place.categoryName, lang);
-  const slot = size === 'large' ? { width: 282, height: 300 } : { width: 180, height: 251 };
+  const slot = SLOTS[size];
+  const CategoryGlyph = categoryIcon(place.categorySlug);
+
+  const label = region ? `${place.name}, ${region}` : place.name;
 
   return (
-    <article className={`${styles.card} ${size === 'large' ? styles.large : styles.small}`}>
+    <Link
+      to={`/place/${place.slug}`}
+      className={`${styles.card} ${styles[size]} ${place.heroUrl ? '' : styles.noPhoto}`}
+      aria-label={label}
+    >
       {place.heroUrl ? (
         <img
           className={styles.photo}
@@ -48,20 +67,25 @@ export function PlaceCard({ place, size }: { place: Place; size: 'large' | 'smal
           loading="lazy"
           decoding="async"
         />
-      ) : (
-        /* The place is real even without a photograph, so it gets a designed tile rather
-           than being filtered out — the one rail where this happens is Food & Wine, whose
-           37 tavernas have no images at all. Deliberately not a grey box: that reads as a
-           load failure, which would be a lie about a place that exists. */
-        <span className={styles.fallback} aria-hidden="true">
-          <span className={styles.fallbackMark}>{category.slice(0, 1) || '·'}</span>
-        </span>
-      )}
+      ) : null}
 
-      <div className={styles.scrim} aria-hidden="true" />
+      {place.heroUrl && <div className={styles.scrim} aria-hidden="true" />}
 
       <div className={styles.body}>
-        {category && <p className={styles.category}>{category}</p>}
+        <p className={styles.category}>
+          {!place.heroUrl && <Icon as={CategoryGlyph} size={16} className={styles.categoryIcon} />}
+          <span>{category}</span>
+        </p>
+
+        {/* Only on a card with no photograph: the space the image would have taken.
+            lang="en" because `translations` carries English on all 181 rows and nothing
+            else — a screen reader should switch voice rather than read English with the
+            interface language's phonemes. A no-op when the interface is English. */}
+        {!place.heroUrl && place.short && (
+          <p className={styles.blurb} lang="en">
+            {place.short}
+          </p>
+        )}
 
         <div className={styles.footer}>
           {region && (
@@ -70,9 +94,11 @@ export function PlaceCard({ place, size }: { place: Place; size: 'large' | 'smal
               <span>{region}</span>
             </p>
           )}
-          <h3 className={styles.name}>{place.name}</h3>
+          <h3 className={styles.name} lang="en">
+            {place.name}
+          </h3>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

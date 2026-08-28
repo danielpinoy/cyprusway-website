@@ -8,7 +8,13 @@
   border-radius: var(--cw-radius-md);
   background-color: var(--cw-white);
   text-align: center;
-  cursor: default;
+  text-decoration: none;
+  transition: transform var(--cw-transition), box-shadow var(--cw-transition);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--cw-shadow-md);
 }
 
 .photo,
@@ -28,12 +34,17 @@
     var(--cw-sand) 0%,
     color-mix(in srgb, var(--cw-gold) 22%, var(--cw-sand)) 100%
   );
-  color: color-mix(in srgb, var(--cw-navy) 45%, transparent);
+  /* Was navy at 45%, which measures 2.28 on the gradient's gold end — under the 3:1
+     WCAG 1.4.11 asks of a meaningful graphic, and the initial IS the content of this
+     tile. Found by scripts/check-contrast.mjs, not by eye.
+     contrast: #596c82 on #eaddb8 = 3.99 (graphic) */
+  color: color-mix(in srgb, var(--cw-navy) 70%, transparent);
   font-size: 28px;
   font-weight: 700;
 }
 
-/* Gold tint with a navy label — 8.2:1. The gold itself as a label would be 2.6:1. */
+/* Gold tint with a navy label. The gold itself as a label would be 2.63.
+   contrast: --cw-navy on #f3ebcf = 9.34 */
 .tag {
   padding-block: 2px;
   padding-inline: var(--cw-space-12);
