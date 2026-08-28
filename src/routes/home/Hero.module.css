@@ -112,8 +112,15 @@
   transition: background-color var(--cw-transition), border-color var(--cw-transition);
 }
 
+/* Gold at 60% over this card measured 1.91 against its own fill — invisible. At full
+   strength the outer edge, which is the one that reads against the navy hero, is 4.23.
+   The inner edge against the lightened hover fill is 2.97 and is recorded rather than
+   met: hover is not how this control is identified — it is a link with a permanent visible
+   label — so nothing depends on seeing the boundary.
+   contrast: --cw-gold on --cw-navy = 4.23 (graphic)
+   contrast: --cw-gold on #36537d = 2.97 (decorative) */
 .optionLink:hover {
-  border-color: color-mix(in srgb, var(--cw-gold) 60%, transparent);
+  border-color: var(--cw-gold);
   background-color: color-mix(in srgb, var(--cw-white) 12%, transparent);
 }
 

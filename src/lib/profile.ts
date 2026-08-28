@@ -100,3 +100,26 @@ export async function savePreferredLanguage(
 
   if (error) console.warn('[profile] preferred_language write failed:', error.message);
 }
+
+/**
+ * Whether this account is premium.
+ *
+ * One column off the profile row the caller already owns, under the existing "users can
+ * read own profile" policy. The only consumer is the trip screen's Print/Download PDF
+ * button: `trip-pdf` refuses a non-premium caller with 403 `premium_required`, so the
+ * button is rendered for accounts that can use it and is absent otherwise — never
+ * disabled, which is the call phase 4 made for "Unlock Unlimited" and for the same reason.
+ *
+ * A failed read reads as not premium: hiding a button nobody could have used is a smaller
+ * error than showing one that 403s.
+ */
+export async function fetchIsPremium(userId: string): Promise<boolean> {
+  const { data, error } = await getSupabase()
+    .from('users')
+    .select('is_premium')
+    .eq('id', userId)
+    .maybeSingle<{ is_premium: boolean }>();
+
+  if (error || !data) return false;
+  return data.is_premium === true;
+}

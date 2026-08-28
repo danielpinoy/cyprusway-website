@@ -30,6 +30,7 @@ interface PlaceRow {
   /** Never contains the hero; the two are separate images. Measured 28 Aug. */
   gallery: unknown[] | null;
   virtual_tour: unknown | null;
+  plannable: boolean | null;
   prominence: number | null;
   visit_duration_minutes: number | null;
   destination: { slug: string; name: LocalisedName } | null;
@@ -66,6 +67,8 @@ export interface Place {
   categoryName: LocalisedName;
   /** Material icon name from the CMS, e.g. `restaurant`, `beach_access`. */
   categoryIcon: string | null;
+  /** Whether a trip may schedule a stop here. See the note on the select. */
+  plannable: boolean;
   badges: Badge[];
 }
 
@@ -83,6 +86,11 @@ const SELECT = [
   'badges',
   'prominence',
   'visit_duration_minutes',
+  /* Only the trip picker reads this, and it reads it as a filter rather than a field —
+     the 35 published-but-unplannable places must never be offered as a stop, because
+     trip-edit refuses a NEW stop at one (place_not_plannable). Measured 28 Aug: 181
+     published, 146 plannable, and all 146 carry coordinates. */
+  'plannable',
 ].join(',');
 
 export async function fetchPlaces(): Promise<Place[]> {
@@ -149,6 +157,7 @@ function toPlace(row: PlaceRow): Place {
     categorySlug: category?.slug ?? null,
     categoryName: category?.name ?? {},
     categoryIcon: category?.icon ?? null,
+    plannable: row.plannable === true,
     badges: (row.badges ?? []).map((b) => ({
       slug: b.slug,
       name: b.name,

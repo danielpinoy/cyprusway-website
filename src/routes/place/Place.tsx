@@ -36,7 +36,7 @@ import styles from './Place.module.css';
  */
 export default function Place() {
   const { slug } = useParams<{ slug: string }>();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const data = useHomeData();
 
   const place = useMemo(
@@ -44,9 +44,26 @@ export default function Place() {
     [data.places, slug],
   );
 
+  /* Title AND description. The prerendered HTML carries both; this keeps them right after
+     a client-side navigation, and it is the route's own job now that useDocumentHead
+     leaves dynamic paths alone. */
   useEffect(() => {
-    if (place) document.title = `${place.name} — CyprusWay`;
-  }, [place]);
+    if (!place) return;
+    document.title = t('ui_meta_place_title', { name: place.name });
+    const region = localised(place.regionName, lang);
+    const description =
+      place.short?.trim() ||
+      (region
+        ? t('ui_meta_place_desc', { name: place.name, region })
+        : t('ui_meta_place_desc_any', { name: place.name }));
+    let tag = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.name = 'description';
+      document.head.appendChild(tag);
+    }
+    tag.content = description;
+  }, [place, t, lang]);
 
   if (import.meta.env.DEV && data.status === 'misconfigured') {
     return <MisconfiguredNotice onRetry={data.retry} />;

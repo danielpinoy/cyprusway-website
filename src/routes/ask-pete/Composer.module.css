@@ -1,3 +1,7 @@
+/* ONE object. Figma node 3558:17990 draws a white card — radius 12, padding 16, gap 12 —
+   with NO border on it or on any child; the colour is carried by the send button. The
+   placeholder sits directly in the card, not in a nested field. This resting state is the
+   frame exactly, and nothing here adds a border to it. */
 .composer {
   display: flex;
   flex-direction: column;
@@ -7,8 +11,33 @@
   background-color: var(--cw-white);
 }
 
-.composer:focus-within {
-  outline: 2px solid var(--cw-gold);
+/*
+ * Focus belongs to the CARD, because the textarea is the card: it fills it edge to edge
+ * and has no bounds of its own. A ring on the textarea draws a second box inside the
+ * first, which is what made this read as a field in a card rather than as one object.
+ *
+ * Scoped to the textarea, not `:focus-within`, and `:has(:focus-visible)` rather than
+ * `:has(:focus)` — measured in Chrome, both matter:
+ *
+ *   send button, clicked with a mouse   :focus-visible = false  -> no ring, correctly
+ *   send button, reached by Tab         rings the BUTTON, not this surface
+ *   textarea, reached by Tab            :focus-visible = true   -> ring
+ *   textarea, clicked with a mouse      :focus-visible = TRUE   -> ring
+ *
+ * That last line is a browser rule, not a choice: a text-entry field always matches
+ * :focus-visible however it was focused, because a caret alone is not treated as
+ * sufficient indication. So a mouse click into the box still rings it. The mouse cases
+ * that CAN be silenced — every button in here — are.
+ *
+ * --cw-gold-link rather than the site-wide navy slab: it is a palette token, it reads as
+ * brand rather than as a system artefact beside the gold send button, and unlike raw gold
+ * it clears the 3:1 that WCAG 1.4.11 asks of a focus indicator against BOTH adjacent
+ * colours — the white card inside the ring and the sand ground outside it.
+ *   contrast: --cw-gold-link on --cw-white = 5.63 (graphic)
+ *   contrast: --cw-gold-link on --cw-sand = 4.96 (graphic)
+ */
+.composer:has(.input:focus-visible) {
+  outline: 2px solid var(--cw-gold-link);
   outline-offset: 2px;
 }
 
@@ -28,9 +57,19 @@
   color: var(--cw-black-2);
 }
 
-/* The outline lives on the card, so the textarea's own is removed rather than doubled. */
-.input:focus {
+/*
+ * The textarea never draws its own ring.
+ *
+ * styles/global.css paints `outline: 2px solid white` AND `box-shadow: 0 0 0 4px navy` on
+ * every :focus-visible element. The previous version of this file suppressed only the
+ * outline — so the navy box-shadow survived, unopposed, and became the inner of the two
+ * rings. Both are cancelled here, and `:focus-visible` is named alongside `:focus` so the
+ * suppression is not left depending on which of the two the browser happens to apply.
+ */
+.input:focus,
+.input:focus-visible {
   outline: none;
+  box-shadow: none;
 }
 
 .input::placeholder {

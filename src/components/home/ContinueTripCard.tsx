@@ -1,3 +1,5 @@
+import { Link } from 'react-router';
+
 import { useI18n } from '../../i18n/I18nProvider';
 import { directusImageSrcSet, directusImageUrl } from '../../lib/directusImage';
 import { localised, type Place } from '../../lib/places';
@@ -59,10 +61,10 @@ export function ContinueTripCard({
           </p>
         )}
 
-        <span className={styles.continue}>
+        <Link to={`/trip/${trip.id}`} className={styles.continue}>
           {t('ui_trip_continue')}
-          <span className="cw-visually-hidden">{` — ${t('ui_coming_soon')}`}</span>
-        </span>
+          <span className="cw-visually-hidden">{` — ${trip.name ?? t('ui_trip_untitled')}`}</span>
+        </Link>
       </div>
 
       {trip.coverUrl && (

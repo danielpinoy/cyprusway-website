@@ -1,4 +1,4 @@
-# Translation queue — phases 1 to 4
+# Translation queue — phases 1 to 5
 
 The React rebuild introduces strings the vanilla dictionary never had. They ship in English
 only, and the other four languages fall back to English — the same fallback the vanilla
@@ -52,7 +52,7 @@ gets English, exactly as before.
 
 ---
 
-## The queue — 141 keys, English only
+## The queue — 219 keys, English only
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
@@ -252,6 +252,72 @@ changes the language of the app on their phone. The switcher says so.
 | `ui_language_shared` | Also changes the app | Under the language options, for a signed-in visitor. The switcher writes the shared profile row, so it changes Pete's language on their phone too — this line is the only warning |
 | `ui_meta_askpete_title` | Ask Pete — CyprusWay | |
 | `ui_meta_askpete_desc` | Ask a local guide about Cyprus — beaches, food, history and what to do tonight. | |
+
+### Build My Trip — 78, added in phase 5
+
+**Two things here are not translatable, and one of them is a new category for this file.**
+
+`warnings[].message` from `trip-edit` is **server-authored English prose** — "day ends
+21:17, after 20:00". It arrives with the response, is rendered as it stands, and is not in
+this dictionary. It cannot be: the server composes each one per edit from values only it
+holds. It is marked `lang="en"` where it renders. Pete's replies (phase 4) are also
+untranslated, but they are at least *generated in the reader's language*; these are not.
+
+The other is the stop sub-line, which is a CMS **category slug** with its hyphens replaced
+("archaeological sites"). Stored trip elements carry no region, so the slug stands in where
+the frame draws one — the same English-in-a-translated-frame situation as place names, and
+consistent with it.
+
+| Key | English | Context |
+| --- | --- | --- |
+| `ui_trip_setup_title` · `ui_trip_setup_sub` | Build My Trip · Plan a new trip | The setup screen. The frame prints the same subtitle on the *editor* screen, which is placeholder copy pasted from setup and is not used there |
+| `ui_trip_signin_title` · `ui_trip_signin_body` | Trips need a free account · Your trips are the same on the web and in the app, so you can plan here and follow along there. | All three trip screens, signed out. The second sentence is the substantive one: a trip is one shared row, not a web copy |
+| `ui_trip_name_label` · `ui_trip_name_placeholder` | Trip name · Enter trip name | |
+| `ui_trip_region_label` | Select base destination | **Singular, though the frame's label is plural.** `base_location` is one text column |
+| `ui_trip_dates_label` · `ui_trip_from` · `ui_trip_to` | Date range · From · To | |
+| `ui_trip_span` | {count} days | **Has a placeholder** |
+| `ui_trip_span_error` | A trip can be 1 to {max} days. | **Has a placeholder.** 31 is `trip-edit`'s structural cap, not a preference |
+| `ui_trip_create` · `ui_trip_creating` · `ui_trip_create_failed` | Create a Trip · Creating… · That trip couldn't be created. Please try again. | |
+| `ui_trip_list` · `ui_trip_map` | List · Map | The view toggle |
+| `ui_trip_day_n` | Day {n} | **Has a placeholder** |
+| `ui_trip_today` · `ui_trip_tomorrow` | Today · Tomorrow | Day-header tags. **The frames also draw "After Tomorrow"**, against dates that contradict it — placeholder sloppiness, not a spec, and there is deliberately no third label |
+| `ui_trip_toggle_day` | Day {n} stops | Accessible name of the collapse control. Never visible |
+| `ui_trip_remove_day` | Remove day {n} | **Has a placeholder** |
+| `ui_trip_empty_day` | Nothing planned for this day yet. | An empty day is a real state — the server keeps it empty rather than inventing a lunch for it |
+| `ui_trip_add_stops` · `ui_trip_add_day` | Add to Trip · Add Day | |
+| `ui_trip_delete` | Delete Trip | Destructive; confirms first |
+| `ui_trip_pdf` · `ui_trip_pdf_failed` | Print/Download PDF · That PDF couldn't be made. Please try again. | Rendered only for a premium account — the endpoint refuses everyone else with 403 |
+| `ui_trip_move_up` · `ui_trip_move_down` | Move {name} earlier · Move {name} later | **Have a placeholder.** "Earlier" and "later" rather than "up" and "down": the list is a day and the axis is time, not the screen |
+| `ui_trip_move_label` · `ui_trip_move_to_day` | Move to another day · Move to day {n} | |
+| `ui_trip_remove_stop` | Remove {name} | **Has a placeholder** |
+| `ui_trip_directions` · `ui_trip_directions_for` | Get Directions · Get directions to {name}, opens a map | Opens the reader's map site with the stop's stored coordinates. Nothing is routed and nothing is requested |
+| `ui_trip_drive` · `ui_trip_walk` | Drive for {minutes} min · Walk for {minutes} min | **Have a placeholder.** These two are the *whole* travel vocabulary: the stored mode is `car` or `walking` and there is no third value. **Do not translate the frame's "Take a bus"** — there is no bus |
+| `ui_trip_travel_pending` | Working out the times… | While a change is in flight. The previous number is never shown again once its neighbours have moved |
+| `ui_trip_lunch` · `ui_trip_lunch_any` | Lunch break · Pick any spot nearby | Lunch is placed by the server; the second line is for a lunch with no specific restaurant |
+| `ui_trip_saving` | Saving… | Announced to a screen reader, not drawn |
+| `ui_trip_rename` · `ui_trip_rename_save` · `ui_trip_cancel` | Rename trip · Save name · Cancel | |
+| `ui_trip_conflict` | This trip changed somewhere else — showing the latest version. | **The optimistic-concurrency failure.** Usually the same person's phone, so "somewhere else" rather than "someone else". Never retried silently — that would overwrite whatever won the race |
+| `ui_trip_save_failed` · `ui_trip_auth_failed` · `ui_trip_gone` | That change couldn't be saved. · Your session expired. Sign in again to keep editing. · This trip no longer exists. | |
+| `ui_trip_not_found_title` · `ui_trip_not_found_body` | That trip is not here · It may have been deleted, or the link may belong to another account. | The second clause matters: RLS makes "not yours" and "not there" the same answer, and the copy must not claim more than that |
+| `ui_trip_delete_title` · `ui_trip_delete_body` · `ui_trip_deleted` · `ui_trip_delete_failed` | Delete this trip? · This cannot be undone, and it removes the trip from the app too. · Trip deleted. · That trip couldn't be deleted. | The "and in the app" half is the part a reader will not expect |
+| `ui_trip_map_title` · `ui_trip_map_body` | The map is still to come · Your stops for the day are listed beside this, in order, with their times. | The placeholder panel: what is missing, and what stands in its place |
+| `ui_trip_add_title` | Add to trip | Panel heading |
+| `ui_trip_add_step_day` · `ui_trip_add_step_explore` | 1. Which day? · 2. What would you like to explore? | Numbered as the frame numbers them |
+| `ui_trip_add_time_note` | Times are worked out for you — a new stop starts when the one before it ends. | **Stands where the frame draws a time picker.** It states the packing rule in one line rather than offering a control the server has no field for |
+| `ui_trip_add_search` | Filter these places | **Deliberately not "Search".** It filters the list already on screen; catalogue-wide search is a different, parked thing |
+| `ui_trip_add_all_interests` | All Interests | |
+| `ui_trip_add_selected` | {count} selected | **Has a placeholder** |
+| `ui_trip_add_cta` | Add to Trip | |
+| `ui_trip_add_empty` | Nothing here matches those filters. | |
+| `ui_trip_add_full` | That day is full — {max} stops is the most one day can hold. | **Has a placeholder.** 20 is a contract bound |
+| `ui_trip_add_already` | Already on this day | The same place twice in one day is refused by the server, so the picker says so rather than letting it be chosen |
+| `ui_trips_title` · `ui_trips_sub` | My Trips · Everything you have planned | |
+| `ui_trips_new` | Build a new trip | |
+| `ui_trips_empty_title` · `ui_trips_empty_body` | No trips yet · Build one and it appears here, and in the app. | |
+| `ui_trips_days` | {count} days | **Has a placeholder** |
+| `ui_trips_open` | Open {name} | **Has a placeholder.** Accessible name of a trip card |
+| `ui_meta_buildtrip_title` · `ui_meta_buildtrip_desc` | Build My Trip — CyprusWay · Plan a Cyprus trip day by day — pick your base, your dates and your stops. | |
+| `ui_meta_trips_title` · `ui_meta_trips_desc` | My Trips — CyprusWay · The trips you have planned with CyprusWay. | `/trips` is `noIndex`; this metadata is for the browser tab, not for a crawler |
 
 ---
 

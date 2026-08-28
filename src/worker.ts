@@ -1,4 +1,4 @@
-import { LEGACY_REDIRECTS, PLACE_PATH_PREFIX } from './routes/routes';
+import { LEGACY_REDIRECTS, PLACE_PATH_PREFIX, TRIP_PATH_PREFIX } from './routes/routes';
 
 /**
  * The Cloudflare Worker in front of the static assets.
@@ -112,7 +112,10 @@ export default {
       return Response.redirect(destination.toString(), 301);
     }
 
-    if (url.pathname.toLowerCase().startsWith(PLACE_PATH_PREFIX)) {
+    if (
+      url.pathname.toLowerCase().startsWith(PLACE_PATH_PREFIX) ||
+      url.pathname.toLowerCase().startsWith(TRIP_PATH_PREFIX)
+    ) {
       return placeShell(await env.ASSETS.fetch(new URL('/', url.origin)));
     }
 

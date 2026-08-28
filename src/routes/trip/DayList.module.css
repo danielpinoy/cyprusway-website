@@ -1,0 +1,245 @@
+.days {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.day {
+  border-block-end: 1px solid color-mix(in srgb, var(--cw-grey-3) 20%, transparent);
+  padding-block-end: var(--cw-space-8);
+}
+
+.dayHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cw-space-12);
+  padding-block: var(--cw-space-12);
+}
+
+.dayText {
+  min-inline-size: 0;
+}
+
+.dayDate {
+  margin: 0;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.dayNumber {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cw-space-8);
+  margin: 0;
+  font-size: var(--cw-h4-size);
+  line-height: var(--cw-h4-line);
+  font-weight: var(--cw-h4-weight);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+/* "Today" / "Tomorrow". The frame sets this in raw gold, which is 2.32 on sand and would
+   be the eleventh instance of the family this project keeps finding. gold-link carries it.
+   contrast: --cw-gold-link on --cw-sand = 4.96 */
+.tag {
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  font-weight: 700;
+  color: var(--cw-gold-link);
+}
+
+.dayActions {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+  flex-shrink: 0;
+}
+
+.disc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border: 0;
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-navy) 12%, transparent);
+  /* contrast: --cw-navy on #e2e4ea = 8.77 */
+  color: var(--cw-navy);
+  cursor: pointer;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border: 0;
+  padding: 0;
+  border-radius: var(--cw-radius-sm);
+  background: none;
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+  cursor: pointer;
+}
+
+.iconButton:hover:not(:disabled) {
+  color: var(--cw-navy);
+}
+
+.iconButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.empty {
+  margin: 0;
+  padding-block: var(--cw-space-12);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.stops {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stop {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-12);
+  padding-block: var(--cw-space-12);
+}
+
+.reorder {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  inline-size: 24px;
+}
+
+.disc64 {
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--cw-radius-pill);
+  object-fit: cover;
+}
+
+.discEmpty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
+  /* contrast: --cw-navy on #e8ebf0 = 9.32 (graphic) */
+  color: var(--cw-navy);
+}
+
+.stopBody {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.stopName {
+  margin: 0;
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.stopSub {
+  margin: 0;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  text-transform: capitalize;
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.stopActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-12);
+  margin-block-start: var(--cw-space-4);
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-4);
+  border: 0;
+  padding: 0;
+  background: none;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-gold-link on --cw-sand = 4.96 */
+  color: var(--cw-gold-link);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.select {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--cw-small-size);
+  color: inherit;
+  cursor: pointer;
+}
+
+.time {
+  flex-shrink: 0;
+  margin: 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  font-variant-numeric: tabular-nums;
+  /* contrast: --cw-black-2 on --cw-sand = 9.33 */
+  color: var(--cw-black-2);
+}
+
+/* The pending state. Never the old number — a leg whose neighbours just changed must not
+   show its previous value as though still true. */
+.pending {
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+  font-style: italic;
+}
+
+.travel {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding-block: var(--cw-space-8);
+  padding-inline-start: calc(24px + var(--cw-space-12));
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-black-2 on --cw-sand = 9.33 */
+  color: var(--cw-black-2);
+}
+
+/* contrast: --cw-gold-link on --cw-sand = 4.96 (graphic) */
+.travelIcon {
+  flex-shrink: 0;
+  color: var(--cw-gold-link);
+}

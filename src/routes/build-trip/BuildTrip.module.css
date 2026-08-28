@@ -1,0 +1,207 @@
+.page {
+  background-color: var(--cw-sand);
+  min-block-size: 70vh;
+  padding-block: var(--cw-space-48);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-24);
+  inline-size: min(502px, 100% - 2 * var(--cw-space-24));
+  margin-inline: auto;
+}
+
+.head {
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-h1-size);
+  line-height: var(--cw-h1-line);
+  font-weight: var(--cw-h1-weight);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.subtitle {
+  margin-block: var(--cw-space-8) 0;
+  font-size: 14px;
+  line-height: 1.8;
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-24);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.label {
+  padding: 0;
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 590;
+  /* contrast: --cw-black-2 on --cw-sand = 9.33 */
+  color: var(--cw-black-2);
+}
+
+.small {
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-black-1 on --cw-sand = 14.99 */
+  color: var(--cw-black-1);
+}
+
+.input {
+  inline-size: 100%;
+  min-block-size: 48px;
+  padding-inline: var(--cw-space-12);
+  padding-block: var(--cw-space-8);
+  border: 1px solid var(--cw-grey-2);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-white);
+  font: inherit;
+  font-size: 14px;
+  line-height: 24px;
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+}
+
+.input::placeholder {
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+/* The frame draws a magnifier glyph inside the name and date fields. It is a
+   component-reuse artifact — a search icon in a name field — and is not rendered, the
+   same call the app made. */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding-block: var(--cw-space-8);
+  padding-inline: var(--cw-space-12);
+  border: 1px solid var(--cw-grey-2);
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-white) 60%, transparent);
+  /* contrast: --cw-black-2 on #fbf9f6 = 10.07 */
+  color: var(--cw-black-2);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 510;
+  cursor: pointer;
+  transition: border-color var(--cw-transition), background-color var(--cw-transition);
+}
+
+/* Selected. Gold border and a gold tint with a navy label — the treatment phase 1 settled
+   for the interest chips and phase 3 reused for Explore's filters. aria-pressed carries
+   the state non-visually, so nothing depends on seeing the colour.
+   contrast: --cw-navy on --cw-gold-tint = 10.21 */
+.chip[aria-pressed='true'] {
+  border-width: 2px;
+  border-color: var(--cw-gold);
+  background-color: var(--cw-gold-tint);
+  padding-block: 7px;
+  padding-inline: 11px;
+  color: var(--cw-navy);
+  font-weight: 700;
+}
+
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-24);
+}
+
+.dateField {
+  display: flex;
+  flex: 1 1 10rem;
+  flex-direction: column;
+  gap: var(--cw-space-4);
+  min-inline-size: 0;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.error {
+  margin: 0;
+  padding: var(--cw-space-12);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-alert-tint);
+  /* contrast: --cw-alert-text on #f4d3cc = 5.11 */
+  color: var(--cw-alert-text);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+}
+
+/* ---- Signed out ------------------------------------------------------------
+   The same panel Ask Pete uses: never a disabled form. */
+.signIn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-16);
+  padding: var(--cw-space-16);
+  border-radius: 12px;
+  background-color: var(--cw-white);
+}
+
+.signInMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
+  /* contrast: --cw-navy on #e8ebf0 = 9.32 */
+  color: var(--cw-navy);
+}
+
+.signInCopy {
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+}
+
+.signInTitle {
+  margin: 0;
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.signInBody {
+  margin-block: var(--cw-space-4) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}

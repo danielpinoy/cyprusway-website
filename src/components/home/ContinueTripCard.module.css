@@ -70,12 +70,20 @@
   padding-inline: var(--cw-space-16);
   border-radius: var(--cw-radius-sm);
   background-color: var(--cw-sand);
-  color: var(--cw-grey-3);
+  /* Live since phase 5: the trip editor exists, so this goes somewhere. It was dimmed and
+     inert while it did not — the reduced opacity and the grey are gone with it.
+     contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
   font-size: var(--cw-button-size);
   font-weight: var(--cw-button-weight);
   line-height: var(--cw-button-line);
-  opacity: 0.7;
-  cursor: default;
+  text-decoration: none;
+  transition: background-color var(--cw-transition);
+}
+
+/* contrast: --cw-navy on #ece1c1 = 8.55 */
+.continue:hover {
+  background-color: color-mix(in srgb, var(--cw-gold) 18%, var(--cw-sand));
 }
 
 .cover {

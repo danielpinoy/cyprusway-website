@@ -30,6 +30,7 @@
  *     contrast: <fg> on <bg> = <ratio> (graphic)    WCAG 1.4.11 non-text        -> 3:1
  *     contrast: <fg> on <bg> = <ratio> (logotype)   1.4.3 brand exemption       -> recorded
  *     contrast: <fg> on <bg> = <ratio> (rejected)   measured and NOT used       -> recorded
+ *     contrast: <fg> on <bg> = <ratio> (decorative) boundary carrying no state  -> recorded
  *
  * `<fg>` and `<bg>` are either a `--cw-*` token or a literal hex. A token whose value
  * composites over something unknown — anything built on `transparent` — cannot be resolved
@@ -154,7 +155,7 @@ function resolveColour(expression, tokens, seen = new Set()) {
 }
 
 function readTokens() {
-  const css = readFileSync(TOKENS, 'utf8');
+  const css = readFileSync(TOKENS, 'utf8').replace(/\r\n/g, '\n');
   const tokens = new Map();
   for (const match of css.matchAll(/(--cw-[a-z0-9-]+)\s*:\s*([^;]+);/gi)) {
     tokens.set(match[1], match[2].trim());
@@ -188,25 +189,58 @@ function cssFiles(directory) {
   return out;
 }
 
-/** The block a character offset sits inside, as `[start, end)`. */
-function enclosingBlock(css, offset) {
+/** The three characters that can end the construct preceding a selector. */
+const DELIMITERS = new Set(['{', '}', ';']);
+
+/**
+ * The stylesheet with every comment blanked to spaces of the same length.
+ *
+ * Offsets and line counts are unchanged, so anything found in here can be sliced straight
+ * out of the original. Two separate defects need it. Braces written inside a comment were
+ * being counted as real ones, which silently mis-locates every rule after them; and
+ * `color: var(--cw-gold)` written in prose is not a declaration, which was the first false
+ * positive this check ever produced.
+ */
+function blankComments(css) {
+  return css.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
+}
+
+/**
+ * The region a declaration's annotation may live in — the rule's own body plus the
+ * comments written directly above its selector — as `[start, end)`, or **null** when the
+ * declaration is not inside a rule at all.
+ *
+ * READ THIS BEFORE CHANGING IT. Every defect this function has had was one defect wearing
+ * different clothes: a search that did not find what it was looking for fell back to byte
+ * 0, which turns "I could not locate the rule" into "the rule is the whole file" — and a
+ * file with one annotation anywhere then passed for all of its gold. That shipped twice,
+ * and both times the run kept printing a coverage number that read like assurance. So the
+ * rule, stated once: **a search that fails here narrows the region or returns null. It
+ * never widens it, and byte 0 is never a fallback.** The one region that legitimately
+ * starts at 0 is a rule that genuinely begins the file, whose preamble is the file header.
+ */
+function enclosingBlock(code, offset) {
+  /* The innermost `{` still open at `offset`. */
   let depth = 0;
-  let start = 0;
+  let brace = -1;
   for (let i = offset; i >= 0; i -= 1) {
-    if (css[i] === '}') depth += 1;
-    else if (css[i] === '{') {
+    if (code[i] === '}') depth += 1;
+    else if (code[i] === '{') {
       if (depth === 0) {
-        start = i;
+        brace = i;
         break;
       }
       depth -= 1;
     }
   }
+  if (brace === -1) return null;
+
+  /* Its match. */
   depth = 0;
-  let end = css.length;
-  for (let i = start + 1; i < css.length; i += 1) {
-    if (css[i] === '{') depth += 1;
-    else if (css[i] === '}') {
+  let end = code.length;
+  for (let i = brace + 1; i < code.length; i += 1) {
+    if (code[i] === '{') depth += 1;
+    else if (code[i] === '}') {
       if (depth === 0) {
         end = i;
         break;
@@ -214,10 +248,15 @@ function enclosingBlock(css, offset) {
       depth -= 1;
     }
   }
-  /* Include the comment block immediately above the selector, which is where an
-     annotation most naturally goes. */
-  const selectorStart = css.lastIndexOf('\n\n', start);
-  return [selectorStart === -1 ? 0 : selectorStart, end];
+
+  /* Back over the selector and the comment block above it, stopping at the end of
+     whatever precedes them: the previous rule's `}`, a declaration's `;`, or the
+     enclosing `{`. Comments are blanked by now, so one walk over "not a delimiter"
+     collects the selector and its comments together — and a rule can no longer reach
+     back into the rule before it for an annotation, which is the whole point. */
+  let start = brace;
+  while (start > 0 && !DELIMITERS.has(code[start - 1])) start -= 1;
+  return [start, end];
 }
 
 function lineOf(css, offset) {
@@ -226,24 +265,36 @@ function lineOf(css, offset) {
 
 /* ---- the checks ---------------------------------------------------------- */
 
-const tokens = readTokens();
-const family = goldFamily(tokens);
-const problems = [];
-let annotations = 0;
-let goldDeclarations = 0;
-
 /* One line, deliberately: `contrast:` followed by a newline is prose, and prose that
    happened to end in the word "contrast" was the first false positive this found. */
 const ANNOTATION =
-  /contrast:[ \t]*([#a-z0-9-]+)[ \t]+on[ \t]+([#a-z0-9-]+)[ \t]*=[ \t]*(\d+(?:\.\d+)?)[ \t]*(\(large\)|\(graphic\)|\(logotype\)|\(rejected\))?/gi;
+  /contrast:[ \t]*([#a-z0-9-]+)[ \t]+on[ \t]+([#a-z0-9-]+)[ \t]*=[ \t]*(\d+(?:\.\d+)?)[ \t]*(\(large\)|\(graphic\)|\(logotype\)|\(rejected\)|\(decorative\))?/gi;
 
-/* Only the roles where a colour is read as text or sits behind it. `border-color` and
-   friends are out of scope: this is about legibility, not decoration. */
-const ROLE = /(^|[\s;{])(color|background|background-color)\s*:\s*([^;}]+)/gi;
+/* Text roles, and the two boundary roles that carry meaning.
+ *
+ * `outline` and `border-color` were added after a composer focus ring shipped in gold
+ * without a measurement and this file did not notice — it was scoped to legibility, and a
+ * focus ring is not legibility, it is WCAG 1.4.11 non-text contrast at 3:1. Adding them
+ * immediately found a selected gallery thumbnail at 2.32 against its own ground.
+ *
+ * Genuinely decorative boundaries are not exempted by omission; they are annotated
+ * `(decorative)`, so the number still exists and still gets re-derived. */
+const ROLE =
+  /(^|[\s;{])(color|background|background-color|outline|outline-color|border-color)\s*:\s*([^;}]+)/gi;
 
-for (const file of cssFiles(SRC)) {
-  const css = readFileSync(file, 'utf8');
-  const name = relative(ROOT, file).replace(/\\/g, '/');
+/**
+ * Everything wrong with one stylesheet, and what it counted.
+ *
+ * Taking a string rather than a path is what lets the guard below run the real checker
+ * over the exact shapes that have defeated it before. A checker whose own failure modes
+ * are only written down in prose gets to fail the same way twice, which is what happened.
+ */
+function analyse(name, source, tokens, family) {
+  const css = source.replace(/\r\n/g, '\n');
+  const code = blankComments(css);
+  const problems = [];
+  let annotations = 0;
+  let goldDeclarations = 0;
 
   /* 1. Every annotation must be true. */
   for (const match of css.matchAll(ANNOTATION)) {
@@ -270,8 +321,9 @@ for (const file of cssFiles(SRC)) {
        that was measured and NOT used. Both are still re-derived, so a token change that
        invalidates the note is still a build failure — which is the point of writing the
        rejected options down at all. */
-    const exempt =
-      qualifier?.toLowerCase() === '(logotype)' || qualifier?.toLowerCase() === '(rejected)';
+    const exempt = ['(logotype)', '(rejected)', '(decorative)'].includes(
+      qualifier?.toLowerCase() ?? '',
+    );
     const threshold = qualifier ? AA_LARGE : AA_TEXT;
 
     if (Math.abs(actual - claimed) > TOLERANCE) {
@@ -287,8 +339,9 @@ for (const file of cssFiles(SRC)) {
     }
   }
 
-  /* 2. Gold in a text or background role must be measured. */
-  for (const match of css.matchAll(ROLE)) {
+  /* 2. Gold in a text or background role must be measured. Matched against the blanked
+     copy, so a colour named in prose is not mistaken for a declaration. */
+  for (const match of code.matchAll(ROLE)) {
     const value = match[3];
     const usesGold =
       [...value.matchAll(/var\(\s*(--cw-[a-z0-9-]+)/gi)].some((v) => family.has(v[1])) ||
@@ -296,17 +349,203 @@ for (const file of cssFiles(SRC)) {
     if (!usesGold) continue;
 
     goldDeclarations += 1;
-    const [start, end] = enclosingBlock(css, match.index);
-    const block = css.slice(start, end);
-    if (!/contrast:/i.test(block)) {
+    const line = lineOf(code, match.index);
+    const region = enclosingBlock(code, match.index);
+
+    if (region === null) {
       problems.push(
-        `${name}:${lineOf(css, match.index)}  gold in a \`${match[2]}\` role with no ` +
+        `${name}:${line}  gold in a \`${match[2]}\` role that is not inside any rule, so ` +
+          `there is nowhere for its annotation to be.\n` +
+          `      This used to be reported as measured: the search for the enclosing rule ` +
+          `fell back to byte 0 and inherited the first rule's annotation.`,
+      );
+      continue;
+    }
+
+    /* Sliced out of the ORIGINAL, because the annotation is a comment. */
+    if (!/contrast:/i.test(css.slice(region[0], region[1]))) {
+      problems.push(
+        `${name}:${line}  gold in a \`${match[2]}\` role with no ` +
           `contrast annotation in its rule.\n` +
           `      Measure it and write:  /* contrast: <fg> on <bg> = <ratio> */\n` +
           `      Ten failures across four phases were all this shape.`,
       );
     }
   }
+
+  return { problems, annotations, goldDeclarations };
+}
+
+/* ---- the checker's own guard ---------------------------------------------
+ *
+ * Job 2 has failed open twice. First because it located a rule by searching backwards for
+ * a blank line, which never matched under CRLF; then because "no enclosing rule found"
+ * fell back to byte 0. Both times every file passed, the coverage number went up, and the
+ * number was offered as the evidence that gold was being measured. Prose in a doc did not
+ * prevent the second one.
+ *
+ * So the shapes that got through are fixtures now. They run on every invocation, before
+ * the tree, against the real `analyse` — a checker that has stopped catching them cannot
+ * report a pass, and the failure names the shape that came back.
+ */
+const GUARD = [
+  {
+    what: 'gold outside every rule, in a file that is annotated elsewhere',
+    expect: 'problem',
+    css: [
+      'color: var(--cw-gold);',
+      '',
+      '.rule {',
+      '  /* contrast: --cw-navy on --cw-white = 11.14 */',
+      '  color: var(--cw-navy);',
+      '}',
+      '',
+    ].join('\n'),
+  },
+  {
+    what: 'unmeasured gold in the rule after an annotated one, no blank line between',
+    expect: 'problem',
+    css: [
+      '.a {',
+      '  /* contrast: --cw-navy on --cw-white = 11.14 */',
+      '  color: var(--cw-navy);',
+      '}',
+      '.b {',
+      '  color: var(--cw-gold);',
+      '}',
+      '',
+    ].join('\n'),
+  },
+  {
+    what: 'unmeasured gold below an annotated rule, blank line between',
+    expect: 'problem',
+    css: [
+      '.a {',
+      '  /* contrast: --cw-navy on --cw-white = 11.14 */',
+      '  color: var(--cw-navy);',
+      '}',
+      '',
+      '.b {',
+      '  color: var(--cw-gold);',
+      '}',
+      '',
+    ].join('\n'),
+  },
+  {
+    what: 'unmeasured gold whose annotation is in the NEXT rule, not its own',
+    expect: 'problem',
+    css: [
+      '.b {',
+      '  color: var(--cw-gold);',
+      '}',
+      '',
+      '/* contrast: --cw-navy on --cw-white = 11.14 */',
+      '.a {',
+      '  color: var(--cw-navy);',
+      '}',
+      '',
+    ].join('\n'),
+  },
+  {
+    what: 'unmeasured gold nested in a media query, annotated only outside it',
+    expect: 'problem',
+    css: [
+      '/* contrast: --cw-black-1 on --cw-gold = 6.46 */',
+      '.chip {',
+      '  background: var(--cw-gold);',
+      '}',
+      '',
+      '@media (min-width: 640px) {',
+      '  .other {',
+      '    color: var(--cw-gold);',
+      '  }',
+      '}',
+      '',
+    ].join('\n'),
+  },
+  {
+    what: 'an annotation whose arithmetic is wrong',
+    expect: 'problem',
+    css: [
+      '.gold {',
+      '  /* contrast: --cw-black-1 on --cw-gold = 9.99 */',
+      '  background: var(--cw-gold);',
+      '}',
+      '',
+    ].join('\n'),
+  },
+  {
+    what: 'measured gold, annotation in the comment above its selector',
+    expect: 'clean',
+    css: [
+      '/* contrast: --cw-black-1 on --cw-gold = 6.46 */',
+      '.gold {',
+      '  background: var(--cw-gold);',
+      '}',
+      '',
+    ].join('\n'),
+  },
+  {
+    what: 'measured gold whose own comment contains a closing brace',
+    expect: 'clean',
+    css: [
+      '.gold {',
+      '  /* the frame draws this as } shaped, which used to break the brace count.',
+      '     contrast: --cw-black-1 on --cw-gold = 6.46 */',
+      '  background: var(--cw-gold);',
+      '}',
+      '',
+    ].join('\n'),
+  },
+  {
+    what: 'gold named in prose only, which is not a declaration',
+    expect: 'clean',
+    css: [
+      '/* This used to be color: var(--cw-gold) and no longer is. */',
+      '.a {',
+      '  color: var(--cw-navy);',
+      '}',
+      '',
+    ].join('\n'),
+  },
+];
+
+/* ---- run ----------------------------------------------------------------- */
+
+const tokens = readTokens();
+const family = goldFamily(tokens);
+
+let guardFailed = false;
+for (const fixture of GUARD) {
+  const { problems: found } = analyse('guard.css', fixture.css, tokens, family);
+  const caught = found.length > 0;
+  if (caught !== (fixture.expect === 'problem')) {
+    guardFailed = true;
+    console.error(
+      `\ncontrast check GUARD FAILED — ${caught ? 'now reports' : 'no longer catches'}: ` +
+        `${fixture.what}`,
+    );
+    for (const problem of found) console.error(`      ${problem}`);
+  }
+}
+if (guardFailed) {
+  console.error(
+    '\n  The checker itself is broken, so nothing it says about src/ means anything.\n' +
+      '  Fix `enclosingBlock` before trusting another coverage number.\n',
+  );
+  process.exit(1);
+}
+
+const problems = [];
+let annotations = 0;
+let goldDeclarations = 0;
+
+for (const file of cssFiles(SRC)) {
+  const name = relative(ROOT, file).replace(/\\/g, '/');
+  const result = analyse(name, readFileSync(file, 'utf8'), tokens, family);
+  problems.push(...result.problems);
+  annotations += result.annotations;
+  goldDeclarations += result.goldDeclarations;
 }
 
 if (problems.length > 0) {
@@ -317,6 +556,7 @@ if (problems.length > 0) {
 }
 
 console.log(
-  `contrast check passed — ${annotations} annotation(s) re-derived, ` +
+  `contrast check passed — ${GUARD.length} guard fixture(s) still caught, ` +
+    `${annotations} annotation(s) re-derived, ` +
     `${goldDeclarations} gold declaration(s) all measured`,
 );

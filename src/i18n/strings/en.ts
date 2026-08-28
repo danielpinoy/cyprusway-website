@@ -199,6 +199,105 @@ export const stringsEn = {
   ui_meta_askpete_title: 'Ask Pete — CyprusWay',
   ui_meta_askpete_desc:
     'Ask a local guide about Cyprus — beaches, food, history and what to do tonight.',
+  /* --- Build My Trip (phase 5) ----------------------------------------------- */
+  ui_trip_setup_title: 'Build My Trip',
+  ui_trip_setup_sub: 'Plan a new trip',
+  ui_trip_signin_title: 'Trips need a free account',
+  ui_trip_signin_body:
+    'Your trips are the same on the web and in the app, so you can plan here and follow along there.',
+  ui_trip_name_label: 'Trip name',
+  ui_trip_name_placeholder: 'Enter trip name',
+  /* Singular: `base_location` is one text column, whatever the frame's plural label says. */
+  ui_trip_region_label: 'Select base destination',
+  ui_trip_dates_label: 'Date range',
+  ui_trip_from: 'From',
+  ui_trip_to: 'To',
+  ui_trip_span: '{count} days',
+  ui_trip_span_error: 'A trip can be 1 to {max} days.',
+  ui_trip_create: 'Create a Trip',
+  ui_trip_creating: 'Creating…',
+  ui_trip_create_failed: "That trip couldn't be created. Please try again.",
+  /* --- the editor --- */
+  ui_trip_list: 'List',
+  ui_trip_map: 'Map',
+  ui_trip_day_n: 'Day {n}',
+  ui_trip_today: 'Today',
+  ui_trip_tomorrow: 'Tomorrow',
+  ui_trip_toggle_day: 'Day {n} stops',
+  ui_trip_remove_day: 'Remove day {n}',
+  ui_trip_empty_day: 'Nothing planned for this day yet.',
+  ui_trip_add_stops: 'Add to Trip',
+  ui_trip_add_day: 'Add Day',
+  ui_trip_delete: 'Delete Trip',
+  ui_trip_pdf: 'Print/Download PDF',
+  ui_trip_pdf_failed: "That PDF couldn't be made. Please try again.",
+  ui_trip_move_up: 'Move {name} earlier',
+  ui_trip_move_down: 'Move {name} later',
+  ui_trip_move_to_day: 'Move to day {n}',
+  ui_trip_move_label: 'Move to another day',
+  ui_trip_remove_stop: 'Remove {name}',
+  /* An outbound link to the device's map app, built from the stop's stored coordinates.
+     Nothing is routed here and nothing is requested. */
+  ui_trip_directions: 'Get Directions',
+  ui_trip_directions_for: 'Get directions to {name}, opens a map',
+  /* Minutes and mode are the whole of what the server stores for a leg. */
+  ui_trip_drive: 'Drive for {minutes} min',
+  ui_trip_walk: 'Walk for {minutes} min',
+  ui_trip_travel_pending: 'Working out the times…',
+  ui_trip_lunch: 'Lunch break',
+  ui_trip_lunch_any: 'Pick any spot nearby',
+  ui_trip_saving: 'Saving…',
+  ui_trip_rename: 'Rename trip',
+  ui_trip_rename_save: 'Save name',
+  ui_trip_cancel: 'Cancel',
+  /* The optimistic-concurrency guard fired. Never a silent retry — that would overwrite
+     whatever won the race, which is the one thing the guard exists to prevent. */
+  ui_trip_conflict: 'This trip changed somewhere else — showing the latest version.',
+  /* One per outcome. They used to be one string, which made a 409 and a client-side
+     refusal look identical when they need opposite responses from the reader. */
+  ui_trip_save_failed: "That change couldn't be saved. Something went wrong on our side — please try again.",
+  ui_trip_offline: "That change couldn't be saved — it never reached us. Check your connection and try again.",
+  ui_trip_blocked: "That change couldn't be saved, and nothing was sent. Reload the trip and try again.",
+  ui_trip_auth_failed: 'Your session expired. Sign in again to keep editing.',
+  ui_trip_gone: 'This trip no longer exists.',
+  ui_trip_not_found_title: 'That trip is not here',
+  ui_trip_not_found_body:
+    'It may have been deleted, or the link may belong to another account.',
+  ui_trip_delete_title: 'Delete this trip?',
+  ui_trip_delete_body: 'This cannot be undone, and it removes the trip from the app too.',
+  ui_trip_deleted: 'Trip deleted.',
+  ui_trip_delete_failed: "That trip couldn't be deleted.",
+  /* --- the map placeholder --- */
+  ui_trip_map_title: 'The map is still to come',
+  ui_trip_map_body:
+    'Your stops for the day are listed beside this, in order, with their times.',
+  /* --- add to trip --- */
+  ui_trip_add_title: 'Add to trip',
+  ui_trip_add_step_day: '1. Which day?',
+  ui_trip_add_step_explore: '2. What would you like to explore?',
+  /* Why there is no time to choose. The server packs the day: an added stop starts when
+     the one before it ends, plus the travel between them. */
+  ui_trip_add_time_note: 'Times are worked out for you — a new stop starts when the one before it ends.',
+  ui_trip_add_search: 'Filter these places',
+  ui_trip_add_all_interests: 'All Interests',
+  ui_trip_add_selected: '{count} selected',
+  ui_trip_add_cta: 'Add to Trip',
+  ui_trip_add_empty: 'Nothing here matches those filters.',
+  ui_trip_add_full: 'That day is full — {max} stops is the most one day can hold.',
+  ui_trip_add_already: 'Already on this day',
+  /* --- the hub --- */
+  ui_trips_title: 'My Trips',
+  ui_trips_sub: 'Everything you have planned',
+  ui_trips_new: 'Build a new trip',
+  ui_trips_empty_title: 'No trips yet',
+  ui_trips_empty_body: 'Build one and it appears here, and in the app.',
+  ui_trips_days: '{count} days',
+  ui_trips_open: 'Open {name}',
+  ui_meta_buildtrip_title: 'Build My Trip — CyprusWay',
+  ui_meta_buildtrip_desc:
+    'Plan a Cyprus trip day by day — pick your base, your dates and your stops.',
+  ui_meta_trips_title: 'My Trips — CyprusWay',
+  ui_meta_trips_desc: 'The trips you have planned with CyprusWay.',
   ui_meta_place_title: '{name} — CyprusWay',
   /* The standfirst is the description on every place that has one; these two carry the
      rest. Deliberately plain: a fabricated superlative for a place nobody has written

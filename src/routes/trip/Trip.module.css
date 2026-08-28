@@ -1,0 +1,427 @@
+.page {
+  background-color: var(--cw-sand);
+  min-block-size: 70vh;
+  padding-block: var(--cw-space-40);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-16);
+  inline-size: min(760px, 100% - 2 * var(--cw-space-24));
+  margin-inline: auto;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cw-space-16);
+  text-align: center;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cw-space-8);
+  margin: 0;
+  font-size: var(--cw-h1-size);
+  line-height: var(--cw-h1-line);
+  font-weight: var(--cw-h1-weight);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+  text-wrap: balance;
+}
+
+/* The pencil the map frame draws beside the title. The list frame omits it; `name` is in
+   the trip-edit contract and a trip you cannot rename is worse than an inconsistent
+   frame, so the pencil wins. */
+.rename {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 32px;
+  block-size: 32px;
+  border: 0;
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
+  /* contrast: --cw-navy on #e8ebf0 = 9.32 */
+  color: var(--cw-navy);
+  cursor: pointer;
+}
+
+.renameForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cw-space-8);
+  inline-size: 100%;
+}
+
+.renameInput {
+  flex: 1 1 16rem;
+  min-block-size: 44px;
+  padding-inline: var(--cw-space-12);
+  border: 1px solid var(--cw-grey-2);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-white);
+  font: inherit;
+  font-size: var(--cw-h5-size);
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-navy) 8%, transparent);
+}
+
+.toggleButton {
+  padding-block: var(--cw-space-4);
+  padding-inline: var(--cw-space-16);
+  border: 0;
+  border-radius: var(--cw-radius-pill);
+  background: none;
+  /* contrast: --cw-grey-3 on #e4e2de = 4.70 */
+  color: var(--cw-grey-3);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  font-weight: 590;
+  cursor: pointer;
+}
+
+.toggleButton[aria-pressed='true'] {
+  background-color: var(--cw-white);
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.notice {
+  margin: 0;
+  padding: var(--cw-space-12);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-alert-tint);
+  /* contrast: --cw-alert-text on #f4d3cc = 5.11 */
+  color: var(--cw-alert-text);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+}
+
+/* The advisory tier — R2/R3/R5/R7/R9. Shown, never blocking: nothing in it was refused. */
+.warnings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-4);
+  margin: 0;
+  padding-block: var(--cw-space-12);
+  padding-inline: var(--cw-space-16);
+  border-radius: var(--cw-radius-sm);
+  background-color: color-mix(in srgb, var(--cw-navy) 8%, transparent);
+  list-style: disc;
+  list-style-position: inside;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-navy on #e4e2de = 8.61 */
+  color: var(--cw-navy);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-12);
+  padding-block-start: var(--cw-space-16);
+}
+
+.plain {
+  border: 0;
+  padding: 0;
+  background: none;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  font-weight: 590;
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.plain:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Destructive, and coloured as such. It confirms before acting. */
+.danger {
+  border: 0;
+  padding: 0;
+  background: none;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  font-weight: 590;
+  /* contrast: --cw-alert-text on --cw-sand = 6.31 */
+  color: var(--cw-alert-text);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.confirmTitle {
+  margin: 0;
+  font-size: var(--cw-h3-size);
+  line-height: var(--cw-h3-line);
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.confirmBody {
+  margin-block: var(--cw-space-8) var(--cw-space-16);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-12);
+}
+
+/* ---- The map view -----------------------------------------------------------
+   Parked. The rail beside it is real data; only the surface is a placeholder. */
+.map {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-12);
+}
+
+.dayTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dayTab {
+  padding-block: var(--cw-space-8);
+  padding-inline: var(--cw-space-16);
+  border: 0;
+  border-radius: var(--cw-radius-sm);
+  background-color: color-mix(in srgb, var(--cw-navy) 8%, transparent);
+  /* contrast: --cw-grey-3 on #e4e2de = 4.70 */
+  color: var(--cw-grey-3);
+  font-size: var(--cw-body-size);
+  font-weight: 590;
+  cursor: pointer;
+}
+
+.dayTab[aria-pressed='true'] {
+  background-color: var(--cw-white);
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.mapBody {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-12);
+}
+
+.rail {
+  display: flex;
+  flex: 1 1 16rem;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding: var(--cw-space-16);
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+  list-style: none;
+}
+
+.railItem {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+}
+
+/* The frame's numbered gold pins. Raw gold with a white numeral would be 2.63; black-1 on
+   gold is the phase-1 ruling for any label on a gold surface.
+   contrast: --cw-black-1 on --cw-gold = 6.46 */
+.pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-gold);
+  color: var(--cw-black-1);
+  font-size: var(--cw-small-size);
+  font-weight: 700;
+}
+
+.railName {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.railTime {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.railEmpty {
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+  font-size: var(--cw-body-size);
+}
+
+.placeholder {
+  display: flex;
+  flex: 2 1 20rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cw-space-8);
+  min-block-size: 320px;
+  padding: var(--cw-space-24);
+  border: 1px dashed color-mix(in srgb, var(--cw-navy) 30%, transparent);
+  border-radius: var(--cw-radius-md);
+  background-color: color-mix(in srgb, var(--cw-navy) 5%, transparent);
+  text-align: center;
+}
+
+/* contrast: --cw-navy on #edeae6 = 9.29 (graphic) */
+.placeholderIcon {
+  color: var(--cw-navy);
+}
+
+.placeholderTitle {
+  margin: 0;
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on #edeae6 = 9.29 */
+  color: var(--cw-navy);
+}
+
+.placeholderBody,
+.placeholderDate {
+  margin: 0;
+  max-inline-size: 34ch;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on #edeae6 = 5.04 */
+  color: var(--cw-grey-3);
+}
+
+/* ---- Skeletons and the gone state ------------------------------------------ */
+.skeletonTitle,
+.skeletonBlock {
+  block-size: 40px;
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-skeleton-on-sand);
+}
+
+.skeletonBlock {
+  block-size: 220px;
+  margin-block-start: var(--cw-space-16);
+}
+
+.gone {
+  background-color: var(--cw-sand);
+  padding-block: var(--cw-space-48);
+  text-align: center;
+}
+
+.goneTitle {
+  margin: 0;
+  font-size: var(--cw-h2-size);
+  line-height: var(--cw-h2-line);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.goneBody {
+  margin-block: var(--cw-space-12) var(--cw-space-24);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.goneCta {
+  display: inline-block;
+  padding-block: var(--cw-space-12);
+  padding-inline: var(--cw-space-24);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-navy);
+  /* contrast: #ffffff on --cw-navy = 11.14 */
+  color: var(--cw-white);
+  text-decoration: none;
+  font-weight: 590;
+}
+
+/* ---- Signed out ------------------------------------------------------------
+   A link to a trip is a private URL; without a session there is nothing to load and
+   nothing to say except which session is missing. */
+.signIn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-16);
+  padding: var(--cw-space-16);
+  border-radius: 12px;
+  background-color: var(--cw-white);
+}
+
+.signInMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
+  /* contrast: --cw-navy on #e8ebf0 = 9.32 */
+  color: var(--cw-navy);
+}
+
+.signInCopy {
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+}
+
+.signInTitle {
+  margin: 0;
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.signInBody {
+  margin-block: var(--cw-space-4) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}

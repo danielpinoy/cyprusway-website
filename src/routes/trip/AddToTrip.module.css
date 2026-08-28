@@ -1,0 +1,197 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+  background-color: color-mix(in srgb, var(--cw-navy) 55%, transparent);
+}
+
+/* A drawer at the inline end, as the frame draws it — logical, so it comes from the
+   other side under RTL without a direction check. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  inline-size: min(560px, 100%);
+  max-block-size: 100%;
+  background-color: var(--cw-white);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cw-space-12);
+  padding: var(--cw-space-24);
+  border-block-end: 1px solid color-mix(in srgb, var(--cw-grey-3) 20%, transparent);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-h2-size);
+  line-height: var(--cw-h2-line);
+  font-weight: var(--cw-h2-weight);
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border: 0;
+  border-radius: var(--cw-radius-pill);
+  background: none;
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+  cursor: pointer;
+}
+
+.scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-inline: var(--cw-space-24);
+  padding-block: var(--cw-space-16);
+}
+
+.step {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  padding-block-end: var(--cw-space-16);
+}
+
+.stepTitle {
+  padding: 0;
+  margin-block-end: var(--cw-space-12);
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.dayList,
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dayButton,
+.chip {
+  padding-block: var(--cw-space-8);
+  padding-inline: var(--cw-space-12);
+  border: 1px solid var(--cw-grey-2);
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-white);
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 510;
+  cursor: pointer;
+}
+
+/* contrast: --cw-navy on --cw-gold-tint = 10.21 */
+.dayButton[aria-pressed='true'],
+.chip[aria-pressed='true'] {
+  border-width: 2px;
+  border-color: var(--cw-gold);
+  background-color: var(--cw-gold-tint);
+  padding-block: 7px;
+  padding-inline: 11px;
+  color: var(--cw-navy);
+  font-weight: 700;
+}
+
+/* What stands where the frame draws a time picker. */
+.note {
+  margin-block: var(--cw-space-12) 0;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.full {
+  margin-block: var(--cw-space-8) 0;
+  padding: var(--cw-space-8);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-alert-tint);
+  /* contrast: --cw-alert-text on #fcdfdf = 5.69 */
+  color: var(--cw-alert-text);
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+}
+
+.searchLabel {
+  display: block;
+  margin-block-start: var(--cw-space-12);
+}
+
+.search {
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding-inline: var(--cw-space-12);
+  border: 1px solid var(--cw-grey-2);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-white);
+  font: inherit;
+  font-size: 14px;
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+}
+
+.search::placeholder {
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--cw-space-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.already {
+  margin-block: var(--cw-space-4) 0;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.empty {
+  margin: 0;
+  padding-block: var(--cw-space-24);
+  text-align: center;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+  padding: var(--cw-space-24);
+  border-block-start: 1px solid color-mix(in srgb, var(--cw-grey-3) 20%, transparent);
+}
+
+.count {
+  margin: 0;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}

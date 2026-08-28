@@ -202,8 +202,13 @@
   transition: border-color var(--cw-transition), transform var(--cw-transition);
 }
 
+/* Raw gold here measured 2.63 against the chip and 2.32 against the sand behind it — a
+   hover affordance you could barely see. gold-link is the same brand colour with the
+   luminance to carry a 1px edge.
+   contrast: --cw-gold-link on --cw-white = 5.63 (graphic)
+   contrast: --cw-gold-link on --cw-sand = 4.96 (graphic) */
 .starter:hover {
-  border-color: var(--cw-gold);
+  border-color: var(--cw-gold-link);
   transform: translateY(-1px);
 }
 

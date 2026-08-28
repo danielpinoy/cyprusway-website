@@ -12,6 +12,9 @@ import Home from './routes/home/Home';
 import Explore from './routes/explore/Explore';
 import Place from './routes/place/Place';
 import AskPete from './routes/ask-pete/AskPete';
+import BuildTrip from './routes/build-trip/BuildTrip';
+import Trip from './routes/trip/Trip';
+import Trips from './routes/trips/Trips';
 
 /**
  * Every route is prerendered (see scripts/prerender.mjs) — including all 181 place pages —
@@ -34,6 +37,9 @@ export function App() {
           <Route path="/explore" element={<Explore />} />
           <Route path="/place/:slug" element={<Place />} />
           <Route path="/ask-pete" element={<AskPete />} />
+          <Route path="/build-trip" element={<BuildTrip />} />
+          <Route path="/trips" element={<Trips />} />
+          <Route path="/trip/:id" element={<Trip />} />
           <Route element={<LayoutRoute />}>
             <Route path="/about" element={<About />} />
             <Route path="/faq" element={<Faq />} />

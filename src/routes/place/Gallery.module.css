@@ -72,8 +72,14 @@
   opacity: 1;
 }
 
+/* WHICH thumbnail is selected, so 1.4.11's 3:1 is required and not optional. Raw gold
+   measured 2.32 against the sand the strip sits on and shipped that way — found by
+   scripts/check-contrast.mjs once it was taught to look at boundary roles, not just text.
+   The inner edge is a photograph and cannot be measured; opacity and aria-pressed carry
+   the state alongside the ring, so the outer edge is not the only channel.
+   contrast: --cw-gold-link on --cw-sand = 4.96 (graphic) */
 .thumb[aria-pressed='true'] {
-  border-color: var(--cw-gold);
+  border-color: var(--cw-gold-link);
   opacity: 1;
 }
 

@@ -30,6 +30,20 @@ export const ROUTE_META: Readonly<Record<string, RouteMeta>> = {
     changefreq: 'weekly',
     priority: '0.9',
   },
+  '/build-trip': {
+    titleKey: 'ui_meta_buildtrip_title',
+    descKey: 'ui_meta_buildtrip_desc',
+    changefreq: 'monthly',
+    priority: '0.7',
+  },
+  /* `/trips` lists one account's trips, so it is prerendered for its shell and metadata
+     and kept OUT of the sitemap: there is nothing on it for a crawler, and inviting one
+     to a page that is only ever a sign-in panel is a crawl error waiting to happen. */
+  '/trips': {
+    titleKey: 'ui_meta_trips_title',
+    descKey: 'ui_meta_trips_desc',
+    noIndex: true,
+  },
   '/ask-pete': {
     titleKey: 'ui_meta_askpete_title',
     descKey: 'ui_meta_askpete_desc',
@@ -81,6 +95,29 @@ export const SITE_ORIGIN = 'https://cyprusway.eu';
  * prerendered file, so a place published since the last deploy still opens.
  */
 export const PLACE_PATH_PREFIX = '/place/';
+
+/**
+ * `/trip/<uuid>` is one person's itinerary behind their session. It is NOT prerendered and
+ * never will be: there is nothing to prerender, and a file per trip would be a file per
+ * private document. The Worker serves the SPA shell for the prefix, exactly as it does for
+ * a place published since the last deploy, and the page itself sets `noindex`
+ * unconditionally rather than only on its not-found branch.
+ */
+export const TRIP_PATH_PREFIX = '/trip/';
+
+/**
+ * Paths that are real routes but have no ROUTE_META entry, because their metadata comes
+ * from the row behind them rather than from this table.
+ *
+ * `useDocumentHead` needs this to know the difference between "a route I have no metadata
+ * for" and "not a route at all". Without it, every dynamic path fell through to
+ * NOT_FOUND_META — which shipped, and put the 404 description on all 181 place pages the
+ * moment JavaScript ran, over the correct one the prerender had written into the HTML.
+ */
+export function isDynamicPath(pathname: string): boolean {
+  const lower = pathname.toLowerCase();
+  return lower.startsWith(PLACE_PATH_PREFIX) || lower.startsWith(TRIP_PATH_PREFIX);
+}
 
 /**
  * The vanilla site's URLs. Every one 301s to its clean equivalent, from the Worker,

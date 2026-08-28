@@ -1,0 +1,200 @@
+.page {
+  background-color: var(--cw-sand);
+  min-block-size: 70vh;
+  padding-block: var(--cw-space-40);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-16);
+  inline-size: min(960px, 100% - 2 * var(--cw-space-24));
+  margin-inline: auto;
+}
+
+.head {
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-h1-size);
+  line-height: var(--cw-h1-line);
+  font-weight: var(--cw-h1-weight);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.subtitle {
+  margin-block: var(--cw-space-8) 0;
+  font-size: 14px;
+  line-height: 1.8;
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.newRow {
+  margin: 0;
+}
+
+.new {
+  display: inline-block;
+  padding-block: var(--cw-space-12);
+  padding-inline: var(--cw-space-24);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-gold);
+  /* The frame paints every gold button's label white, which is 2.63. black-1 is the
+     phase-1 ruling for any label on a gold surface.
+     contrast: --cw-black-1 on --cw-gold = 6.46 */
+  color: var(--cw-black-1);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 590;
+  text-decoration: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--cw-space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  overflow: hidden;
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+  text-decoration: none;
+  transition: transform var(--cw-transition), box-shadow var(--cw-transition);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--cw-shadow-md);
+}
+
+.cover,
+.coverEmpty {
+  inline-size: 100%;
+  block-size: 140px;
+  object-fit: cover;
+}
+
+.coverEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    160deg,
+    var(--cw-sand) 0%,
+    color-mix(in srgb, var(--cw-gold) 22%, var(--cw-sand)) 100%
+  );
+  /* The same ground the no-photo place card uses.
+     contrast: --cw-navy on #eaddb8 = 8.24 (graphic) */
+  color: var(--cw-navy);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-4);
+  padding: var(--cw-space-16);
+}
+
+.name {
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-4);
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.days {
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.emptyState {
+  padding-block: var(--cw-space-40);
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: var(--cw-h4-size);
+  line-height: var(--cw-h4-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.empty {
+  margin-block: var(--cw-space-8) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+/* ---- Signed out ------------------------------------------------------------ */
+.signIn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-16);
+  padding: var(--cw-space-16);
+  border-radius: 12px;
+  background-color: var(--cw-white);
+}
+
+.signInMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
+  /* contrast: --cw-navy on #e8ebf0 = 9.32 */
+  color: var(--cw-navy);
+}
+
+.signInCopy {
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+}
+
+.signInTitle {
+  margin: 0;
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.signInBody {
+  margin-block: var(--cw-space-4) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}

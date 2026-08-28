@@ -476,6 +476,59 @@ spend an allowance to display it.
 **Owner.** Backend, and low priority — the current behaviour is correct, just briefly
 unconfident.
 
+### The contrast check has failed open twice — first CRLF, then byte 0
+
+**What.** `scripts/check-contrast.mjs` has two jobs: re-derive every `contrast:` annotation,
+and refuse gold in a text or boundary role that has no annotation *in its own rule*. Job 1
+has never been wrong. Job 2 has been wrong twice, both times in the same way, and both
+times the run kept printing a coverage number that read like assurance.
+
+**Round one — the blank line that CRLF hid.** The second job located a rule's block by
+searching backwards for a blank line. Git checks this repository out with CRLF on Windows,
+so a blank line is two CRLFs and the search never matched. The fallback was byte 0, which
+turns "no blank line found" into "the block is the whole file" — so any file containing one
+annotation anywhere passed for all of its gold. It still caught a file with *no* annotation
+at all, which is how the first sweep found 24 unmeasured declarations and two shipped
+failures; what it could not catch was a rule with no annotation in a file that had one
+elsewhere, and that is exactly what it missed: `.starter:hover` in the Ask Pete thread, a
+gold border at 2.63 on the chip and 2.32 on the ground behind it.
+
+**Round two — the same byte 0, one search along.** Line endings were normalised at read
+time and that half held. The other half of the fix was recorded here as "the fallback now
+fails closed", and it was not: `enclosingBlock` still answered `0` when the backwards scan
+for the enclosing `{` found nothing, and still answered `0` when there was no blank line
+above the selector. Two ways in, both live. A fixture with un-annotated gold outside every
+rule passed, and so did an un-annotated gold rule written directly beneath an annotated
+one with no blank line between them. Brace counting also read braces inside comments as
+real, and the role scan read `color:` written in prose as a declaration.
+
+**What is actually fixed, 28 August 2026.** Comments are blanked to spaces of equal length
+before anything counts a brace or matches a role, so offsets and line numbers still line up
+while prose stops being parsed as code. `enclosingBlock` returns **null** when a declaration
+is not inside a rule, and the caller reports that rather than waving it through. The
+preamble walk stops at the end of whatever precedes the selector — the previous rule's `}`,
+a `;`, or the enclosing `{` — so a rule can no longer reach back into the rule above it for
+an annotation. The rule is now written at the top of the function: *a search that fails
+narrows the region or returns null; it never widens it, and byte 0 is never a fallback.*
+
+**And a guard, because prose here did not stop round two.** The shapes that got through are
+nine fixtures inside the script. They run on every invocation, before `src/`, against the
+real checker; if the checker stops catching them it cannot report a pass, and the failure
+names the shape. Verified by reintroducing the byte-0 fallback: the guard fails, and the
+coverage line is never printed.
+
+**What it caught in the tree: nothing.** Re-run over all of `src/` after the fix — 138
+annotations re-derived, 44 gold declarations all measured, identical to the run before it.
+The hole was real and both fixtures went through it, but no file in the repository was
+using it. This fix removes a place for the eleventh failure to hide; it did not find one.
+
+**Coverage, and why the old number was stale.** 138 and 44, measured 28 Aug 2026. The 58
+and 32 recorded here previously were a phase-4 run and were never updated as phase 5 added
+its stylesheets — the growth is new CSS, not newly measured CSS.
+
+**Owner.** Web — done, recorded because a fix declared here twice was only half made the
+first time, and the coverage number said nothing about it either way.
+
 ### Chrome does not re-map logical border radii when `dir` changes at runtime
 
 **What.** `I18nProvider` sets `document.documentElement.dir` when the language changes, so
@@ -507,6 +560,157 @@ and an RTL language is a different layout rather than a repaint. That is a phase
 behaviour change and was not made unilaterally in phase 4.
 
 **Owner.** Whoever adds Hebrew.
+
+### Print/Download PDF is premium-only, and premium is unreachable on the web
+
+**What.** `trip-pdf` is deployed and does the job: `POST { itinerary_id }`, no LLM and no
+API spend, returning `application/pdf` bytes. **The app has never called it.**
+
+**Why it is nearly parked.** It is gated on `users.is_premium` — a non-premium caller gets
+**403 `premium_required`** — and `stripeEnabled` is false, so nobody can become premium on
+the web. The button is therefore rendered **only for an account that already is**, and is
+absent otherwise: the same treatment phase 4 gave "Unlock Unlimited", for the same reason.
+Premium accounts do exist, so it is not dead code.
+
+**What unparks it fully.** A purchase path. Nothing about the endpoint needs to change.
+
+**Owner.** Product.
+
+### `trip-generate` has no timeout on either OpenAI call
+
+**What.** Not phase 5's problem and recorded so it is not discovered by a future one.
+`trip-edit` makes no model call at all, so the trip editor inherits none of this. But
+`trip-generate` — which the web does not call and phase 5 deliberately did not build a
+surface for — has **no timeout on either of its OpenAI calls**, which is worse than `mike`,
+where the embedding at least aborts at 1500 ms. It also consumes `consume_trip_generation`
+**before** the model runs, so a hang burns one of the day's allowance.
+
+**What unparks a web generate screen.** Timeouts on both calls, and a decision about the
+burn-on-failure. That is a backend conversation before it is a web one.
+
+**Owner.** Backend.
+
+### `trip-edit` validates the request shape before it authenticates
+
+**What.** A request with a valid project **anon key** as the bearer — no user session —
+reaches the shape validation and gets specific, useful refusals back:
+
+```
+{"error":"invalid_request","detail":"unknown request keys: trip_end"}
+{"error":"invalid_request","detail":"maximum trip length is 31 days"}
+{"error":"invalid_request","detail":"unknown keys in days[0].pois[0]: start_time …"}
+```
+
+Only once the body is well-formed does it answer `{"error":"unauthorized"}`.
+
+**Why it is recorded rather than reported as a defect.** No data crosses the boundary: the
+itinerary read, the write, and every place lookup happen after authentication, and the
+refusals describe the caller's own request rather than anything stored. It also made this
+phase's contract verifiable without holding a token, which is a genuine benefit and is how
+the time-picker question was settled from the server's own words.
+
+**The other half is worth stating plainly:** error messages that name unknown keys with
+their path are equally helpful to anyone mapping the API, and the anon key is public by
+design. Whether ordering auth first is worth losing the diagnostics is a backend judgement,
+not a client one — but it should be a judgement rather than an accident.
+
+**Owner.** Backend, to decide rather than to fix.
+
+### The travel line — the bus, the kilometres, and what is actually stored
+
+**What.** The list frame draws two lines per leg: *"Take a bus · 3km away from last
+location"* and *"Walk · 5 mins"*.
+
+**Why parked.** Neither the bus nor the distance exists:
+
+- `travel_mode` is `"car" | "walking"` (`trip-generate/types.ts`). **There is no bus**, and
+  nothing anywhere plans public transport.
+- **No distance is stored.** `travel_to_next_min` is minutes and is the only travel number
+  on the element. Deriving kilometres from the stored coordinates would put straight-line
+  distance where a reader expects road distance — the app measured that ratio at a median
+  **1.46** and called it "a measured lie".
+- Nothing calls a routing provider at request time, and `place_travel_times` has no client
+  grant, so this is not something a client can fix.
+
+The web renders the mode glyph and the minutes, and nothing else.
+
+**Also not rendered, and this one is a subtraction rather than an impossibility.** Since
+21 August the app uses that second line for the one thing the payload *can* prove: that a
+stored drive does not fit the gap the schedule leaves for it, showing when the traveller
+would really arrive. It measured 102 of 288 live legs. It is not ported, on the ruling that
+a server-side reflow shipped on 24 August and the app's own note says the check "provably
+returns null on every leg" of a freshly written trip — it survives for four populations the
+reflow does not reach, of which the web can see two: the 34 itineraries stored before it
+shipped, and legacy rows nobody has re-opened. Against that, the app warns that "two
+implementations of a warning is two chances to warn wrongly", and the arithmetic is eighty
+lines with three guards.
+
+**What unparks it.** For the bus and the kilometres: a routing provider at request time and
+a stored distance. For the overrun line: a web user reporting a pre-reflow trip whose times
+look impossible.
+
+**Owner.** Backend for the first, web for the second.
+
+### The time picker in the add-to-trip panel
+
+**What.** Frame `3429-16644` draws a "9:00 AM" chip under the selected day.
+
+**Why parked.** `trip-edit` accepts POIs **by id only**. There is no field to send a time
+in, and the deployed function says so in its own refusal — verified 28 Aug:
+
+```
+400 unknown keys in days[0].pois[0]: start_time
+    (stops are sent by place_id only; times, legs and lunch are server-derived)
+```
+
+Where a stop lands is the packing rule: an appended stop starts when the one before it
+ends, plus the leg between them. The app hit the same conflict and resolved it the same
+way — *"Frame-vs-contract conflict, resolved in the contract's favour"* — and the web says
+in one line what happens instead, rather than drawing a control that cannot be honoured.
+
+**What unparks it.** `trip-edit` accepting a requested start time, which would mean the
+packing rule taking a hint rather than owning the schedule. That is a scheduler decision,
+not a client one.
+
+**Owner.** Backend, and only if the product wants it.
+
+### The trip map
+
+**What.** Frame `3464-18946`: numbered pins, a route line following roads, day tabs and a
+stop rail.
+
+**Why parked.** The map itself has been parked since phase 3 — no tiles provider, no
+decision on one. The route line is separately impossible: the app records that Mapbox
+Directions forbids storing results, so every view would be a billable request, and that the
+thin connectors drawn in the frame are decorative rather than a route.
+
+**What phase 5 ships instead.** A placeholder **panel**, not a removed toggle. Unlike
+Explore — where Map was a toggle on a list and dropping it cost nothing — this is a
+designed screen with its own day tabs and its own stop rail, so removing the toggle would
+delete a named destination. The tabs and the rail are real data and render; only the map
+surface says what is missing.
+
+**What unparks it.** A tiles provider, and a decision about the route line separate from it.
+
+**Owner.** The owner.
+
+### The search box in the add-to-trip panel — NOT parked, and why the distinction matters
+
+Recorded because it was parked in the brief and unparked on inspection, and the reasoning
+is worth keeping.
+
+The frame's placeholder reads "Search places and experiences in Cyprus", which is the
+catalogue-wide semantic search that has no client-reachable endpoint — migration 0028
+revoked both vector RPCs to `service_role`. That search is still parked, in the header and
+the footer, where it was parked in phase 1.
+
+**This box is a different thing wearing the same word.** The panel has already loaded the
+146 plannable places; the box filters a list in memory. It needs no endpoint, it is what
+the app does at the same spot — *"the same plain, client-side substring match as Explore's
+search, NOT the semantic search blocked on home. Do not conflate the two"* — and it is
+about fifteen lines.
+
+**Owner.** Done.
 
 ## Content gaps
 
@@ -742,12 +946,13 @@ it. Both URLs 301 to `/` from the Worker, so it degrades to a wrong-but-not-brok
 
 ## Copy and translation
 
-### 141 English-only interface strings
+### 219 English-only interface strings
 
-**What.** The rebuild has introduced 141 `ui_*` strings the vanilla dictionary never had —
+**What.** The rebuild has introduced 219 `ui_*` strings the vanilla dictionary never had —
 62 in phase 1, 21 in phase 2 for the homepage rails, 30 in phase 3 for Explore and the place
-page, and 29 in phase 4 for Ask Pete, less one phase-1 string that was deleted rather than
-translated because it said Ask Pete was unavailable on the web. They render English in all five
+page, 29 in phase 4 for Ask Pete, and 78 in phase 5 for Build My Trip, less one phase-1
+string that was deleted rather than translated because it said Ask Pete was unavailable on
+the web. They render English in all five
 languages via the fallback the switcher already used.
 
 **Pete's own replies are not in this count and never will be.** They are model output,
@@ -787,20 +992,16 @@ whether "My CyprusWay" is a product name that stays English in every language. A
 
 ## Defects awaiting a scheduling decision
 
-### `useDialog` steals focus when the parent re-renders
+### `useDialog` steals focus when the parent re-renders — FIXED in phase 2
 
-**What.** Not a parked feature — a phase-1 bug, recorded here so it has a home if it is not
-fixed in phase 2.
+Kept because the entry outlived the bug and said so for three phases.
 
-`src/components/ui/useDialog.ts` lists `onClose` in its effect dependencies, and both call
-sites pass a fresh arrow every render. Any parent re-render therefore re-runs the whole open
-sequence: focus is pulled back to the dialog's first item, and the scroll-lock class is
-removed and re-added.
+`useDialog` listed `onClose` in its effect dependencies while both call sites passed a
+fresh arrow every render, so any parent re-render re-ran the whole open sequence: focus
+pulled back to the dialog's first item, scroll lock removed and re-added. Phase 2 held
+`onClose` in a ref and dropped it from the dependency array; the comment explaining why is
+in `src/components/ui/useDialog.ts`.
 
-Reproduced in Chrome: with focus on "Give feedback" at the bottom of the drawer, changing
-the language from inside the drawer moved focus back to the first navigation row.
-
-Low severity, four-line fix — hold `onClose` in a ref and drop it from the dependency
-array. Phase-2 plan Q6.
-
-**Owner.** Web.
+Confirmed still fixed in phase 5, which needed it: the add-to-trip drawer's parent
+re-renders on every pending-state change during a save, and an effect keyed on `onClose`
+would have yanked focus to the first control on each one.

@@ -192,3 +192,21 @@
 .noPhoto .name {
   color: var(--cw-navy);
 }
+
+/* ---- Selected, on the trip picker -------------------------------------------
+   The card is a button there rather than a link. A gold ring carries the choice, and
+   `aria-pressed` carries it non-visually — nothing depends on seeing the colour. Raw gold
+   would be 2.32 against the sand the grid sits on; gold-link clears the 3:1 that WCAG
+   1.4.11 asks of a state indicator.
+   contrast: --cw-gold-link on --cw-sand = 4.96 (graphic) */
+.card.selected {
+  outline: 3px solid var(--cw-gold-link);
+  outline-offset: 2px;
+}
+
+/* The button reset the card needs when it is not a link. */
+.card {
+  appearance: none;
+  text-align: start;
+  font: inherit;
+}

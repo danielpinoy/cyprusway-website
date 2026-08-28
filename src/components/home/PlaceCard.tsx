@@ -40,22 +40,77 @@ const SLOTS: Record<PlaceCardSize, { width: number; height: number }> = {
  * than a stock photograph of a taverna would. It reads as an editorial card, which is what
  * it is.
  */
-export function PlaceCard({ place, size }: { place: Place; size: PlaceCardSize }) {
+export function PlaceCard({
+  place,
+  size,
+  select,
+}: {
+  place: Place;
+  size: PlaceCardSize;
+  /**
+   * Present on the trip picker, absent everywhere else.
+   *
+   * The same card does two jobs — navigate, or be chosen — and they are the same card:
+   * one photograph, one no-photo fallback, one set of measured contrast annotations. A
+   * second component would be a copy of the fallback treatment, which is the part most
+   * likely to drift.
+   */
+  select?: { selected: boolean; disabled?: boolean; onToggle: () => void } | undefined;
+}) {
   const { lang } = useI18n();
 
   const region = localised(place.regionName, lang);
   const category = localised(place.categoryName, lang);
   const slot = SLOTS[size];
-  const CategoryGlyph = categoryIcon(place.categorySlug);
 
   const label = region ? `${place.name}, ${region}` : place.name;
+  const className = [
+    styles.card,
+    styles[size],
+    place.heroUrl ? '' : styles.noPhoto,
+    select?.selected ? styles.selected : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  if (select) {
+    return (
+      <button
+        type="button"
+        className={className}
+        aria-pressed={select.selected}
+        aria-label={label}
+        disabled={select.disabled ?? false}
+        onClick={select.onToggle}
+      >
+        <Body place={place} slot={slot} region={region} category={category} />
+      </button>
+    );
+  }
 
   return (
-    <Link
-      to={`/place/${place.slug}`}
-      className={`${styles.card} ${styles[size]} ${place.heroUrl ? '' : styles.noPhoto}`}
-      aria-label={label}
-    >
+    <Link to={`/place/${place.slug}`} className={className} aria-label={label}>
+      <Body place={place} slot={slot} region={region} category={category} />
+    </Link>
+  );
+}
+
+/** The card's contents, shared by the link and the selectable button so the no-photo
+ *  fallback and its measured treatment exist once. */
+function Body({
+  place,
+  slot,
+  region,
+  category,
+}: {
+  place: Place;
+  slot: { width: number; height: number };
+  region: string;
+  category: string;
+}) {
+  const CategoryGlyph = categoryIcon(place.categorySlug);
+  return (
+    <>
       {place.heroUrl ? (
         <img
           className={styles.photo}
@@ -99,6 +154,6 @@ export function PlaceCard({ place, size }: { place: Place; size: PlaceCardSize }
           </h3>
         </div>
       </div>
-    </Link>
+    </>
   );
 }
