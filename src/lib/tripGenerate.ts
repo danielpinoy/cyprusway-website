@@ -20,6 +20,15 @@ import { fetchPlannerProfile, type PlannerProfile } from './profile';
  * of the day's three, and **there is no refund path** — decision-log entry 63 ruled one
  * and nothing was built. So every failure this file reports has to say whether it counted.
  *
+ * WHETHER IT COUNTED IS MEASURED, NOT INFERRED FROM THE STATUS CODE. A 500 can come from
+ * `profile fetch failed` (before the counter) or `persist failed` (long after it); a
+ * thrown `fetch` can mean the request never left or that the socket dropped with the
+ * model mid-sentence. The status code cannot tell those apart. The counter row can:
+ * `consume_trip_generation` writes `trip_generations_today` and `_reset_at` on every
+ * allow, so the row is read before the request and again after the ending, and **the
+ * attempt counted if and only if the row moved**. That comparison is the source of every
+ * "that attempt counted" and every "trying again is safe" the screen shows.
+ *
  * THE ROW IS WRITTEN BEFORE THE RESPONSE. `persistItinerary` INSERTs the itinerary and
  * `itinerary_id` in the 200 is that row's id. That is why an ambiguous ending — a
  * timeout, a dropped socket, a 5xx — is answered by looking for the row rather than by
@@ -40,7 +49,9 @@ const TRIP_GENERATE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tri
  * Two `gpt-4.1-mini` completions plus an embedding set the band, not trip length — the
  * 14-day trip sat in the middle at 37 s. **Neither OpenAI call carries a timeout or an
  * abort signal** (`llm.ts:109`, `index.ts:2348`), so the only real ceilings are OpenAI's
- * own and the platform's per-request wall clock (150 s on the Supabase Free plan).
+ * own and the platform's per-request wall clock — 150 s on the Supabase Free plan
+ * according to prior reports; the project's plan is not exposed by the Management API, so
+ * that figure is unverified for this project.
  *
  * 120 s, not the app's 90. 57.4 s is the maximum of fourteen samples rather than a
  * ceiling, and giving up early produces the worst ending available: the generation is
@@ -62,14 +73,25 @@ export const GENERATE_TIMEOUT_MS = 120_000;
  * flight, the single read returns nothing, and the user is told "no trip was created"
  * by a query fired too early to know — while the row appears a second later.
  *
- * Four reads over fifteen seconds close that window. They are indexed reads of the
- * caller's own rows under RLS, so the cost is negligible and the alternative is a false
- * statement produced by timing.
+ * Four reads over fifteen seconds narrow that window; they do not close it, because
+ * nothing bounds how long the server takes. That is why the copy for this ending stays
+ * conditional — "if the plan finishes, it will be in My Trips" — rather than asserting
+ * either outcome. The reads are indexed reads of the caller's own rows under RLS.
  */
 const RECOVERY_SCHEDULE_MS: readonly number[] = [0, 3_000, 8_000, 15_000];
 
 /** After this long the waiting copy changes. Past the median, well short of the bound. */
 export const GENERATE_SLOW_AFTER_MS = 45_000;
+
+/**
+ * How long the token read in front of the request may take.
+ *
+ * `getSession()` goes to the network when the token needs refreshing, and phase 5 found
+ * the shape this guards against: one await that never settles leaves the screen in its
+ * busy state for as long as the tab is open, with no timeout ever armed because the
+ * timeout is set *after* the token. Same value as the editor's `TOKEN_TIMEOUT_MS`.
+ */
+const TOKEN_TIMEOUT_MS = 8_000;
 
 /** `interest_tags` takes 1–5 slugs; a sixth is a 400 (probed). */
 export const MAX_INTEREST_TAGS = 5;
@@ -79,7 +101,9 @@ export const MAX_INTEREST_TAGS = 5;
  *
  * A client cannot read it — `consume_trip_generation` is `service_role` only — so this is
  * a documented default and nothing more. The real number rides the 429, and the moment one
- * arrives it replaces this for the rest of the session.
+ * arrives it replaces this for the rest of the session. It is also the one number on the
+ * Premium explanation that is a claim rather than a reading, because a free account can
+ * never receive the 429 that would correct it.
  */
 export const TRIP_GENERATION_DAILY_CAP = 3;
 
@@ -107,6 +131,8 @@ export const EMPTY_DRAFT: TripDraft = {
   childAgeRange: null,
 };
 
+/** Shape only. Date ordering, the span bound and the earliest start are the wizard's to
+ *  check — they need today's date, which this module deliberately does not compute. */
 export function draftComplete(draft: TripDraft): boolean {
   return (
     draft.startIso != null &&
@@ -118,20 +144,23 @@ export function draftComplete(draft: TripDraft): boolean {
 }
 
 /**
- * One per ending, because they need different things from the reader — and because three
- * of them cost a generation and four do not, which is the distinction the copy turns on.
+ * One per ending, because they need different things from the reader.
  *
- * | kind | counted? | why |
- * |---|---|---|
- * | `premium`    | no  | 403, and the gate precedes the counter |
- * | `account`    | no  | 403, anonymous session — unreachable on this site |
- * | `quota`      | no  | 429; migration 0047 rejects without incrementing |
- * | `invalid`    | no  | 400, before auth. A defect on this side — everything is pre-validated |
- * | `auth`       | no  | 401 |
- * | `generation` | **yes** | 422 after the model ran. Retry is legitimate |
- * | `server`     | **yes** | 5xx, or a 200 whose id could not be resolved |
- * | `slow`       | **probably** | our own 120 s abort; the server may still be working |
- * | `offline`    | no  | `fetch` threw before any response, and the re-query found nothing |
+ * Whether the attempt counted is NOT encoded here — it is `consumed` on the state, and it
+ * is measured (see the header). What the kind carries is what the server said, or that it
+ * said nothing:
+ *
+ * | kind | what happened |
+ * |---|---|
+ * | `premium`    | 403, the gate. Before the counter, so never consumed |
+ * | `account`    | 403, anonymous session — unreachable on this site |
+ * | `quota`      | 429; migration 0047 rejects without incrementing |
+ * | `invalid`    | 400, before auth. A defect on this side — everything is pre-validated |
+ * | `auth`       | 401, or no session to send |
+ * | `generation` | 422 after the model ran. The server says no trip; retry is legitimate |
+ * | `server`     | 5xx, or a 200 whose id could not be resolved |
+ * | `slow`       | no answer we could use, and the counter moved — the server may still be working |
+ * | `offline`    | no answer we could use, and the counter did not move — nothing was spent |
  */
 export type GenerationFailure =
   | 'premium'
@@ -143,17 +172,6 @@ export type GenerationFailure =
   | 'server'
   | 'slow'
   | 'offline';
-
-/** Whether this ending spent one of the day's allowance. `slow` is deliberately absent —
- *  it is "probably", and its copy says so rather than asserting either way. */
-const COUNTED: ReadonlySet<GenerationFailure> = new Set<GenerationFailure>([
-  'generation',
-  'server',
-]);
-
-export function failureCounted(kind: GenerationFailure): boolean {
-  return COUNTED.has(kind);
-}
 
 export interface QuotaReport {
   remaining: number;
@@ -179,10 +197,19 @@ export type GenerationState =
   | {
       phase: 'error';
       kind: GenerationFailure;
+      /**
+       * Whether this attempt spent one of the day's allowance — **measured** by comparing
+       * the counter row before and after (see the header). `null` when a read failed and
+       * the comparison could not be made; the copy then says so rather than guessing.
+       */
+      consumed: boolean | null;
       /** Set when the recovery re-query found a row written by this attempt. */
-      recoveredTripId?: string;
-      /** Re-read after the attempt. Certain whenever the attempt consumed. */
+      recoveredTripId: string | null;
+      /** Re-read after the attempt. Certain whenever the attempt is known to have consumed. */
       quota: QuotaReport | null;
+      /** The counter row as re-read after the attempt, for the wizard to adopt — the row it
+       *  read at entry is stale the moment anything is spent. Null if the re-read failed. */
+      profile: PlannerProfile | null;
     };
 
 const IDLE: GenerationState = { phase: 'idle' };
@@ -197,15 +224,22 @@ let state: GenerationState = IDLE;
 const listeners = new Set<() => void>();
 
 /**
- * The last Cyprus day the server named, this session.
+ * A day the server has named as "today", this session — or null.
  *
- * Set from a 429's `quota_day`, and from the counter row after any response that consumed
- * — because `consume_trip_generation` writes `trip_generations_reset_at = v_day` on every
- * branch it takes, so a row re-read straight after a consuming call carries the server's
- * own today. That is the only way this client ever learns the date, and it never computes
- * one.
+ * Set from a 429's `quota_day`, and from the counter row after an attempt that is known
+ * to have consumed: `consume_trip_generation` writes `trip_generations_reset_at = v_day`
+ * on every allow, so a row re-read straight after a consuming call carries the server's
+ * own today. Those are the only two ways this client ever learns the date, and it never
+ * computes one. A plain read of the row does NOT set it — a stored day is a day the count
+ * belongs to, not evidence of what day it is now.
+ *
+ * KNOWN LIMIT, stated rather than hidden: a session that spans Cyprus midnight keeps the
+ * day it learned before it. A count read after that is reported as certain and overstates
+ * usage by yesterday's spend until the next 429 or consuming call corrects it. It can never
+ * understate, and nothing on the screen is disabled on the strength of it — the server is
+ * the authority and a refusal costs nothing.
  */
-let serverDay: string | null = null;
+let knownToday: string | null = null;
 
 /** Replaces the coded default the moment a 429 states the real number. */
 let knownCap: number | null = null;
@@ -255,41 +289,43 @@ function capFor(used: number): number {
 /**
  * What the counter row means, given what the server has said about the day.
  *
- * `assumeToday` is set by the caller in exactly one situation: the row was re-read
- * immediately after a response that consumed. `consume_trip_generation` writes today's
- * Cyprus day on every branch, so at that moment the row's own `reset_at` **is** the
- * server's today — no derivation, no guess, and the count becomes exact.
+ * `justConsumed` is set by the caller in exactly one situation: the row was re-read after
+ * an attempt the before/after comparison proved to have consumed. At that moment the row's
+ * own `reset_at` **is** the server's today — written by the RPC, not derived here — and
+ * the count is exact.
  */
 export function quotaFromProfile(
   profile: PlannerProfile,
-  options: { assumeToday?: boolean } = {},
+  options: { justConsumed?: boolean } = {},
 ): QuotaReport {
   const used = profile.generationsToday ?? 0;
   const rowDay = parseDay(profile.generationsResetAt);
-
-  if (options.assumeToday && rowDay) {
-    serverDay = rowDay;
-  }
-
   const cap = capFor(used);
-  const day = serverDay ?? rowDay;
 
-  if (serverDay == null) {
+  if (options.justConsumed && rowDay) knownToday = rowDay;
+
+  if (knownToday == null || rowDay == null) {
     /* No day from the server yet. The count is a floor, not a fact — the lazy reset may
        not have run — so it is reported uncertain and the caller must not lock anything on
        it. A refusal costs nothing and the 429 carries the day that settles it. */
-    return { remaining: Math.max(0, cap - used), cap, day, certain: false };
+    return { remaining: Math.max(0, cap - used), cap, day: rowDay, certain: false };
   }
 
-  /* A stored day older than the server's today means the count is spent and the reset has
-     simply not run yet: the full cap is available. */
-  const stale = rowDay != null && rowDay < serverDay;
-  return {
-    remaining: stale ? cap : Math.max(0, cap - used),
-    cap,
-    day: serverDay,
-    certain: true,
-  };
+  if (rowDay < knownToday) {
+    /* The row belongs to a day before one the server has called today, so the count is
+       spent and the reset has simply not run yet: the full cap is available. */
+    return { remaining: cap, cap, day: knownToday, certain: true };
+  }
+
+  if (rowDay > knownToday) {
+    /* Written on a later day than the last one the server named to us — another device,
+       or a session that crossed midnight and generated from the app. The RPC only ever
+       writes today's day, so today is at least `rowDay`; whether it is exactly `rowDay` is
+       not knowable from here, and the count is reported as a floor. */
+    return { remaining: Math.max(0, cap - used), cap, day: rowDay, certain: false };
+  }
+
+  return { remaining: Math.max(0, cap - used), cap, day: rowDay, certain: true };
 }
 
 /** The day after the one a count belongs to — when the next allowance appears, Cyprus
@@ -298,6 +334,26 @@ export function dayAfter(day: string): string {
   const [y, m, d] = day.split('-').map(Number) as [number, number, number];
   const next = new Date(Date.UTC(y, m - 1, d + 1));
   return next.toISOString().slice(0, 10);
+}
+
+/**
+ * Did the attempt spend an allowance? The row says.
+ *
+ * `consume_trip_generation` writes `trip_generations_today = v_today + 1` and
+ * `_reset_at = v_day` on every allow (migration 0047) — so if either column differs
+ * between the read before the request and the read after the ending, the RPC allowed a
+ * generation in between. If both are identical, it did not: a rejection writes the same
+ * count back, and a request that never reached the RPC writes nothing.
+ *
+ * Null when either read failed. The screen then says the count could not be confirmed
+ * rather than picking a side.
+ */
+function counterMoved(before: PlannerProfile, after: PlannerProfile): boolean | null {
+  if (before.access === 'unknown' || after.access === 'unknown') return null;
+  return (
+    before.generationsToday !== after.generationsToday ||
+    before.generationsResetAt !== after.generationsResetAt
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -309,9 +365,17 @@ interface ItineraryStamp {
   created_at: string;
 }
 
-/** Newest trip this account owns. RLS scopes it; no user filter is needed and none is
- *  added, matching `lib/trips.ts`. */
-async function latestItinerary(): Promise<ItineraryStamp | null> {
+/**
+ * The newest trip the account owns, or that there is none — kept apart from "the read
+ * failed". They used to collapse into one `null`, and the recovery treated both as
+ * "compare against nothing", so a failed snapshot on an account with existing trips would
+ * have "recovered" its most recent old one and announced it as just created. The app's
+ * `latestItinerary` has the same collapse.
+ */
+type Snapshot = { ok: true; newest: ItineraryStamp | null } | { ok: false };
+
+/** RLS scopes it; no user filter is needed and none is added, matching `lib/trips.ts`. */
+async function snapshotItineraries(): Promise<Snapshot> {
   try {
     const { data, error } = await getSupabase()
       .from('itineraries')
@@ -321,12 +385,12 @@ async function latestItinerary(): Promise<ItineraryStamp | null> {
       .returns<ItineraryStamp[]>();
     if (error) {
       console.warn('[planner] itineraries snapshot failed:', error.message);
-      return null;
+      return { ok: false };
     }
-    return data?.[0] ?? null;
+    return { ok: true, newest: data?.[0] ?? null };
   } catch (error) {
     console.warn('[planner] itineraries snapshot threw:', error);
-    return null;
+    return { ok: false };
   }
 }
 
@@ -337,17 +401,24 @@ const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, 
  * client that gave up while the server was still writing.
  *
  * `poll: false` for an ending the server has already answered (a 5xx): nothing is in
- * flight, so one read is the whole answer.
+ * flight, so one read is the whole answer. With no usable snapshot there is nothing to
+ * compare a row against, so the search is skipped — but the schedule's wait is still
+ * honoured when polling, because the counter comparison that follows needs the same time
+ * for the RPC to have run.
  */
-async function findRecoveredTrip(
-  before: ItineraryStamp | null,
-  poll: boolean,
-): Promise<string | null> {
+async function findRecoveredTrip(before: Snapshot, poll: boolean): Promise<string | null> {
   const schedule = poll ? RECOVERY_SCHEDULE_MS : [0];
+  if (!before.ok) {
+    if (poll) await wait(schedule[schedule.length - 1] ?? 0);
+    return null;
+  }
   for (const delay of schedule) {
     if (delay > 0) await wait(delay);
-    const fresh = await latestItinerary();
-    if (fresh && (!before || fresh.created_at > before.created_at)) return fresh.id;
+    const fresh = await snapshotItineraries();
+    if (!fresh.ok || !fresh.newest) continue;
+    if (!before.newest || fresh.newest.created_at > before.newest.created_at) {
+      return fresh.newest.id;
+    }
   }
   return null;
 }
@@ -355,6 +426,18 @@ async function findRecoveredTrip(
 // ---------------------------------------------------------------------------
 // The request
 // ---------------------------------------------------------------------------
+
+/** Distinguishable from any value the promise could resolve to, including null. */
+const TIMED_OUT = Symbol('timed-out');
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | typeof TIMED_OUT> {
+  return Promise.race([
+    promise,
+    new Promise<typeof TIMED_OUT>((resolve) => {
+      setTimeout(() => resolve(TIMED_OUT), ms);
+    }),
+  ]);
+}
 
 function buildBody(draft: TripDraft): Record<string, unknown> {
   /* Exactly the five accepted keys, and never a sixth: the accepted set is closed and an
@@ -391,28 +474,73 @@ function readError(payload: unknown): { code: string | null; detail: unknown } {
   };
 }
 
-/** Re-read the counter after an attempt. `consumed` says whether the RPC ran, which is
- *  what makes the number exact rather than a floor. */
-async function quotaAfter(
-  userId: string,
-  consumed: boolean,
-): Promise<QuotaReport | null> {
-  const profile = await fetchPlannerProfile(userId);
-  if (profile.access === 'unknown') return null;
-  return quotaFromProfile(profile, { assumeToday: consumed });
-}
-
-async function fail(
+/**
+ * An ending the server answered before the counter: 400, 401, 403, 429. Nothing was
+ * spent, and the row is re-read only so the wizard has a fresh one to go back to.
+ */
+async function settleBeforeCounter(
   kind: GenerationFailure,
   userId: string,
-  recoveredTripId?: string,
+  quotaFromWire: QuotaReport | null,
 ): Promise<void> {
-  const quota = await quotaAfter(userId, failureCounted(kind) || kind === 'slow');
-  setState(
-    recoveredTripId
-      ? { phase: 'error', kind, recoveredTripId, quota }
-      : { phase: 'error', kind, quota },
-  );
+  const after = await fetchPlannerProfile(userId);
+  const fresh = after.access === 'unknown' ? null : after;
+  setState({
+    phase: 'error',
+    kind,
+    consumed: false,
+    recoveredTripId: null,
+    quota: quotaFromWire ?? (fresh ? quotaFromProfile(fresh) : null),
+    profile: fresh,
+  });
+}
+
+/**
+ * Every ending that happened — or may have happened — after the counter. Whether it
+ * counted is measured; whether a row exists is looked for; and the kind is settled from
+ * the evidence rather than from the status code alone:
+ *
+ *  - a row exists → recovered, whatever the wire said
+ *  - the counter moved and there is no row → `answered` stands (422 → generation, 5xx →
+ *    server), or `slow` when the server never answered and may still be working
+ *  - the counter did not move → nothing was spent, and the ending becomes `offline`
+ *    unless the server itself answered (a 422 or 5xx before the counter keeps its kind,
+ *    with `consumed: false` so the copy says it did not count)
+ *  - a read failed → `consumed: null`, and the copy says the count could not be confirmed
+ */
+async function settleAfterCounter(
+  answered: 'generation' | 'server' | null,
+  userId: string,
+  before: PlannerProfile,
+  snapshot: Snapshot,
+): Promise<void> {
+  /* Poll only when the server never answered — then the persist may still be in flight.
+     After a 5xx or a 422 the handler has returned and one read is the whole answer. */
+  const recoveredTripId = await findRecoveredTrip(snapshot, answered === null);
+
+  const after = await fetchPlannerProfile(userId);
+  const consumed = counterMoved(before, after);
+  const fresh = after.access === 'unknown' ? null : after;
+  const quota = fresh ? quotaFromProfile(fresh, { justConsumed: consumed === true }) : null;
+
+  let kind: GenerationFailure;
+  if (answered) {
+    /* The server spoke. A 5xx after a spend with no usable snapshot is the one case where
+       a row might exist unseen (`persist failed` is the ambiguous detail), so it takes the
+       conditional copy rather than "no new trip appeared". */
+    kind = answered === 'server' && consumed === true && !snapshot.ok ? 'slow' : answered;
+  } else {
+    kind = consumed === false ? 'offline' : 'slow';
+  }
+
+  setState({
+    phase: 'error',
+    kind,
+    consumed,
+    recoveredTripId,
+    quota,
+    profile: fresh,
+  });
 }
 
 /**
@@ -424,22 +552,44 @@ async function fail(
 export async function startGeneration(userId: string, draft: TripDraft): Promise<void> {
   if (state.phase === 'running') return;
   if (!draftComplete(draft)) {
-    setState({ phase: 'error', kind: 'invalid', quota: null });
+    setState({
+      phase: 'error',
+      kind: 'invalid',
+      consumed: false,
+      recoveredTripId: null,
+      quota: null,
+      profile: null,
+    });
     return;
   }
 
   setState({ phase: 'running', startedAt: Date.now() });
 
-  const token = await currentAccessToken();
-  if (!token) {
-    await fail('auth', userId);
+  const token = await withTimeout(currentAccessToken(), TOKEN_TIMEOUT_MS);
+  if (token === TIMED_OUT || !token) {
+    /* Nothing was sent, so nothing was spent — `offline` for the hung refresh and `auth`
+       for a session that is simply gone. The profile is not re-read: the network is the
+       thing in doubt on the first, and there is no session to read with on the second. */
+    console.warn('[planner] no token:', token === TIMED_OUT ? 'session read timed out' : 'no session');
+    setState({
+      phase: 'error',
+      kind: token === TIMED_OUT ? 'offline' : 'auth',
+      consumed: false,
+      recoveredTripId: null,
+      quota: null,
+      profile: null,
+    });
     return;
   }
 
-  /* Snapshot before the request. Every ambiguous ending is resolved against this: a row
-     newer than it means the generation happened and was paid for, whatever the wire said
-     or failed to say. */
-  const before = await latestItinerary();
+  /* Two snapshots before the request, in parallel. The counter row is what decides
+     whether the attempt counted; the newest itinerary is what every ambiguous ending is
+     resolved against — a row newer than it means the generation happened and was paid
+     for, whatever the wire said or failed to say. */
+  const [before, snapshot] = await Promise.all([
+    fetchPlannerProfile(userId),
+    snapshotItineraries(),
+  ]);
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), GENERATE_TIMEOUT_MS);
@@ -458,19 +608,15 @@ export async function startGeneration(userId: string, draft: TripDraft): Promise
     });
   } catch (error) {
     clearTimeout(timer);
-    /* The two are not the same ending and the app conflates them. Our own abort means the
-       server had 120 seconds and may still be working — the allowance is gone and a retry
-       would spend a second one. A `fetch` that threw on its own never reached the server,
-       so nothing was spent and a retry is safe — but only after looking, because "never
-       reached the server" is an assumption until the re-query agrees. */
-    const timedOut = controller.signal.aborted;
-    const recovered = await findRecoveredTrip(before, timedOut);
-    if (recovered) {
-      await fail(timedOut ? 'slow' : 'offline', userId, recovered);
-      return;
-    }
-    if (!timedOut) console.warn('[planner] transport failure:', error);
-    await fail(timedOut ? 'slow' : 'offline', userId);
+    /* Our own abort and a thrown fetch are the same ending to this client: no answer it
+       can use. Neither says whether the request reached the server — a socket can drop
+       with the model mid-sentence — so neither is allowed to say "nothing was spent".
+       The counter decides (see settleAfterCounter). */
+    console.warn(
+      '[planner] no usable answer:',
+      controller.signal.aborted ? `aborted at ${GENERATE_TIMEOUT_MS} ms` : error,
+    );
+    await settleAfterCounter(null, userId, before, snapshot);
     return;
   }
   clearTimeout(timer);
@@ -495,13 +641,8 @@ export async function startGeneration(userId: string, draft: TripDraft): Promise
       setState({ phase: 'success', tripId: id });
       return;
     }
-    const recovered = await findRecoveredTrip(before, false);
-    if (recovered) {
-      setState({ phase: 'success', tripId: recovered });
-      return;
-    }
     console.warn('[planner] 200 with no resolvable itinerary id');
-    await fail('server', userId);
+    await settleAfterCounter('server', userId, before, snapshot);
     return;
   }
 
@@ -513,49 +654,43 @@ export async function startGeneration(userId: string, draft: TripDraft): Promise
       /* Every rule this endpoint enforces is pre-validated in the wizard, so a 400 is a
          defect on this side rather than something the reader did. Logged as one. */
       console.error('[planner] request refused by validation — client defect:', detail);
-      await fail('invalid', userId);
+      await settleBeforeCounter('invalid', userId, null);
       return;
     case 401:
-      await fail('auth', userId);
+      await settleBeforeCounter('auth', userId, null);
       return;
     case 403:
       /* Told apart by `error`, which is what the two codes exist for (entry 5).
          `account_required` needs an anonymous session and this site creates none. */
-      await fail(code === 'account_required' ? 'account' : 'premium', userId);
+      await settleBeforeCounter(code === 'account_required' ? 'account' : 'premium', userId, null);
       return;
     case 429: {
       const record = (payload ?? {}) as Record<string, unknown>;
       const day = parseDay(record.quota_day);
-      if (day) serverDay = day;
+      if (day) knownToday = day;
       if (typeof record.daily_cap === 'number' && record.daily_cap > 0) {
         knownCap = record.daily_cap;
       }
-      const remaining = typeof record.remaining === 'number' ? record.remaining : 0;
       /* Authoritative, all three of them, and nothing was consumed — 0047 rejects an
          over-cap call without incrementing. */
-      setState({
-        phase: 'error',
-        kind: 'quota',
-        quota: {
-          remaining,
-          cap: knownCap ?? TRIP_GENERATION_DAILY_CAP,
-          day,
-          certain: day != null,
-        },
+      await settleBeforeCounter('quota', userId, {
+        remaining: typeof record.remaining === 'number' ? record.remaining : 0,
+        cap: knownCap ?? TRIP_GENERATION_DAILY_CAP,
+        day,
+        certain: day != null,
       });
       return;
     }
     case 422:
-      /* After the model ran, and after `:1567`. The attempt counted; the copy says so. */
-      await fail('generation', userId);
+      /* After the model ran. The server says no trip; whether the allowance went with it
+         is measured, not assumed. */
+      await settleAfterCounter('generation', userId, before, snapshot);
       return;
-    default: {
-      /* 500 and 502. A 5xx can land after the row was persisted — `persist failed` is the
-         ambiguous one — so look before saying anything. One read: the server has already
-         answered, so nothing is in flight. */
-      const recovered = await findRecoveredTrip(before, false);
-      await fail('server', userId, recovered ?? undefined);
+    default:
+      /* 500 and 502. `profile fetch failed` lands before the counter and `persist failed`
+         long after it, with the same status — and the second can leave a row behind. Both
+         questions are answered by looking rather than by the code. */
+      await settleAfterCounter('server', userId, before, snapshot);
       return;
-    }
   }
 }

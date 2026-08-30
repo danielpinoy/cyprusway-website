@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 
 import { useSession } from '../../lib/SessionProvider';
@@ -31,6 +31,9 @@ function useCardPreview(): 'signin' | 'signup' | 'interests' | null {
 }
 
 const PREVIEW_USER = { id: 'preview' } as User;
+
+/** Which card is up. One object per change of card, so the exit can hold the last one. */
+type Card = { kind: 'interests'; user: User } | { kind: 'auth'; mode: 'signin' | 'signup' };
 
 /**
  * Owns which of the two cards is on screen.
@@ -67,36 +70,50 @@ export function AuthGate() {
   const showInterests =
     (preview === 'interests' || (Boolean(user) && needsOnboarding)) && !interestsDismissed;
   const interestsUser = user ?? (preview === 'interests' ? PREVIEW_USER : null);
+  const cardMode = authMode ?? (preview === 'signin' || preview === 'signup' ? preview : null);
 
-  if (showInterests && interestsUser) {
-    return (
-      <Modal
-        open
-        size="interests"
-        labelledBy={TITLE_ID}
-        onClose={() => setInterestsDismissed(true)}
-      >
+  /* Memoised on its inputs so its identity only changes when the card does — the effect
+     below keys on it, and a fresh object every render would re-run that effect every
+     render. `user` is the provider's state object and is stable between session changes. */
+  const card = useMemo<Card | null>(() => {
+    if (showInterests && interestsUser) return { kind: 'interests', user: interestsUser };
+    if (cardMode) return { kind: 'auth', mode: cardMode };
+    return null;
+  }, [showInterests, interestsUser, cardMode]);
+
+  /* The card that was last up, kept so the exit has something to fade out. Two Modals
+     used to be mounted and unmounted here as the card changed, which meant the surface
+     left the document in the same frame it closed and nothing could animate. Now there is
+     one Modal, it stays mounted from its first open (see useKeepMounted), and while
+     `card` is null it renders the last card, inert, for the 200 ms the exit takes. This
+     is data — which card — not a closing phase; no timer decides when it ends. */
+  const [lastCard, setLastCard] = useState<Card | null>(null);
+  useEffect(() => {
+    if (card) setLastCard(card);
+  }, [card]);
+
+  const shown = card ?? lastCard;
+  if (!shown) return null;
+
+  return (
+    <Modal
+      open={card !== null}
+      size={shown.kind === 'interests' ? 'interests' : 'auth'}
+      labelledBy={TITLE_ID}
+      onClose={shown.kind === 'interests' ? () => setInterestsDismissed(true) : closeAuth}
+    >
+      {shown.kind === 'interests' ? (
         <InterestsScreen
-          user={interestsUser}
+          user={shown.user}
           titleId={TITLE_ID}
           /* No browse surface exists, so saving closes the card and leaves the visitor
              on the command centre, signed in — with Top Recommendations re-ranked by the
              selection they just made, without a refetch. */
           onSaved={(selected) => completeOnboarding([...selected])}
         />
-      </Modal>
-    );
-  }
-
-  const cardMode = authMode ?? (preview === 'signin' || preview === 'signup' ? preview : null);
-
-  if (cardMode) {
-    return (
-      <Modal open size="auth" labelledBy={TITLE_ID} onClose={closeAuth}>
-        <AuthCard mode={cardMode} titleId={TITLE_ID} initialError={authFailed} />
-      </Modal>
-    );
-  }
-
-  return null;
+      ) : (
+        <AuthCard mode={shown.mode} titleId={TITLE_ID} initialError={authFailed} />
+      )}
+    </Modal>
+  );
 }

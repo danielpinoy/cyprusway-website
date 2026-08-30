@@ -66,6 +66,73 @@ computes neither — in particular it never derives "today in Cyprus", which dec
 entry 64 lists as the first item in that change's blast radius. Absence of either field is
 treated as unknown rather than as five or as today.
 
+### The motion convention — built in phase 6
+
+The drawer, the auth card and the interests card appeared and vanished in one frame. Two
+reasons compounded: each surface was mounted only while open (`if (!open) return null`),
+so there was never a *before* state to transition from or a node left to animate out; and
+phase 1's plan specified a slide for the drawer (`WEB-PHASE-1-PLAN.md` §4 item 4,
+*"Its slide-in transform is `translateX(100%)` … decided at implementation"*) that was
+never implemented — the anchoring shipped, the transform did not. The frames specify
+nothing: `3562-23804` and its mirror `3558-20716` are static compositions with no motion
+data, so the convention below is a proposal that was accepted, not a transcription.
+
+**Three rules, and they are the whole convention.**
+
+1. **Motion is a transform or an opacity, never a layout property.** The drawer slides
+   with `translate`; the cards fade and settle from `scale: 0.98`. Nothing animates
+   `width`, `height` or an inset — those re-lay-out every frame on the phones the drawer
+   exists for.
+2. **A surface enters with `@starting-style` and leaves with a discrete `display`
+   transition — no JavaScript timer, no "closing" state in React.** From its first open a
+   surface stays mounted (`useKeepMounted`) and toggles `data-open` and `inert`.
+   `@starting-style` supplies the enter's before state; `transition-behavior:
+   allow-discrete` on `display` holds the exit visible until its 200 ms are up, then flips
+   to `none`. Chrome 117+, Safari 17.5+, Firefox 129+; older browsers paint the final state
+   at once, which is the correct fallback. `--cw-motion-surface: 200ms` is the one
+   duration; `--cw-transition` (160 ms) stays for hover states.
+3. **`prefers-reduced-motion` is honoured globally and nowhere else.** `global.css` clamps
+   every transition and animation to 0.01 ms under the query; anything added anywhere
+   inherits it. No per-component rule exists and none should be added — a second place
+   is a second place to forget. The exit does not depend on a real duration elapsing:
+   the `display` flip is part of the transition and completes in 0.01 ms like the rest.
+
+**The focus trap did not need to change, and the order is why.** `useDialog` focuses into
+the surface on the `open` flip. Because the slide is a transform, the panel is at its
+final layout position on that first frame — `offsetParent` is set, `focusables()` finds the
+items, focus lands on an element that is where it will be. On close the hook restores focus
+to the trigger on the same flip, while the surface is still leaving and already `inert`, so
+a Tab press during the exit cannot land inside it. The two ways this breaks are animating
+via `display: none → block` under a delay (frame one has no focusables) and a focus-driven
+scroll (irrelevant: the overlays are `position: fixed`).
+
+**What it took.** One CSS file per surface, one duration token, an eleven-line hook, and
+`AuthGate` going from two Modals it mounted and unmounted to one it keeps mounted and hands
+the last card to while the exit runs.
+
+**What was measured, and what was not — 30 Aug 2026.** The build keeps the rules (four
+`@starting-style` blocks and two `allow-discrete` in the minified stylesheet), and the
+browser parses them (`transition-behavior` computes to `normal, allow-discrete`). Driven
+from the automation tab: on open the drawer is `translate: 0px`, the scrim opacity 1,
+`display: block`, not inert, focus on the first navigation row; on close `translate:
+100%`, opacity 0, **`display: none`**, inert, still mounted, scroll lock released, focus
+back on the trigger; re-opening from `display: none` lands the same way; under
+`?dir=rtl` the panel anchors to the left edge and its slide is `-100%`. The interests card
+paints its first frame at opacity 0 and scale 0.98 — the `@starting-style` before-state —
+with focus on the second focusable, and on close is inert with a `display` transition
+registered. **The 200 ms tween itself was not observed:** the automation window was
+hidden (`visibilityState: "hidden"`, zero animation frames), and the machine has the OS
+reduce-motion setting on, which the global clamp turns into a computed duration of
+`1e-05s` — rule 3, working, but in the way of watching rule 2. First sighting is owed on a
+foreground window without reduce-motion; the end states are what a screen reader and the
+keyboard depend on, and those are the part that was measured.
+
+**What stayed parked, on purpose: the day accordion in the trip editor.** Animating height
+is rule 1's exception and needs `grid-template-rows: 0fr → 1fr` or measured heights, and
+the `hidden` attribute that makes the panel pop is also what removes it from the
+accessibility tree. The cost is real and the win is a 200 ms fold on a list of stops.
+It comes back only if a reader reports the pop as a fault.
+
 ### What phase 3 deliberately did **not** unpark: "View All" on the rails
 
 Phase 2 removed the frames' five "View All" links because they had nowhere to go, and wrote
@@ -678,6 +745,32 @@ would imply both.
 
 **Owner.** Backend, still.
 
+### The app's `latestItinerary` cannot tell a failed read from an empty list
+
+**What.** `cyprusway-app/src/lib/tripPlanner.ts:650`: `latestItinerary()` returns `null`
+both when the account has no trips and when the read failed — the error is logged and
+the same `null` comes back. `startGeneration` takes that as the pre-request snapshot, and
+`recoverOrFail` then decides with `!before || fresh.created_at > before.created_at`.
+
+**Why it is a defect.** On an account that already has trips, a snapshot read that fails —
+a blip on the wire before the request even goes out — makes `before` null, and any later
+ambiguous ending (transport error, 5xx, the 90 s abort) "recovers" whatever the newest
+*existing* row is and shows *"Your trip was created … that generation is already
+counted"* with a **View your trip** button that opens an old trip. Two claims, both false,
+on the screen whose entire purpose is not to make false claims about the spend.
+
+**Shipped.** This is in the app today. The web's client had the identical collapse until
+30 Aug 2026 and now carries a discriminated snapshot (`{ ok: true, newest } | { ok:
+false }`), with a failed snapshot disabling recovery-by-comparison rather than matching
+everything; `lib/tripGenerate.ts` is the reference.
+
+**The fix is the same shape there:** make `latestItinerary` return the failure as a
+distinct value, and in `recoverOrFail` treat "no snapshot" as "cannot tell", never as "no
+trips". Its copy for that case should be the conditional one — *check your trips* — not
+*your trip was created*.
+
+**Owner.** App.
+
 ### The app's generation recovery fires one query into the race it is trying to resolve
 
 **What.** Not a web defect — recorded here because phase 6 deliberately does not copy it,
@@ -1132,6 +1225,31 @@ whether "My CyprusWay" is a product name that stays English in every language. A
 
 ## Defects awaiting a scheduling decision
 
+### The account-gated pages prerender their sign-in panel, so a signed-in visitor sees it first
+
+**What.** `/build-trip`, `/trips` and `/plan-trip` are prerendered, and the HTML each one
+ships is the title, the sub-line and the **"Trips need a free account"** panel. Measured in
+`dist/*/index.html` on 30 Aug 2026. A signed-in visitor arriving cold therefore sees the
+sign-in panel until the session probe finishes — then a skeleton, then the page.
+
+**Why.** `SessionStatus` starts `'idle'` on the server and on the first client render alike
+(deliberately: anything else is a hydration mismatch on every page), and the pages test
+`status !== 'resolving' && !user`. On the server that is true. `idle` is also the *final*
+state for a genuine guest, so a page cannot tell "not probed yet" from "probed, no session"
+— the provider does not expose the difference.
+
+**Why it is recorded rather than fixed here.** It is the shell's state machine, phase 1's,
+and the fix is one bit on the provider (`probed: boolean`, or an `'unknown'` status before
+the effect runs) that every gated page then reads — a change to be made once, not
+worked around in a third page. Phase 6 matched phase 5 instead of diverging. Until then a
+comment in `routes.ts` claiming the planner's prerender was public content was wrong and
+has been corrected: the crawler sees the sign-in panel, on all three routes.
+
+**What unparks it.** A `SessionProvider` change, then the three pages showing the skeleton
+while the probe is outstanding.
+
+**Owner.** Web, phase 1's shell.
+
 ### `useDialog` steals focus when the parent re-renders — FIXED in phase 2
 
 Kept because the entry outlived the bug and said so for three phases.
@@ -1151,7 +1269,7 @@ would have yanked focus to the first control on each one.
 **What.** `formatTime` in `src/lib/tripDates.ts` built a `Date` with `Date.UTC(2000, 0, 1,
 h, m)` and then formatted it with `Intl.DateTimeFormat` **without `timeZone: 'UTC'`**, so
 the formatter rendered that instant in the reader's own zone. A stop stored at `09:00`
-displayed as **11:00 AM** in Cyprus and as 4:00 AM in New York. Measured in the browser on
+displayed as **11:00 AM** in Cyprus and as 5:00 AM in New York in summer. Measured in the browser on
 30 Aug 2026, Europe/Bucharest, against a real trip document.
 
 The function's own comment said the opposite the entire time — *"the stored value is the
@@ -1178,6 +1296,57 @@ device-clock decision, deliberately, and matched to the app — `itineraries` ca
 timezone and the two clients agreeing matters more than either being right in isolation.
 That is a different question from rendering a stored string.
 
+**The app does not have it — checked.** Its `formatTime12` (`trip-builder/[id].tsx:153`)
+is string arithmetic on the stored "HH:MM" and never constructs a `Date`, so it cannot be
+shifted. The web's was the only one of the two that went through `Intl`.
+
 **Owner.** Web — done. Recorded because the comment that described the correct behaviour
-sat directly above the code that did the opposite, and because the app's own renderers
-should be checked for the same shape.
+sat directly above the code that did the opposite.
+
+---
+
+## For the next audit
+
+### Plans and comments in this repo assert intentions as facts — three instances
+
+**What.** Prose in this repository — plan documents and code comments alike — has a habit
+of describing what the author *meant* the code to do, in the indicative, and the code then
+not doing it. Nobody catches it because the prose reads as a finished fact and it sits
+right next to the code, where it is taken as the explanation rather than as a claim.
+Three instances are now on record, found in three consecutive days:
+
+| Where | What it said | What the code did |
+|---|---|---|
+| `WEB-PHASE-1-PLAN.md` §4 item 4 | *"Its slide-in transform is `translateX(100%)` under a `[dir="rtl"]` override…"* | No transform, no transition. The drawer popped for five phases; built in phase 6 |
+| `src/lib/tripDates.ts`, above `formatTime` | *"The stored value is the server's clock-of-day and carries no zone; it is displayed, never converted."* | It was converted, by the reader's timezone, on every trip on the site — 09:00 rendered as 11:00 AM in Cyprus. Fixed in phase 6 |
+| `docs/PARKED.md`, the contrast-check entry, first version | *"the fallback now fails closed"* | `enclosingBlock` still answered byte 0 on two paths and the check passed un-annotated gold. Fixed on the second attempt, 28 Aug, with fixtures |
+
+And a fourth of a lesser kind, from the same week: `routes.ts` claimed the planner's
+prerender was public content when it is the sign-in panel. Same mechanism, smaller
+consequence.
+
+**Why it keeps happening.** In each case the sentence was true of the *design* and was
+written before, or instead of, the check. A comment is where a reader stops reading the
+code, so a wrong one is worse than none: `formatTime`'s said "never converted" directly
+above the line that converted, and four phases of eyes stopped at the comment.
+
+**The rule for the next audit, and for the one after that.** *A comment or a plan sentence
+is a hypothesis about the code, not evidence about it.* Every claim a comment makes that
+the surrounding code is being relied on for — a timezone, a bound, a fallback direction, a
+transition, a "never", an "always", an "on every branch" — is checked against the code or
+against a run, and the check is written next to the claim: a measured value, a probe, a
+fixture, a `TZ=` run. Where a claim cannot be checked, the comment says it is a claim.
+Three specific habits follow:
+
+1. **"Never" and "always" get a test or get softened.** The `formatTime` comment would
+   have been caught by the four-timezone run that now exists.
+2. **A plan describing a mechanism is not the mechanism.** When a phase closes, the plan's
+   claims about what was built are read against the tree, and the ones that were not built
+   are moved to this file — as phase 1's drawer slide should have been.
+3. **A fix that is declared is not a fix that is verified.** The contrast checker's first
+   "fails closed" was declared in prose; the second was proved by nine fixtures that run
+   before every check. Prose that says a hole is closed is exactly the prose this entry
+   is about.
+
+**Owner.** Whoever audits next. This entry is the reason the phase-6 audit
+(`PHASE-6-PLAN.md` §16) opened with the comments and not with the code.

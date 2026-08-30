@@ -87,7 +87,19 @@ export default function Trip() {
     const to = parseIso(state.tripEnd);
     return from && to ? daysBetween(from, to) + 1 : 0;
   }, [state.tripStart, state.tripEnd]);
-  const builtShort = state.days.length > 0 && requestedDays > state.days.length;
+  /* Three guards, each for a false positive that was real:
+     - `type`: a legacy manual row whose document is shorter than its dates would otherwise
+       blame Pete for a trip Pete never built;
+     - no pending day and not saving: Remove Day shrinks `days` optimistically while
+       `trip_end` is still the old value, so without this the notice flashed on every
+       removal until the response moved the date;
+     - at least one day: a manual trip is created with `days: []`. */
+  const settled = !state.saving && !state.days.some((day) => day.pending);
+  const builtShort =
+    state.type === 'ai_generated' &&
+    settled &&
+    state.days.length > 0 &&
+    requestedDays > state.days.length;
 
   const existingByDay = useMemo(
     () =>

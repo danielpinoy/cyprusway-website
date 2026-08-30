@@ -6,7 +6,7 @@ import { useT } from '../../i18n/I18nProvider';
 import { displayNameFor } from '../../lib/auth';
 import { useSession } from '../../lib/SessionProvider';
 import { Icon } from '../ui/Icon';
-import { useDialog } from '../ui/useDialog';
+import { useDialog, useKeepMounted } from '../ui/useDialog';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { NavLabel } from './NavLabel';
 import { MENU_NAV, MENU_SIGNOUT } from './navigation';
@@ -23,6 +23,20 @@ const REPORT_MAILTO = 'mailto:partners@cyprusway.eu?subject=CyprusWay%20problem%
  * Anchored with `inset-inline-end`, so it enters from the right in LTR and the left in
  * RTL, matching the mirrored frame 3558-20716 without a direction branch in the code.
  *
+ * It slides — 200 ms in, 200 ms out — which phase 1's plan specified and phase 1 did not
+ * build (docs/PARKED.md, "Plans and comments assert intentions as facts"). The mechanics
+ * are the motion convention's and live in the stylesheet: the portal stays mounted after
+ * its first open so the exit has something to animate, `data-open` drives the styles,
+ * `@starting-style` gives the enter its off-canvas start, and a discrete `display`
+ * transition holds the exit until it is done. No timer and no closing state. The one
+ * direction branch is in CSS, on `[dir='rtl']`, and it is the sign of the slide.
+ *
+ * `useDialog` is unchanged and its timing is what makes the focus trap safe: it focuses on
+ * the `open` flip, and because the slide is a transform the panel is already at its final
+ * layout position on that first frame — `offsetParent` is set, the items are found, and
+ * focus lands on an element that is where it will be. On close the hook restores focus to
+ * the trigger on the same flip, while the panel is still sliding out and already `inert`.
+ *
  * Not built from the frame: the "Continue your trip" card at the bottom, which needs
  * itinerary data phase 1 does not load, and the PRO badge on Book with Pete, which the
  * 14 Aug audit recorded as inverted.
@@ -32,14 +46,17 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
   const { user, signOut } = useSession();
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const mounted = useKeepMounted(open);
 
   useDialog(panelRef, { open, dismissible: true, onClose });
 
-  if (!open || typeof document === 'undefined') return null;
+  if (!mounted || typeof document === 'undefined') return null;
 
   return createPortal(
     <div
       className={styles.overlay}
+      data-open={open ? 'true' : 'false'}
+      inert={!open}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}

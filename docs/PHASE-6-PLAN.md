@@ -874,7 +874,7 @@ Three things the plan did not anticipate. All three are in the tree.
 bug — a phase-5 one, on every trip on the site since the editor shipped. `formatTime` built
 a `Date` with `Date.UTC(…)` and formatted it without `timeZone: 'UTC'`, so
 `Intl.DateTimeFormat` rendered that instant in the reader's own zone: a stop stored at
-`09:00` displayed as **11:00 AM** in Cyprus and 4:00 AM in New York. Measured in the browser
+`09:00` displayed as **11:00 AM** in Cyprus and 5:00 AM in New York in summer. Measured in the browser
 against a real document, Europe/Bucharest, 30 Aug. `formatDayHeading` and `formatDate` had
 the same omission, which puts a trip day one date early for any reader west of Greenwich.
 
@@ -923,3 +923,133 @@ Run against the live deployment on 30 Aug, signed in as a **free** account —
 `itinerary_id` hand-off to `/trip/:id`, the 422 / 502 / timeout endings and the recovery
 re-query. Those are the first signed-in run — with the profile-write flag in §3.1 to
 settle first, and Q4's disconnect test to fold into it.
+
+---
+
+## 16 · Audit, 30 August — what the hunt found
+
+Run against the built phase, looking for the failure shapes this project actually
+produces: comments that assert what the code does not do, client-side overwrites of server
+truth, stale closures, collapsed errors, paths that had never run, and numbers copied from
+the server rather than read. **Twelve findings; all fixed except the two that belong to the
+shell, which are recorded.** The polling and the date maths were where the brief said to
+look, and they held the two worst.
+
+### The polling — four defects in fifteen lines
+
+**16.1 A failed snapshot was read as "no trips".** `latestItinerary()` returned `null` for
+both "the account has no trips" and "the read failed", and the recovery compared with
+`!before || newer`. A snapshot that failed on an account with existing trips would have
+"recovered" its most recent *old* trip and announced *"Your trip was created"*. The app's
+`latestItinerary` has the identical collapse. Now a discriminated `Snapshot`, and a failed
+one disables recovery-by-comparison rather than matching everything.
+
+**16.2 A thrown `fetch` was reported as "no trip was created, so trying again is safe"
+after one immediate read.** That is the app's single-shot defect, reproduced in my own
+transport branch: a socket can drop with the model mid-sentence, the server finishes twenty
+seconds later, and the copy has already invited a second spend. Transport errors now take
+the same polled schedule as the abort.
+
+**16.3 Whether the attempt counted was asserted from the status code.** 500 `profile fetch
+failed` lands before the counter; 500 `persist failed` lands after it and may leave a row;
+502 is always after. The code called all of them counted. **It is now measured:**
+`consume_trip_generation` writes both counter columns on every allow, so the row is read
+before the request and again after the ending, and `consumed` is *moved or not moved* —
+with `null` when a read failed, and copy for all three. The `COUNTED` set is gone.
+Consequences the copy now gets right: a 5xx before the counter says *"did not count"*; an
+abort whose counter never moved is *"offline — nothing was spent"* rather than *"slow"*; a
+counted 5xx with no usable snapshot takes the conditional copy instead of asserting *"no new
+trip appeared"*.
+
+**16.4 The wizard's profile was never refreshed after an attempt.** Back from a counted 422
+recomputed the count from the row read at *entry* — "3 of 3 left" after a spend, the exact
+number the whole design exists to get right. Every ending now carries the fresh row and
+the wizard adopts it.
+
+**16.5 `currentAccessToken()` had no timeout** — phase 5's hang, again: a stuck
+`getSession()` left Pete on screen forever with the 120 s timer never armed, because the
+timer was set *after* the token. Same 8 s bound as the editor; nothing sent, so the ending
+is honest about that.
+
+### The date maths — two
+
+**16.6 The start date was never checked against `minTripStart()`.** The `min` attribute
+constrains the picker, not the keyboard. A typed past date is *accepted* by the server and
+plans a trip in the past; a typed "today" is a 400 the wizard then logged as its own defect
+— which it was. Checked on the way in with a message, and re-derived at the moment of the
+spend rather than taken from the render that painted the button, so a tab left open across
+midnight cannot send yesterday's "tomorrow".
+
+**16.7 The three formatters were verified, not just fixed.** Run under `TZ=America/New_York`,
+`Asia/Nicosia`, `Pacific/Kiritimati` (UTC+14) and `Pacific/Honolulu`: `09:00` → 9:00 AM,
+`31 Aug` → *Mon, August 31*, span 1–31 Oct = 31, +30 days across a month end, +2 days
+across the March DST change — identical in all four. The app's `formatTime12` was checked
+for the same shape and does not have it: string arithmetic, no `Date`.
+
+### Comments asserting what the code did not do — four
+
+**16.8** *"4:00 AM in New York"* (formatTime, PARKED, §15) — 5:00 in summer. **16.9** *"Four
+reads over fifteen seconds close that window"* — they narrow it; nothing bounds the server.
+**16.10** `routes.ts`: *"what a signed-out visitor actually sees is the Premium
+explanation"* — the prerender contains the sign-in panel (§16.13). **16.11** `slow`'s copy
+said *"that attempt counted"* while its own comment said *"probably"* — resolved by 16.3,
+which replaces the guess with a measurement.
+
+### The editor — one
+
+**16.12 The built-short notice flashed on every Remove Day**, because `days` shrinks
+optimistically while `trip_end` is still the old value until the response. And it was not
+gated on `type`, so a legacy manual row with a short document would have blamed Pete for
+a trip Pete never built. Guarded on `type === 'ai_generated'`, no pending day, not saving.
+
+### The shell — two, recorded, not fixed here
+
+**16.13 The account-gated pages prerender their sign-in panel** (`/build-trip`, `/trips`,
+`/plan-trip` alike): `SessionStatus` is `idle` on the server and `idle` is also a guest's
+final state, so a page cannot tell "not probed" from "no session". A signed-in visitor sees
+the panel, then a skeleton, then the page. One bit on the provider fixes all three;
+`PARKED.md`. **16.14 The premium-gate state on the machine was sticky** — a 403 left
+`error/premium` in module state, so an account granted premium mid-session stayed gated
+until reload. The wizard now adopts the refusal into its own profile state and clears the
+machine.
+
+### Numbers copied rather than read
+
+`TRIP_GENERATION_DAILY_CAP = 3` is the one, and it is now one constant rather than two:
+the Premium page's *"Three planned trips a day"* was a second copy in prose and is
+`{cap}` from the same constant. It remains a claim — a free account never receives the 429
+that would correct it — and the translation queue says so.
+
+### Verified after the fixes
+
+`quotaFromProfile` was driven through the real module (`vite.ssrLoadModule`) across the
+six states the day logic has: cold open (uncertain floor), just consumed (certain, learns
+the day), a stale row after that (full cap, certain), a same-day row (certain), a row
+*newer* than the known day (uncertain floor, day not adopted), and same-day again. All as
+designed. `typecheck`, `check:css`, `check:contrast` and the full build pass.
+
+---
+
+## 17 · The motion convention — built, 30 August
+
+Asked for after the audit: the drawer popped in and out in one frame, and so did the auth
+and interests cards. Three rules, applied to those three surfaces; the day accordion left
+alone on purpose. The full record — why the pop, that the frames specify nothing, the rules,
+the focus-trap ordering, what was and was not measured — is `PARKED.md`, under Unparked.
+
+What changed in the tree:
+
+- `useDialog.ts` — `useKeepMounted(open)`: a surface mounts on its first open and stays,
+  toggling `data-open` and `inert`, so a transition has a node on both sides.
+- `MobileMenu.tsx` / `.module.css` — the slide phase 1 specified and did not build:
+  `translate` 200 ms with `@starting-style` for the enter, a discrete `display` transition
+  for the exit, and the sign flipped under `[dir='rtl']` — the one direction branch.
+- `Modal.tsx` / `.module.css` — scrim fade, card fade-and-settle from `scale: 0.98`.
+- `AuthGate.tsx` — one Modal instead of two mounted and unmounted, holding the last card
+  while the exit runs. That is data (which card), not a closing phase; nothing times it.
+- `tokens.css` — `--cw-motion-surface: 200ms`. Hover states keep `--cw-transition`.
+- No reduced-motion rule anywhere new: `global.css` already clamps everything, and the
+  exit does not depend on a real duration elapsing.
+
+`typecheck`, `check:css`, `check:contrast` and the full build pass. The minified stylesheet
+keeps all four `@starting-style` blocks and both `allow-discrete` keywords.

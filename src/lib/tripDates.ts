@@ -131,7 +131,7 @@ export function formatDate(date: string | null, lang: string): string {
  * It was being converted. Without `timeZone: 'UTC'` the formatter renders the UTC instant
  * this function builds in whatever zone the reader's device is in, so a stop stored at
  * `09:00` displayed as **11:00 AM** in Cyprus (measured, Europe/Bucharest, 30 Aug 2026)
- * and as 4:00 AM in New York. Every time on every trip was wrong by the reader's offset,
+ * and as 5:00 AM in New York in summer. Every time on every trip was wrong by the reader's offset,
  * and the comment above this function said the opposite the whole time.
  *
  * It matters more from phase 6 on, not less: a generated day starts at the profile's

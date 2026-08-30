@@ -329,6 +329,9 @@ export const stringsEn = {
   ui_plan_dates_title: 'When are you going?',
   ui_plan_dates_sub:
     'Trips start tomorrow at the earliest, and can run up to {max} days.',
+  /* The picker's `min` stops the mouse, not the keyboard. A typed start before tomorrow
+     is refused here with a reason, rather than sent for the server to refuse. */
+  ui_plan_dates_early: 'Trips start tomorrow at the earliest — pick a later date.',
   /* --- step 3: base destination and interests --- */
   ui_plan_places_title: 'Where are you based, and what do you like?',
   ui_plan_places_sub: 'Pete plans around one base and works outwards from it.',
@@ -378,6 +381,8 @@ export const stringsEn = {
   ui_plan_quota_known: '{n} of {cap} left today',
   ui_plan_quota_unknown: 'Up to {cap} trips a day',
   ui_plan_quota_none: "That's all {cap} for today. More on {date}, Cyprus time.",
+  /* Only for a 429 from a pre-0047 RPC, which omits `quota_day`. Deployed RPCs send it. */
+  ui_plan_quota_none_noday: "That's all {cap} for today. More tomorrow, Cyprus time.",
   /* --- generating --- */
   ui_plan_building: 'Building your Cyprus route…',
   ui_plan_building_long: 'Still working — this one is taking longer than usual.',
@@ -390,18 +395,24 @@ export const stringsEn = {
   ui_plan_fail_slow_title: 'This is taking longer than expected',
   ui_plan_fail_slow_body:
     'Pete may still be working. If the plan finishes, it will be in My Trips.',
+  /* Shown only when the counter row is measured NOT to have moved, so "safe" is a
+     statement about the row, not a hope about the network. */
   ui_plan_fail_offline_title: "Couldn't reach the planner",
   ui_plan_fail_offline_body:
-    'We checked — no trip was created, so trying again is safe.',
+    'Check your connection. Nothing was spent and no trip was created, so trying again is safe.',
   ui_plan_fail_quota_title: "That's all for today",
   ui_plan_fail_invalid_title: 'Something in this trip did not make sense to the planner',
   ui_plan_fail_invalid_body: 'Go back and check your dates, base and interests.',
   ui_plan_fail_auth_title: 'Your session expired',
   ui_plan_fail_auth_body: 'Sign in again to plan a trip.',
-  /* The counted line, appended to the failures above that landed after the server spent
-     the allowance. Separate from the body so the two halves cannot drift apart. */
+  /* The allowance line, appended to a failure. Three answers, because the count is
+     MEASURED — the counter row before and after — and a measurement can come back moved,
+     unmoved, or unreadable. Separate from the bodies so the two halves cannot drift. */
   ui_plan_counted: 'That attempt counted — {n} of {cap} left today.',
   ui_plan_counted_unknown: 'That attempt counted.',
+  ui_plan_not_counted: 'That attempt did not count.',
+  ui_plan_counted_maybe:
+    "We couldn't confirm whether that attempt counted. Check My Trips before trying again.",
   ui_plan_recovered_title: 'Your trip was created',
   ui_plan_recovered_body:
     'The connection dropped on the way back, but Pete finished the plan — and that generation is already counted.',
@@ -417,7 +428,7 @@ export const stringsEn = {
   ui_plan_premium_body:
     'Tell Pete your dates, where you are based and what you like, and he builds a complete day-by-day plan — real places from the CyprusWay catalogue, grouped by area, with lunch and travel time worked in. It arrives in your trips, ready to edit.',
   ui_plan_premium_lead: 'Trip planning is part of CyprusWay Premium, along with:',
-  ui_plan_premium_gen: 'Three planned trips a day',
+  ui_plan_premium_gen: '{cap} planned trips a day',
   ui_plan_premium_gen_body:
     'Each one a full itinerary you can reorder, add to and trim.',
   ui_plan_premium_pdf: 'Print or download any trip as a PDF',

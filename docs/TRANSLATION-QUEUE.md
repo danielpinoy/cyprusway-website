@@ -52,7 +52,7 @@ gets English, exactly as before.
 
 ---
 
-## The queue — 314 keys, English only
+## The queue — 318 keys, English only
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
@@ -321,7 +321,7 @@ consistent with it.
 
 ---
 
-### AI Trip Planner — 95, added in phase 6
+### AI Trip Planner — 99, added in phase 6
 
 The wizard at `/plan-trip`, the generation screen, the Premium explanation, and two strings
 the trip editor gained with it.
@@ -348,6 +348,7 @@ message and one that invites a second spend against a counter the reader cannot 
 | `ui_plan_morning_label` · `ui_plan_morning_early` · `ui_plan_morning_normal` · `ui_plan_morning_late` | Morning preference · Early riser · Normal · Late starter | Three, one per stored value. The app draws two and infers the third; the newer frames settle it |
 | `ui_plan_prefs_failed` | Those preferences couldn't be saved. Please try again. | Blocks Continue: planning at the stored pace while the screen shows the chosen one would be worse |
 | `ui_plan_dates_title` · `ui_plan_dates_sub` | When are you going? · Trips start tomorrow at the earliest, and can run up to {max} days. | **Has a placeholder.** 31 is a contract bound, not a preference |
+| `ui_plan_dates_early` | Trips start tomorrow at the earliest — pick a later date. | The picker's `min` stops the mouse, not the keyboard; a typed "today" is a server 400 |
 | `ui_plan_places_title` · `ui_plan_places_sub` | Where are you based, and what do you like? · Pete plans around one base and works outwards from it. | The base is **one** value, however plural the frame's label reads |
 | `ui_plan_interests_label` | What do you want to do? | The frame's wording |
 | `ui_plan_interests_count` · `ui_plan_interests_full` | {count} of {max} chosen · That's {max} — clear one to choose another. | **Have placeholders.** A sixth tag is refused by the server by name, so the cap is stated rather than only drawn as dimming |
@@ -360,21 +361,21 @@ message and one that invites a second spend against a counter the reader cannot 
 | `ui_plan_review_party_none` · `ui_plan_review_party_profile` | No preference · Your usual travel style | Which one shows depends on whether the account has a stored traveller type. Skipping the step means two different things, and this says which |
 | `ui_plan_create` | Create my trip | **The only control on this site that spends money.** Never reword it into something that sounds free |
 | `ui_plan_duration_hint` | Usually 20 to 30 seconds. Sometimes longer. | Measured: median 22 s, worst 57.4 of fourteen. **Do not translate the frame's "about ten seconds" or the app's "about 15 seconds"** — both are under the median |
-| `ui_plan_quota_known` · `ui_plan_quota_unknown` · `ui_plan_quota_none` | {n} of {cap} left today · Up to {cap} trips a day · That's all {cap} for today. More on {date}, Cyprus time. | **Have placeholders.** Three forms, because the count is only sometimes knowable — the day a count belongs to is a Cyprus day the server owns, and this client never derives one |
+| `ui_plan_quota_known` · `ui_plan_quota_unknown` · `ui_plan_quota_none` · `ui_plan_quota_none_noday` | {n} of {cap} left today · Up to {cap} trips a day · That's all {cap} for today. More on {date}, Cyprus time. · That's all {cap} for today. More tomorrow, Cyprus time. | **Have placeholders.** Four forms, because the count is only sometimes knowable — the day a count belongs to is a Cyprus day the server owns, and this client never derives one. The last is a fallback for a 429 without `quota_day`, which no deployed RPC sends |
 | `ui_plan_building` · `ui_plan_building_long` | Building your Cyprus route… · Still working — this one is taking longer than usual. | The frame draws the first. The second replaces it at 45 seconds |
 | `ui_plan_fail_generation_title` · `_body` | Pete couldn't build this trip · Changing your dates, base or interests usually helps. | 422. **Counted** — the counted line below is appended to it |
 | `ui_plan_fail_server_title` · `_body` | The planner could not finish · Nothing arrived, and no new trip appeared on your list. | 5xx, after the re-query looked. **Counted** |
 | `ui_plan_fail_slow_title` · `_body` | This is taking longer than expected · Pete may still be working. If the plan finishes, it will be in My Trips. | Our own 120-second bound. **Conditional on purpose:** whether the server finishes after the client gives up is inferred, not measured, and this sentence is true either way. No retry is offered |
-| `ui_plan_fail_offline_title` · `_body` | Couldn't reach the planner · We checked — no trip was created, so trying again is safe. | The one ending where "safe" is a statement rather than a hope: the re-query looked |
+| `ui_plan_fail_offline_title` · `_body` | Couldn't reach the planner · Check your connection. Nothing was spent and no trip was created, so trying again is safe. | Shown only when the counter row is **measured** not to have moved, so "safe" is a statement about the row rather than a hope about the network |
 | `ui_plan_fail_quota_title` | That's all for today | 429. Nothing was consumed — an over-cap call is refused without incrementing |
 | `ui_plan_fail_invalid_title` · `_body` | Something in this trip did not make sense to the planner · Go back and check your dates, base and interests. | 400. A defect on our side, since everything is pre-validated, and logged as one |
 | `ui_plan_fail_auth_title` · `_body` | Your session expired · Sign in again to plan a trip. | |
-| `ui_plan_counted` · `ui_plan_counted_unknown` | That attempt counted — {n} of {cap} left today. · That attempt counted. | **Have placeholders.** The sentence that stops a second spend. Kept separate from the bodies above so the two halves cannot drift apart |
+| `ui_plan_counted` · `ui_plan_counted_unknown` · `ui_plan_not_counted` · `ui_plan_counted_maybe` | That attempt counted — {n} of {cap} left today. · That attempt counted. · That attempt did not count. · We couldn't confirm whether that attempt counted. Check My Trips before trying again. | **Have placeholders.** The sentence that stops a second spend, in the three shapes a measurement can come back: moved, unmoved, unreadable. Kept separate from the bodies above so the two halves cannot drift apart |
 | `ui_plan_recovered_title` · `_body` | Your trip was created · The connection dropped on the way back, but Pete finished the plan — and that generation is already counted. | Shown when the re-query found the row. **Never beside a retry** |
 | `ui_plan_view_trip` · `ui_plan_check_trips` · `ui_plan_retry` · `ui_plan_change` | View your trip · Check My Trips · Try again · Change details | |
 | `ui_plan_premium_title` · `ui_plan_premium_body` | Pete can plan the whole trip · Tell Pete your dates, where you are based and what you like… | **What most visitors see.** 25 accounts, one premium. The heading says what the feature is, not what the reader lacks |
 | `ui_plan_premium_lead` | Trip planning is part of CyprusWay Premium, along with: | |
-| `ui_plan_premium_gen` · `_gen_body` · `_pdf` · `_pdf_body` · `_pete` · `_pete_body` | Three planned trips a day… · Print or download any trip as a PDF… · Unlimited Ask Pete… | The three things premium measurably unlocks. **Do not add tours** — zero exist — and do not restore "87 curated places": it is 181 published, 146 plannable, 37 restaurants |
+| `ui_plan_premium_gen` · `_gen_body` · `_pdf` · `_pdf_body` · `_pete` · `_pete_body` | {cap} planned trips a day… · Print or download any trip as a PDF… · Unlimited Ask Pete… | The three things premium measurably unlocks. **Has a placeholder** — the cap is the coded default (3), the one number on the page that is a claim rather than a reading. **Do not add tours** — zero exist — and do not restore "87 curated places": it is 181 published, 146 plannable, 37 restaurants |
 | `ui_plan_premium_note` | Premium is not on sale on this site yet — there is nothing to buy here today. If your account already has Premium, sign in with it and the planner opens. | **No price, deliberately.** Nothing here can charge one. See the note below |
 | `ui_plan_premium_alt` · `ui_plan_premium_alt_body` | Build a trip yourself · Free and unlimited. Pick your base and your dates, then add the places you want. | The thing that does work, offered instead of a dead button |
 | `ui_plan_entry_title` · `ui_plan_entry_body` · `ui_plan_entry_cta` | Let Pete plan it for you · Give Pete your dates and your base and he builds the whole itinerary, day by day. · Open the AI Trip Planner | The card on `/build-trip` and `/trips`. There is no new navigation item |

@@ -140,6 +140,10 @@
   --cw-shadow-md: 0 4px 24px rgb(27 59 107 / 10%);
   --cw-shadow-lg: 0 8px 40px rgb(27 59 107 / 16%);
   --cw-transition: 160ms ease;
+  /* A surface entering or leaving — the drawer, the cards. Longer than a hover state
+     because the whole eye has to follow it; short enough that nobody waits for it. The
+     motion convention (docs/PARKED.md) uses this and nothing else. */
+  --cw-motion-surface: 200ms;
 
   --cw-z-header: 100;
   --cw-z-drawer: 200;

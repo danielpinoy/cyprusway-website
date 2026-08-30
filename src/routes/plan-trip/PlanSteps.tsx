@@ -120,6 +120,7 @@ export function DatesStep({
   maxEnd,
   span,
   spanError,
+  startEarly,
   onStart,
   onEnd,
 }: {
@@ -128,6 +129,8 @@ export function DatesStep({
   maxEnd: string | undefined;
   span: number;
   spanError: boolean;
+  /** The typed start is before `minStart` — the picker cannot produce this, the keyboard can. */
+  startEarly: boolean;
   onStart: (value: string) => void;
   onEnd: (value: string) => void;
 }) {
@@ -182,11 +185,13 @@ export function DatesStep({
           </div>
         </div>
         <p className={styles.groupStatus} role="status">
-          {spanError
-            ? t('ui_trip_span_error', { max: MAX_TRIP_DAYS })
-            : span > 0
-              ? t('ui_trip_span', { count: span })
-              : ' '}
+          {startEarly
+            ? t('ui_plan_dates_early')
+            : spanError
+              ? t('ui_trip_span_error', { max: MAX_TRIP_DAYS })
+              : span > 0
+                ? t('ui_trip_span', { count: span })
+                : ' '}
         </p>
       </fieldset>
     </div>

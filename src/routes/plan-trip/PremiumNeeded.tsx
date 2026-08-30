@@ -3,6 +3,7 @@ import { CalendarRange, FileDown, MessageCircleQuestion, Sparkles } from 'lucide
 
 import { Icon } from '../../components/ui/Icon';
 import { useI18n } from '../../i18n/I18nProvider';
+import { TRIP_GENERATION_DAILY_CAP } from '../../lib/tripGenerate';
 import styles from './PremiumNeeded.module.css';
 
 /**
@@ -57,7 +58,13 @@ export function PremiumNeeded() {
               <Icon as={benefit.icon} size={20} />
             </span>
             <span className={styles.benefitText}>
-              <span className={styles.benefitTitle}>{t(benefit.title)}</span>
+              {/* The cap is the coded default — the one number on this page that is a
+                  claim rather than a reading, because a free account never receives the
+                  429 that would state the real one. One constant, so it cannot drift from
+                  the wizard's own line. */}
+              <span className={styles.benefitTitle}>
+                {t(benefit.title, { cap: TRIP_GENERATION_DAILY_CAP })}
+              </span>
               <span className={styles.benefitBody}>{t(benefit.body)}</span>
             </span>
           </li>

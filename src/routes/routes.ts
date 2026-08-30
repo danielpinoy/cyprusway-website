@@ -39,10 +39,11 @@ export const ROUTE_META: Readonly<Record<string, RouteMeta>> = {
   /* `/trips` lists one account's trips, so it is prerendered for its shell and metadata
      and kept OUT of the sitemap: there is nothing on it for a crawler, and inviting one
      to a page that is only ever a sign-in panel is a crawl error waiting to happen. */
-  /* The AI Trip Planner. Indexed like `/build-trip`, and for the same reason: what a
-     signed-out visitor — and, on this site, almost every signed-in one — actually sees is
-     the Premium explanation, which is real public content about a real feature. The
-     wizard behind it is account-gated, but nothing on the page is private. */
+  /* The AI Trip Planner. Indexed like `/build-trip`, because it is the same shape: the
+     prerendered page is the title, the sub-line and the sign-in panel — `SessionStatus`
+     is `idle` on the server, so the panel is what the crawler and the first paint get.
+     The Premium explanation is behind a session (it needs the account's `is_premium` to
+     know it applies) and is NOT in the prerender. Nothing on the page is private. */
   '/plan-trip': {
     titleKey: 'ui_meta_plantrip_title',
     descKey: 'ui_meta_plantrip_desc',

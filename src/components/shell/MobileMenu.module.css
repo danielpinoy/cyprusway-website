@@ -3,10 +3,34 @@
   inset: 0;
   z-index: var(--cw-z-drawer);
   background-color: color-mix(in srgb, var(--cw-navy) 55%, transparent);
+  opacity: 1;
+  /* The scrim fades; `display` is discrete and, with `allow-discrete`, keeps its visible
+     value until the transition ends — so the exit has 200 ms to run before the node
+     leaves the render tree. See Modal.module.css for the same shape. */
+  transition:
+    opacity var(--cw-motion-surface) ease-out,
+    display var(--cw-motion-surface) allow-discrete;
+}
+
+.overlay[data-open='false'] {
+  display: none;
+  opacity: 0;
+}
+
+@starting-style {
+  .overlay {
+    opacity: 0;
+  }
 }
 
 /* inset-inline-end, not right: the drawer enters from the right in LTR and from the
-   left in RTL, which is what the mirrored frame 3558-20716 shows, with no branch. */
+   left in RTL, which is what the mirrored frame 3558-20716 shows, with no branch.
+
+   The slide is `translate`, not a layout property, so the panel is at its final layout
+   position from its first frame — which is what lets useDialog focus into it on the open
+   flip without waiting for anything. The sign of the slide is the ONE direction branch,
+   because 100% of the panel's own width moves it off the edge it is anchored to, and
+   which edge that is comes from `inset-inline-end`. */
 .panel {
   position: absolute;
   inset-block: 0;
@@ -19,6 +43,26 @@
   background-color: var(--cw-navy);
   color: var(--cw-white);
   box-shadow: var(--cw-shadow-lg);
+  translate: 0 0;
+  transition: translate var(--cw-motion-surface) ease-out;
+}
+
+.overlay[data-open='false'] .panel {
+  translate: 100% 0;
+}
+
+:global([dir='rtl']) .overlay[data-open='false'] .panel {
+  translate: -100% 0;
+}
+
+@starting-style {
+  .panel {
+    translate: 100% 0;
+  }
+
+  :global([dir='rtl']) .panel {
+    translate: -100% 0;
+  }
 }
 
 .top {

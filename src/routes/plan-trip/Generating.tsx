@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '../../components/ui/Button';
@@ -7,8 +7,8 @@ import type { TranslationKey } from '../../i18n/dictionary';
 import { formatDate } from '../../lib/tripDates';
 import {
   dayAfter,
-  failureCounted,
   GENERATE_SLOW_AFTER_MS,
+  TRIP_GENERATION_DAILY_CAP,
   type GenerationFailure,
   type GenerationState,
   type QuotaReport,
@@ -27,6 +27,12 @@ import styles from './Generating.module.css';
  * and returns nothing. Every ending below therefore states whether the attempt counted and
  * what is left, because "something went wrong, try again" invites a second spend against a
  * counter the reader cannot see.
+ *
+ * WHETHER IT COUNTED COMES FROM THE MACHINE, NOT FROM THE KIND. `consumed` is measured by
+ * comparing the counter row before and after (lib/tripGenerate.ts), and can be null when
+ * a read failed. The copy has three shapes for the three answers, and the retry button is
+ * offered only when the answer is known — a "Try again" beside "we could not confirm" is
+ * an invitation to spend twice.
  *
  * AND NO CANCEL. There is nothing to cancel: the allowance is gone the moment the request
  * clears the RPC, and a client abort stops neither the handler nor the OpenAI calls. A
@@ -53,12 +59,27 @@ export function Generating({
   return (
     <Failed
       kind={state.kind}
+      consumed={state.consumed}
       quota={state.quota}
       onRetry={onRetry}
       onChangeDetails={onChangeDetails}
       onBack={onBack}
     />
   );
+}
+
+/**
+ * The ending's heading takes focus when it appears. The Create button that had focus has
+ * just unmounted, which would otherwise drop focus on `<body>` — and a keyboard or
+ * screen-reader user would be left at the top of the document with a `role="status"`
+ * announcement as the only clue that anything happened.
+ */
+function useFocusOnMount<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+  return ref;
 }
 
 function Waiting({ startedAt }: { startedAt: number }) {
@@ -116,11 +137,14 @@ function Recovered({
   onViewTrip: (id: string) => void;
 }) {
   const { t } = useI18n();
+  const titleRef = useFocusOnMount<HTMLHeadingElement>();
   /* NEVER a retry beside this. The row exists and was paid for; offering "try again" here
      is an invitation to buy the same trip twice. */
   return (
     <div className={styles.centre}>
-      <h2 className={styles.failTitle}>{t('ui_plan_recovered_title')}</h2>
+      <h2 className={styles.failTitle} tabIndex={-1} ref={titleRef}>
+        {t('ui_plan_recovered_title')}
+      </h2>
       <p className={styles.failBody} role="status">
         {t('ui_plan_recovered_body')}
       </p>
@@ -134,37 +158,39 @@ function Recovered({
 interface FailureCopy {
   title: TranslationKey;
   body: TranslationKey;
+  /** Whether a retry is ever offered for this kind. Still withheld when `consumed` is
+   *  unknown, and always for `slow` — the server may be working on the first attempt. */
   retry: boolean;
   change: boolean;
 }
 
 const FAILURES: Record<GenerationFailure, FailureCopy> = {
-  /* 422, after both model attempts. Counted. Changing the inputs is the move that most
-     often works, so it is offered beside the retry rather than instead of it. */
+  /* 422, after both model attempts. Changing the inputs is the move that most often
+     works, so it is offered beside the retry rather than instead of it. */
   generation: {
     title: 'ui_plan_fail_generation_title',
     body: 'ui_plan_fail_generation_body',
     retry: true,
     change: true,
   },
-  /* 500 or 502, and the re-query found no row. Counted. */
+  /* 500 or 502, and the re-query found no row. */
   server: {
     title: 'ui_plan_fail_server_title',
     body: 'ui_plan_fail_server_body',
     retry: true,
     change: false,
   },
-  /* Our own 120 s abort, and four re-queries over fifteen seconds found nothing.
-     NO RETRY: the server may still be working, and a second attempt would spend a second
-     generation against a first that may yet land. */
+  /* No usable answer, and the counter moved: the server may still be working on it. NO
+     RETRY — a second attempt would spend a second generation against a first that may
+     yet land. */
   slow: {
     title: 'ui_plan_fail_slow_title',
     body: 'ui_plan_fail_slow_body',
     retry: false,
     change: false,
   },
-  /* `fetch` threw before any response AND the re-query agrees nothing was created. The
-     only ending where "trying again is safe" is a statement rather than a hope. */
+  /* No usable answer, and the counter did NOT move — measured, so "trying again is safe"
+     is a statement rather than a hope. */
   offline: {
     title: 'ui_plan_fail_offline_title',
     body: 'ui_plan_fail_offline_body',
@@ -214,12 +240,14 @@ const FAILURES: Record<GenerationFailure, FailureCopy> = {
 
 function Failed({
   kind,
+  consumed,
   quota,
   onRetry,
   onChangeDetails,
   onBack,
 }: {
   kind: GenerationFailure;
+  consumed: boolean | null;
   quota: QuotaReport | null;
   onRetry: () => void;
   onChangeDetails: () => void;
@@ -227,39 +255,48 @@ function Failed({
 }) {
   const { t, lang } = useI18n();
   const copy = FAILURES[kind];
+  const titleRef = useFocusOnMount<HTMLHeadingElement>();
 
-  /* The quota line, and it is three different sentences.
+  /* The line about the allowance — one of five sentences, chosen by evidence.
    *
-   * On a counted failure the row was just re-read, and because `consume_trip_generation`
-   * writes today's Cyprus day on every branch it takes, that row's own `reset_at` IS the
-   * server's today — so the number is exact rather than a floor, and the copy can name it.
-   * When the read failed there is no number and the line says only that it counted.
-   * On a 429 the wire carried `remaining`, `daily_cap` and `quota_day`. */
+   * A 429 carried `remaining`, `daily_cap` and `quota_day` on the wire. Otherwise the
+   * machine compared the counter row before and after: moved → counted, and the number
+   * is exact because the RPC has just written today's day into the row; unmoved →
+   * nothing spent; a failed read → neither claim is made. */
   let counted: string | null = null;
   if (kind === 'quota') {
+    const cap = quota?.cap ?? TRIP_GENERATION_DAILY_CAP;
     counted =
       quota?.day != null
-        ? t('ui_plan_quota_none', {
-            cap: quota.cap,
-            date: formatDate(dayAfter(quota.day), lang),
-          })
-        : t('ui_plan_quota_unknown', { cap: quota?.cap ?? 3 });
-  } else if (failureCounted(kind) || kind === 'slow') {
+        ? t('ui_plan_quota_none', { cap, date: formatDate(dayAfter(quota.day), lang) })
+        : t('ui_plan_quota_none_noday', { cap });
+  } else if (consumed === true) {
     counted =
       quota && quota.certain
         ? t('ui_plan_counted', { n: quota.remaining, cap: quota.cap })
         : t('ui_plan_counted_unknown');
+  } else if (consumed === false) {
+    /* Said only where it is news. For `offline` the body already says it; for the endings
+       the server refused before the counter, nobody would have assumed otherwise. */
+    counted = kind === 'server' || kind === 'generation' ? t('ui_plan_not_counted') : null;
+  } else {
+    counted = t('ui_plan_counted_maybe');
   }
+
+  const canRetry = copy.retry && kind !== 'slow' && consumed !== null;
+  const showTrips = kind === 'slow' || consumed === null;
 
   return (
     <div className={styles.centre}>
-      <h2 className={styles.failTitle}>{t(copy.title)}</h2>
+      <h2 className={styles.failTitle} tabIndex={-1} ref={titleRef}>
+        {t(copy.title)}
+      </h2>
       <div role="status">
         {kind !== 'quota' && <p className={styles.failBody}>{t(copy.body)}</p>}
         {counted && <p className={styles.counted}>{counted}</p>}
       </div>
       <div className={styles.failActions}>
-        {copy.retry && (
+        {canRetry && (
           <Button variant="primary" onClick={onRetry}>
             {t('ui_plan_retry')}
           </Button>
@@ -269,7 +306,7 @@ function Failed({
             {t('ui_plan_change')}
           </Button>
         )}
-        {kind === 'slow' && (
+        {showTrips && (
           <Link className={styles.link} to="/trips">
             {t('ui_plan_check_trips')}
           </Link>

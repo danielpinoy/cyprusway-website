@@ -217,6 +217,8 @@ export interface TripDetail {
   regionSlug: string | null;
   tripStart: string | null;
   tripEnd: string | null;
+  /** `'manual' | 'ai_generated'` — plain text, no CHECK; read for one notice and nothing else. */
+  type: string | null;
   days: unknown[];
   updatedAt: string;
 }
@@ -224,7 +226,7 @@ export interface TripDetail {
 export async function fetchTrip(id: string): Promise<TripDetail | null> {
   const { data, error } = await getSupabase()
     .from('itineraries')
-    .select('id, name, base_location, trip_start, trip_end, updated_at, itinerary_data')
+    .select('id, name, base_location, trip_start, trip_end, type, updated_at, itinerary_data')
     .eq('id', id)
     .maybeSingle<{
       id: string;
@@ -232,6 +234,7 @@ export async function fetchTrip(id: string): Promise<TripDetail | null> {
       base_location: string | null;
       trip_start: string | null;
       trip_end: string | null;
+      type: string | null;
       updated_at: string;
       itinerary_data: { days?: unknown[] } | null;
     }>();
@@ -245,6 +248,7 @@ export async function fetchTrip(id: string): Promise<TripDetail | null> {
     regionSlug: data.base_location,
     tripStart: data.trip_start,
     tripEnd: data.trip_end,
+    type: data.type,
     days: Array.isArray(data.itinerary_data?.days) ? data.itinerary_data.days : [],
     updatedAt: data.updated_at,
   };

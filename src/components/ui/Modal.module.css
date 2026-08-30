@@ -11,6 +11,28 @@
      the command centre, which carries its own imagery; a second background competing
      with the hero is worse than a scrim, and the frame's photo is of Split, Croatia. */
   background-color: var(--cw-scrim);
+  opacity: 1;
+  /* The exit: opacity runs for the duration, and `display` — a discrete property —
+     holds its visible value until the end, then flips to none. Without
+     `allow-discrete` the flip would happen at once and there would be nothing to fade. */
+  transition:
+    opacity var(--cw-motion-surface) ease-out,
+    display var(--cw-motion-surface) allow-discrete;
+}
+
+.overlay[data-open='false'] {
+  display: none;
+  opacity: 0;
+}
+
+/* The enter's *before* state. A node that has just been mounted — or has just gone from
+   display: none to flex — has no previous style to transition from, so its first paint
+   would be its final state. `@starting-style` supplies the missing one. Browsers that do
+   not know the rule paint the final state at once, which is the correct fallback. */
+@starting-style {
+  .overlay {
+    opacity: 0;
+  }
 }
 
 .card {
@@ -22,6 +44,24 @@
   border-radius: var(--cw-radius-lg);
   background-color: var(--cw-sand);
   box-shadow: var(--cw-shadow-lg);
+  opacity: 1;
+  scale: 1;
+  /* Opacity and scale, never a layout property: neither re-lays-out the page behind. */
+  transition:
+    opacity var(--cw-motion-surface) ease-out,
+    scale var(--cw-motion-surface) ease-out;
+}
+
+.overlay[data-open='false'] .card {
+  opacity: 0;
+  scale: 0.98;
+}
+
+@starting-style {
+  .card {
+    opacity: 0;
+    scale: 0.98;
+  }
 }
 
 .auth {

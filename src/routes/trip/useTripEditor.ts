@@ -67,6 +67,8 @@ export interface EditorState {
   name: string | null;
   tripStart: string | null;
   tripEnd: string | null;
+  /** The row's `type`, for the built-short notice: only a generated trip can be "short". */
+  type: string | null;
   updatedAt: string;
   saving: boolean;
   warnings: TripWarning[];
@@ -153,6 +155,7 @@ export function useTripEditor(tripId: string | undefined, enabled: boolean) {
     name: null,
     tripStart: null,
     tripEnd: null,
+    type: null,
     updatedAt: '',
     saving: false,
     warnings: [],
@@ -201,6 +204,7 @@ export function useTripEditor(tripId: string | undefined, enabled: boolean) {
         name: trip.name,
         tripStart: trip.tripStart,
         tripEnd: trip.tripEnd,
+        type: trip.type,
         updatedAt: trip.updatedAt,
         saving: false,
         warnings: [],

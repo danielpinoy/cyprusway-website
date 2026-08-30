@@ -91,7 +91,10 @@ export default function PlanTrip() {
   const [prefsFailed, setPrefsFailed] = useState(false);
   const [savingPrefs, setSavingPrefs] = useState(false);
 
-  const minStart = useMemo(() => toIso(minTripStart()), []);
+  /* Recomputed on every render rather than memoised at mount: a tab left open across
+     midnight would otherwise still offer the day that was "tomorrow" when it opened, and
+     the server refuses a trip that starts today. Trivially cheap. */
+  const minStart = toIso(minTripStart());
 
   /* One `users` read for the whole flow: the gate, step 1's prefill and the count. */
   useEffect(() => {
@@ -117,6 +120,23 @@ export default function PlanTrip() {
     navigate(`/trip/${id}`, { replace: true });
   }, [generation, navigate]);
 
+  /* Every ending re-reads the counter row, and the wizard adopts it. Without this the
+     review step, reached by Back from a counted failure, showed the count from the read
+     made at ENTRY — "3 of 3 left" after a spend. The row on the machine is the fresh one.
+
+     A 403 from the wire also settles the gate for this session: the entry read may have
+     failed (`unknown`) or the column may have changed underneath us, and the server has
+     just said which. The machine is then cleared so a later visit — after a grant, say —
+     starts from a fresh read rather than a remembered refusal. */
+  useEffect(() => {
+    if (generation.phase !== 'error') return;
+    if (generation.profile) setProfile(generation.profile);
+    if (generation.kind === 'premium') {
+      setProfile((current) => (current ? { ...current, access: 'free' } : current));
+      acknowledgeGeneration();
+    }
+  }, [generation]);
+
   const regions = useMemo(() => {
     /* From the catalogue, so the labels are translated and `famagusta` reads "Ayia Napa &
        Protaras" — intersected with the six slugs `trip-generate` accepts, because anything
@@ -129,7 +149,13 @@ export default function PlanTrip() {
   const endYmd = parseIso(draft.endIso);
   const span = startYmd && endYmd ? daysBetween(startYmd, endYmd) + 1 : 0;
   const spanError = span < 1 || span > MAX_TRIP_DAYS;
-  const datesReady = draft.startIso != null && draft.endIso != null && !spanError;
+  /* The `min` attribute constrains the picker, not the keyboard: a typed date is set and
+     `onChange` fires whatever `min` says. A past date is accepted by the server and would
+     plan a trip in the past; today's date is a 400 the wizard would then log as its own
+     defect. So the bound is checked here as well as drawn there. */
+  const startEarly = draft.startIso != null && draft.startIso < minStart;
+  const datesReady =
+    draft.startIso != null && draft.endIso != null && !spanError && !startEarly;
   const placesReady =
     draft.baseLocation != null &&
     draft.interestTags.length > 0 &&
@@ -208,8 +234,18 @@ export default function PlanTrip() {
     });
   }
 
+  const readyToCreate = datesReady && placesReady && draftComplete(draft);
+
   function onCreate() {
-    if (!user || !draftComplete(draft)) return;
+    if (!user || !readyToCreate) return;
+    /* The bound is re-derived at the moment of the spend, not taken from the render that
+       drew the button: `minStart` above is per render, but a click can land on a screen
+       painted before midnight. A start that is no longer tomorrow goes back to step 2
+       with the message rather than to the server for a 400. */
+    if (draft.startIso != null && draft.startIso < toIso(minTripStart())) {
+      goTo(2);
+      return;
+    }
     void startGeneration(user.id, draft);
   }
 
@@ -348,6 +384,7 @@ export default function PlanTrip() {
           maxEnd={startYmd ? toIso(addDays(startYmd, MAX_TRIP_DAYS - 1)) : undefined}
           span={span}
           spanError={draft.endIso != null && spanError}
+          startEarly={startEarly}
           onStart={(value) =>
             setDraft((current) => ({
               ...current,
@@ -421,7 +458,7 @@ export default function PlanTrip() {
         ) : (
           /* The only place money is spent, and it takes an explicit click. Never a side
              effect of Continue, and never disabled on a count this client is not sure of. */
-          <Button variant="primary" disabled={!draftComplete(draft)} onClick={onCreate}>
+          <Button variant="primary" disabled={!readyToCreate} onClick={onCreate}>
             {t('ui_plan_create')}
           </Button>
         )}

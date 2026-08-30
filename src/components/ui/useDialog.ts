@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -91,4 +91,26 @@ export function useDialog<T extends HTMLElement>(
       else if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     };
   }, [open, dismissible, focusables, ref]);
+}
+
+/**
+ * Whether a surface should be in the document: from its first open onwards.
+ *
+ * The motion convention needs the node to exist on both sides of a transition — a node
+ * that has just been mounted has no *before* state to enter from, and a node that has
+ * just been removed cannot animate out. So a surface mounts on its first open and then
+ * stays, toggling `data-open` and `inert` instead of unmounting; `display: none` in the
+ * closed state keeps it out of layout, the accessibility tree and the tab order.
+ *
+ * Returns `open || everOpened`, so the render that flips `open` on mounts the node in
+ * the same pass — that is the render `@starting-style` applies to. Before the first open
+ * it returns false, which keeps the prerender and the first client render identical (the
+ * server never renders a portal).
+ */
+export function useKeepMounted(open: boolean): boolean {
+  const [everOpened, setEverOpened] = useState(false);
+  useEffect(() => {
+    if (open) setEverOpened(true);
+  }, [open]);
+  return open || everOpened;
 }
