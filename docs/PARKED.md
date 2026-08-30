@@ -110,22 +110,31 @@ scroll (irrelevant: the overlays are `position: fixed`).
 `AuthGate` going from two Modals it mounted and unmounted to one it keeps mounted and hands
 the last card to while the exit runs.
 
-**What was measured, and what was not — 30 Aug 2026.** The build keeps the rules (four
-`@starting-style` blocks and two `allow-discrete` in the minified stylesheet), and the
-browser parses them (`transition-behavior` computes to `normal, allow-discrete`). Driven
-from the automation tab: on open the drawer is `translate: 0px`, the scrim opacity 1,
-`display: block`, not inert, focus on the first navigation row; on close `translate:
-100%`, opacity 0, **`display: none`**, inert, still mounted, scroll lock released, focus
-back on the trigger; re-opening from `display: none` lands the same way; under
-`?dir=rtl` the panel anchors to the left edge and its slide is `-100%`. The interests card
-paints its first frame at opacity 0 and scale 0.98 — the `@starting-style` before-state —
-with focus on the second focusable, and on close is inert with a `display` transition
-registered. **The 200 ms tween itself was not observed:** the automation window was
-hidden (`visibilityState: "hidden"`, zero animation frames), and the machine has the OS
-reduce-motion setting on, which the global clamp turns into a computed duration of
-`1e-05s` — rule 3, working, but in the way of watching rule 2. First sighting is owed on a
-foreground window without reduce-motion; the end states are what a screen reader and the
-keyboard depend on, and those are the part that was measured.
+**Measured, frame by frame — 30 Aug 2026, second attempt.** The first attempt read end
+states from a hidden automation tab and called the tween "not observable"; that was a
+reading, not a run, and it was reported as if it settled something. The second attempt
+drove a headless Chrome 152 over CDP — a document that paints, 20 animation frames per
+300 ms — with `prefers-reduced-motion` emulated each way:
+
+| | `no-preference` | `reduce` |
+|---|---|---|
+| Drawer, open | `translate` 100% → 62% → 31% → 9% → 0 over ~190 ms (ease-out); scrim 0 → 1 alongside | 100% → 0 between frame 0 and frame 1 |
+| Drawer, close | 0 → 38% → 68% → 91% → 100%; `display` flips to `none` at ~250 ms, after the slide | `none` by the next frame |
+| Drawer, re-open from `display: none` | starts at 100% again — `@starting-style` applies on every render, not only the first mount | instant |
+| Card, open | opacity 0 → 0.26 → 0.59 → 0.84 → 1 and scale 0.98 → 1 over 200 ms; scrim with it | instant |
+| Card, close | 1 → 0.62 → 0.32 → 0.09 → 0; `display: none` at ~240 ms | instant |
+| Focus | inside the surface on the first frame of open (first nav row; "Continue with Google"); back on the trigger on the first frame of close; the closed surface `inert` | same |
+| Computed durations | `0.2s` | `1e-05s` — the global clamp |
+
+**Why it looks like nothing on this development machine — and that is rule 3 working.**
+Windows *Animation effects* is **off** here (`SystemParametersInfo(SPI_GETCLIENTAREAANIMATION)`
+returns false; `HKCU\Control Panel\Desktop\WindowMetrics\MinAnimate = 0`), and that
+single value is what Chrome reports as `prefers-reduced-motion: reduce` — there is no
+Chrome-side switch. The site's global clamp then collapses every transition to 0.01 ms,
+which is exactly the "appears instantly" that was reported against the convention. To see
+the motion on this machine: Settings → Accessibility → Visual effects → *Animation
+effects* on, or DevTools → Rendering → *Emulate CSS media feature prefers-reduced-motion*
+→ `no-preference`. Nothing in the code changes either way.
 
 **What stayed parked, on purpose: the day accordion in the trip editor.** Animating height
 is rule 1's exception and needs `grid-template-rows: 0fr → 1fr` or measured heights, and
@@ -328,6 +337,36 @@ images. A designer's tag palette, which the app is also waiting on. And a CMS fi
 for best-time-to-visit, which is a content decision before it is a schema one.
 
 **Owner.** Content and design.
+
+### The mobile frames are drawn US-first — Sunday weeks, month-first dates — for a Cyprus audience
+
+**What.** Every frame with a date or a calendar in it carries United States conventions.
+The planner's date step (`3603-17674`) is a month grid whose week starts on **Sunday**;
+the trip frames write dates month-first. The audience is Cyprus, and every language the
+site ships is day-first with a Monday week — measured with `Intl.Locale(...).weekInfo`:
+`firstDay = 1` for `el-CY`, `en-CY`, `en-GB`, `de`, `pl`, `sv`; `7` for `en-US` (and
+`he-IL`, which is the one RTL case where Sunday would be right).
+
+**Why it matters beyond the one frame.** It already leaked into the site once without
+anyone drawing it: `formatDate` and `formatDayHeading` passed the site language `en`
+straight to `Intl`, which resolves a bare `en` to `en-US`, so every trip card, day heading
+and review line rendered "Sep 15, 2026" — while the comment above `formatDate` claimed
+"10 Sep 2026". Corrected 30 Aug 2026 with a one-line `dateLocale()` map (`en → en-GB`) on
+the date formatters. Times were left 12-hour on purpose: `en-GB` would flip them to
+24-hour, and the frames and the app both draw "6:00 AM" — a separate decision.
+
+**The rule.** A frame's calendar or date is a *placeholder in the designer's locale*, not
+a specification. Before any of it is copied: week start from `Intl.Locale('el-CY')`
+`.weekInfo`, date order from `Intl.DateTimeFormat('el-CY')`, and the site's English is
+`en-GB`. The app already made this call for its own grid (Monday-first) without a
+frame saying so; the web should not re-derive it on every phase.
+
+**What unparks it.** Nothing to unpark — it is a standing rule. Recorded because it will
+recur on any frame with a date in it, and because the same phase found the grid itself not
+worth building (PHASE-6-PLAN §18.3).
+
+**Owner.** Design, to redraw the date frames Monday-first and day-first when they are next
+touched; web, to keep checking.
 
 ### Explore is a catalogue, the rails are a ranking — do not "fix" the inconsistency
 
@@ -1384,6 +1423,18 @@ Three specific habits follow:
    "fails closed" was declared in prose; the second was proved by nine fixtures that run
    before every check. Prose that says a hole is closed is exactly the prose this entry
    is about.
+
+**And the same failure on the verification side — recorded 30 Aug 2026, same day.** The
+motion convention was reported as "measured" three times before it was: once from a
+`grep` showing the source was present, once from a hidden automation tab whose animation
+clock was frozen (`visibilityState: hidden`, zero frames), and once in a paragraph written
+*before* the measurement and left standing after it failed to happen. Each was a reading
+presented as a run. When the convention was then reported as not working, the cause —
+the machine's OS animation setting, read from the registry and reproduced under
+emulation — took one painting browser and ten minutes to establish. The rule extends:
+**a `grep` is not a run, a hidden tab is not a run, and "verified" means the thing was
+executed and its output is quoted.** Where a run is not possible, the entry says
+"unverified", not "measured".
 
 **Owner.** Whoever audits next. This entry is the reason the phase-6 audit
 (`PHASE-6-PLAN.md` §16) opened with the comments and not with the code.

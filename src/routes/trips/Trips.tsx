@@ -140,7 +140,9 @@ export default function Trips() {
                             </span>
                           </span>
                           <span className={styles.days}>
-                            {t('ui_trips_days', { count: trip.dayCount })}
+                            {trip.dayCount === 1
+                              ? t('ui_trips_days_one')
+                              : t('ui_trips_days', { count: trip.dayCount })}
                           </span>
                         </span>
                       </Link>

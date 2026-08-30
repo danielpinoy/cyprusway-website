@@ -52,7 +52,7 @@ gets English, exactly as before.
 
 ---
 
-## The queue — 320 keys, English only
+## The queue — 323 keys, English only
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
@@ -276,7 +276,7 @@ consistent with it.
 | `ui_trip_name_label` · `ui_trip_name_placeholder` | Trip name · Enter trip name | |
 | `ui_trip_region_label` | Select base destination | **Singular, though the frame's label is plural.** `base_location` is one text column |
 | `ui_trip_dates_label` · `ui_trip_from` · `ui_trip_to` | Date range · From · To | |
-| `ui_trip_span` | {count} days | **Has a placeholder** |
+|  | {count} days | **Has a placeholder** | (`ui_trip_span` was retired 30 Aug 2026 in favour of `ui_plan_dates_echo`, which carries the count)
 | `ui_trip_span_error` | A trip can be 1 to {max} days. | **Has a placeholder.** 31 is `trip-edit`'s structural cap, not a preference |
 | `ui_trip_create` · `ui_trip_creating` · `ui_trip_create_failed` | Create a Trip · Creating… · That trip couldn't be created. Please try again. | |
 | `ui_trip_list` · `ui_trip_map` | List · Map | The view toggle |
@@ -294,7 +294,7 @@ consistent with it.
 | `ui_trip_directions` · `ui_trip_directions_for` | Get Directions · Get directions to {name}, opens a map | Opens the reader's map site with the stop's stored coordinates. Nothing is routed and nothing is requested |
 | `ui_trip_drive` · `ui_trip_walk` | Drive for {minutes} min · Walk for {minutes} min | **Have a placeholder.** These two are the *whole* travel vocabulary: the stored mode is `car` or `walking` and there is no third value. **Do not translate the frame's "Take a bus"** — there is no bus |
 | `ui_trip_travel_pending` | Working out the times… | While a change is in flight. The previous number is never shown again once its neighbours have moved |
-| `ui_trip_lunch` · `ui_trip_lunch_any` | Lunch break · Pick any spot nearby | Lunch is placed by the server; the second line is for a lunch with no specific restaurant |
+| `ui_trip_lunch` · `ui_trip_lunch_any` · `ui_trip_lunch_near` | Lunch break · Pick any spot nearby · Pick any spot near {name} | Lunch is placed by the server. `_near` **has a placeholder** — the next stop's name — and is the usual case: the scheduler spends the travel to the next stop *before* lunch, so a venue-less lunch is at the next stop and the line says so. `_any` is for a lunch with nothing after it. Added 30 Aug 2026 |
 | `ui_trip_saving` | Saving… | Announced to a screen reader, not drawn |
 | `ui_trip_rename` · `ui_trip_rename_save` · `ui_trip_cancel` | Rename trip · Save name · Cancel | |
 | `ui_trip_conflict` | This trip changed somewhere else — showing the latest version. | **The optimistic-concurrency failure.** Usually the same person's phone, so "somewhere else" rather than "someone else". Never retried silently — that would overwrite whatever won the race |
@@ -315,14 +315,14 @@ consistent with it.
 | `ui_trips_title` · `ui_trips_sub` | My Trips · Everything you have planned | |
 | `ui_trips_new` | Build a new trip | |
 | `ui_trips_empty_title` · `ui_trips_empty_body` | No trips yet · Build one and it appears here, and in the app. | |
-| `ui_trips_days` | {count} days | **Has a placeholder** |
+| `ui_trips_days` · `ui_trips_days_one` | {count} days · 1 day | **Has a placeholder.** The singular was added 30 Aug 2026 — a one-day trip read "1 days". Languages with more than two plural forms need a translator's call on the count rule |
 | `ui_trips_open` | Open {name} | **Has a placeholder.** Accessible name of a trip card |
 | `ui_meta_buildtrip_title` · `ui_meta_buildtrip_desc` | Build My Trip — CyprusWay · Plan a Cyprus trip day by day — pick your base, your dates and your stops. | |
 | `ui_meta_trips_title` · `ui_meta_trips_desc` | My Trips — CyprusWay · The trips you have planned with CyprusWay. | `/trips` is `noIndex`; this metadata is for the browser tab, not for a crawler |
 
 ---
 
-### AI Trip Planner — 99, added in phase 6
+### AI Trip Planner — 101, added in phase 6
 
 The wizard at `/plan-trip`, the generation screen, the Premium explanation, and two strings
 the trip editor gained with it.
@@ -350,6 +350,7 @@ message and one that invites a second spend against a counter the reader cannot 
 | `ui_plan_prefs_failed` | Those preferences couldn't be saved. Please try again. | Blocks Continue: planning at the stored pace while the screen shows the chosen one would be worse |
 | `ui_plan_dates_title` · `ui_plan_dates_sub` | When are you going? · Trips start tomorrow at the earliest, and can run up to {max} days. | **Has a placeholder.** 31 is a contract bound, not a preference |
 | `ui_plan_dates_early` | Trips start tomorrow at the earliest — pick a later date. | The picker's `min` stops the mouse, not the keyboard; a typed "today" is a server 400 |
+| `ui_plan_dates_echo` · `ui_plan_dates_echo_one` | {from} – {to} · {count} days · {from} · 1 day | **Has three placeholders.** The line under the two date inputs, on `/plan-trip` and `/build-trip`: `{from}` and `{to}` are already-formatted dates in the site's language and day-first order ("Tue 15 Sept 2026"), so a translator reorders the sentence, not the dates. The inputs themselves render in the browser's locale and cannot be told otherwise |
 | `ui_plan_places_title` · `ui_plan_places_sub` | Where are you based, and what do you like? · Pete plans around one base and works outwards from it. | The base is **one** value, however plural the frame's label reads |
 | `ui_plan_interests_label` | What do you want to do? | The frame's wording |
 | `ui_plan_interests_count` · `ui_plan_interests_full` | {count} of {max} chosen · That's {max} — clear one to choose another. | **Have placeholders.** A sixth tag is refused by the server by name, so the cap is stated rather than only drawn as dimming |

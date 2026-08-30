@@ -170,6 +170,16 @@
   color: var(--cw-grey-3);
 }
 
+/* The catalogue's own category name. No capitalise: it is already cased, and forcing
+   title case would turn a Greek or Polish label into something no native reader writes. */
+.stopSubName {
+  margin: 0;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
 /* The model's tip. Body copy, not a caption: it is the one line on a generated trip that
    a hand-built one does not have, and it is a sentence rather than a label. */
 .stopNote {

@@ -14,7 +14,7 @@ import type { LanguageCode } from '../i18n/languages';
  */
 
 /** A localised name blob as stored on `destination` and `categories`. */
-type LocalisedName = Partial<Record<LanguageCode, string>>;
+export type LocalisedName = Partial<Record<LanguageCode, string>>;
 
 interface PlaceRow {
   id: number;
@@ -170,4 +170,42 @@ function toPlace(row: PlaceRow): Place {
 /** Pick a localised name, falling back to English then to nothing. */
 export function localised(name: LocalisedName, lang: LanguageCode): string {
   return name[lang] ?? name.en ?? '';
+}
+
+/**
+ * The localised primary-category name for each of a set of places, by place id.
+ *
+ * For the trip editor. A stored stop carries `category` as a SLUG — `resolveCategory` in
+ * `trip-generate/hydrate.ts` takes `categories[0].slug` and nothing else — so the editor
+ * had been rendering `slug.replace(/-/g, ' ')` under a CSS capitalise, which turned
+ * `viewpoints-landmarks` into "Viewpoints Landmarks" while Explore, reading the same
+ * catalogue row's `categories[0].name`, showed "Viewpoints & Landmarks". The ampersand was
+ * never in the slug to lose. This reads the names back from the rows the stops point at:
+ * one request for the trip's places, `id, categories` only, and the same `localised()`
+ * every other surface uses — so the label is the CMS's, in the reader's language, rather
+ * than a fifth hand-maintained copy of the category vocabulary.
+ *
+ * Tolerant: a place that has left the catalogue simply has no entry, and the caller falls
+ * back to the slug.
+ */
+export async function fetchCategoryNames(
+  placeIds: readonly number[],
+): Promise<ReadonlyMap<number, LocalisedName>> {
+  const ids = [...new Set(placeIds)].filter((id) => Number.isInteger(id));
+  if (ids.length === 0) return new Map();
+
+  const { data, error } = await getSupabase()
+    .from('places_sync')
+    .select('id, categories')
+    .in('id', ids)
+    .returns<{ id: number; categories: { slug: string; name: LocalisedName }[] | null }[]>();
+
+  if (error) throw error;
+
+  const names = new Map<number, LocalisedName>();
+  for (const row of data ?? []) {
+    const name = row.categories?.[0]?.name;
+    if (name) names.set(row.id, name);
+  }
+  return names;
 }

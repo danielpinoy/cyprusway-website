@@ -219,7 +219,6 @@ export const stringsEn = {
   ui_trip_dates_label: 'Date range',
   ui_trip_from: 'From',
   ui_trip_to: 'To',
-  ui_trip_span: '{count} days',
   ui_trip_span_error: 'A trip can be 1 to {max} days.',
   ui_trip_create: 'Create a Trip',
   ui_trip_creating: 'Creating…',
@@ -253,6 +252,11 @@ export const stringsEn = {
   ui_trip_travel_pending: 'Working out the times…',
   ui_trip_lunch: 'Lunch break',
   ui_trip_lunch_any: 'Pick any spot nearby',
+  /* The scheduler spends the travel to the NEXT stop before lunch begins — the leg on the
+     stop before lunch is the leg to the stop after it, and the next stop starts the moment
+     lunch ends. So the lunch is at the next stop, and saying so turns what read as a
+     missing travel leg into an explanation. `_any` remains for a lunch with nothing after. */
+  ui_trip_lunch_near: 'Pick any spot near {name}',
   ui_trip_saving: 'Saving…',
   ui_trip_rename: 'Rename trip',
   ui_trip_rename_save: 'Save name',
@@ -299,6 +303,7 @@ export const stringsEn = {
   ui_trips_empty_title: 'No trips yet',
   ui_trips_empty_body: 'Build one and it appears here, and in the app.',
   ui_trips_days: '{count} days',
+  ui_trips_days_one: '1 day',
   ui_trips_open: 'Open {name}',
   /* --- AI Trip Planner (phase 6) --------------------------------------------
      The wizard at /plan-trip, its five steps, the generation screen and the
@@ -339,6 +344,13 @@ export const stringsEn = {
   /* The picker's `min` stops the mouse, not the keyboard. A typed start before tomorrow
      is refused here with a reason, rather than sent for the server to refuse. */
   ui_plan_dates_early: 'Trips start tomorrow at the earliest — pick a later date.',
+  /* The echo under the two date inputs, in the site's language and day-first order —
+     the inputs themselves render in the browser's locale and cannot be told otherwise.
+     Used by /build-trip as well. {from} and {to} are formatDateLong: "Tue 15 Sept 2026". */
+  ui_plan_dates_echo: '{from} – {to} · {count} days',
+  /* A one-day trip: the range collapses to a single date and "days" to "day". English has
+     one irregular count; other languages have more, and a translator may need a third form. */
+  ui_plan_dates_echo_one: '{from} · 1 day',
   /* --- step 3: base destination and interests --- */
   ui_plan_places_title: 'Where are you based, and what do you like?',
   ui_plan_places_sub: 'Pete plans around one base and works outwards from it.',

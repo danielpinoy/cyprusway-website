@@ -89,7 +89,24 @@ export function relativeDayKey(date: string | null): 'today' | 'tomorrow' | null
 }
 
 /**
- * "Wed, 3 June" — the frame's day-header format, localised by the browser.
+ * The locale a DATE is formatted in, for a site language.
+ *
+ * `Intl` resolves a bare `en` to `en-US`, which puts the month first — "Sep 15, 2026" —
+ * and that is what the site's English had been rendering on every trip card, day heading
+ * and review line until 30 Aug 2026 (the comment on `formatDate` below claimed "10 Sep
+ * 2026"; it produced "Sep 10, 2026"). The site's English is Cyprus's English, which is
+ * day-first like every other language it ships. Mapped once, here, so no caller has to
+ * remember.
+ *
+ * Deliberately NOT applied to `formatTime`: `en-GB` would also switch the clock to
+ * 24-hour, and the frames and the app both draw "6:00 AM". That is a separate decision.
+ */
+function dateLocale(lang: string): string {
+  return lang === 'en' ? 'en-GB' : lang;
+}
+
+/**
+ * "Wed 3 June" — the frame's day-header format, localised by the browser.
  *
  * `timeZone: 'UTC'` is not decoration. Every formatter below is handed a `Date` built
  * with `Date.UTC`, which is a way of saying "these components, no zone" — and
@@ -103,7 +120,7 @@ export function relativeDayKey(date: string | null): 'today' | 'tomorrow' | null
 export function formatDayHeading(date: string | null, lang: string): string | null {
   const parsed = parseIso(date);
   if (!parsed) return null;
-  return new Intl.DateTimeFormat(lang, {
+  return new Intl.DateTimeFormat(dateLocale(lang), {
     weekday: 'short',
     day: 'numeric',
     month: 'long',
@@ -111,12 +128,36 @@ export function formatDayHeading(date: string | null, lang: string): string | nu
   }).format(new Date(Date.UTC(parsed.y, parsed.m - 1, parsed.d)));
 }
 
-/** "10 Sep 2026" — never the frame's "09-10-2026", which is ambiguous between DD-MM and
- *  MM-DD and would read as a different date to half the audience. */
+/** "10 Sept 2026" (ICU's en-GB abbreviation) — never the frame's "09-10-2026", which is
+ *  ambiguous between DD-MM and MM-DD and would read as a different date to half the
+ *  audience. Day-first in every site language; see `dateLocale`. */
 export function formatDate(date: string | null, lang: string): string {
   const parsed = parseIso(date);
   if (!parsed) return '';
-  return new Intl.DateTimeFormat(lang, {
+  return new Intl.DateTimeFormat(dateLocale(lang), {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(parsed.y, parsed.m - 1, parsed.d)));
+}
+
+/**
+ * "Tue 15 Sept 2026" — the date step's echo line: weekday, day, month, year.
+ *
+ * Why it exists: a native `<input type="date">` displays in the BROWSER's locale, not the
+ * site's, and nothing on the page can change that — so the two inputs read `mm/dd/yyyy`
+ * on an en-US machine whatever language the site is in. This line under them is in the
+ * site's language and in day-first order, with the weekday, which is also the part of a
+ * date people actually check a trip against. It is the whole of the date step's design
+ * (PHASE-6-PLAN §18.3, option C): the inputs stay native for keyboard, screen reader,
+ * locale and RTL, and the sentence carries what they cannot.
+ */
+export function formatDateLong(date: string | null, lang: string): string {
+  const parsed = parseIso(date);
+  if (!parsed) return '';
+  return new Intl.DateTimeFormat(dateLocale(lang), {
+    weekday: 'short',
     day: 'numeric',
     month: 'short',
     year: 'numeric',

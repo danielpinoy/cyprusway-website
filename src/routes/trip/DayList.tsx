@@ -13,6 +13,7 @@ import {
 import { Icon } from '../../components/ui/Icon';
 import { useI18n } from '../../i18n/I18nProvider';
 import { directusImageSrcSet, directusImageUrl } from '../../lib/directusImage';
+import { localised, type LocalisedName } from '../../lib/places';
 import type { TripElement } from '../../lib/tripEdit';
 import { formatDayHeading, formatTime, relativeDayKey } from '../../lib/tripDates';
 import type { EditorDay } from './useTripEditor';
@@ -35,6 +36,7 @@ function usableCoords(element: TripElement): { lat: number; lng: number } | null
 
 export function DayList({
   days,
+  categoryNames,
   collapsed,
   onToggleDay,
   onMoveStop,
@@ -43,6 +45,8 @@ export function DayList({
   onRemoveDay,
 }: {
   days: readonly EditorDay[];
+  /** Localised primary-category name by place id, from the catalogue (see Trip.tsx). */
+  categoryNames: ReadonlyMap<number, LocalisedName>;
   collapsed: ReadonlySet<number>;
   onToggleDay: (key: number) => void;
   onMoveStop: (dayIndex: number, poiIndex: number, direction: -1 | 1) => void;
@@ -58,6 +62,7 @@ export function DayList({
             day={day}
             dayIndex={dayIndex}
             dayCount={days.length}
+            categoryNames={categoryNames}
             collapsed={collapsed.has(day.key)}
             onToggle={() => onToggleDay(day.key)}
             onMoveStop={onMoveStop}
@@ -75,6 +80,7 @@ function Day({
   day,
   dayIndex,
   dayCount,
+  categoryNames,
   collapsed,
   onToggle,
   onMoveStop,
@@ -85,6 +91,7 @@ function Day({
   day: EditorDay;
   dayIndex: number;
   dayCount: number;
+  categoryNames: ReadonlyMap<number, LocalisedName>;
   collapsed: boolean;
   onToggle: () => void;
   onMoveStop: (dayIndex: number, poiIndex: number, direction: -1 | 1) => void;
@@ -152,9 +159,10 @@ function Day({
               if (element.type === 'lunch') {
                 /* Hidden while the day is pending: lunch position is server-derived and
                    may have moved, so showing where it used to be would be a guess. */
+                const after = day.pois.slice(elementIndex + 1).find(isStop);
                 return day.pending ? null : (
                   <li key={`lunch-${elementIndex}`}>
-                    <LunchRow element={element} />
+                    <LunchRow element={element} nextName={after?.name?.trim() || null} />
                   </li>
                 );
               }
@@ -167,6 +175,11 @@ function Day({
                 <li key={`${element.place_id}-${elementIndex}`}>
                   <StopRow
                     element={element}
+                    categoryName={
+                      typeof element.place_id === 'number'
+                        ? categoryNames.get(element.place_id) ?? null
+                        : null
+                    }
                     pending={day.pending}
                     canMoveUp={stopIndex > 0}
                     canMoveDown={stopIndex < stops.length - 1}
@@ -190,6 +203,7 @@ function Day({
 
 function StopRow({
   element,
+  categoryName,
   pending,
   canMoveUp,
   canMoveDown,
@@ -201,6 +215,8 @@ function StopRow({
   onRemove,
 }: {
   element: TripElement;
+  /** The catalogue's name for the stop's category, or null while it loads / if the place is gone. */
+  categoryName: LocalisedName | null;
   pending: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
@@ -262,9 +278,19 @@ function StopRow({
           {name}
         </p>
         {/* The frame's sub-line is a region; a stored element carries none, so the
-            category slug stands in — English, like the place names beside it. */}
-        {element.category && (
-          <p className={styles.stopSub}>{element.category.replace(/-/g, ' ')}</p>
+            category stands in. Its NAME comes from the catalogue row — "Viewpoints &
+            Landmarks", localised — because the stored element holds only the slug, and a
+            slug de-hyphenated under a capitalise lost the ampersand. The slug is the
+            fallback while the names load or if the place has left the catalogue. */}
+        {(categoryName || element.category) && (
+          <p
+            className={categoryName ? styles.stopSubName : styles.stopSub}
+            lang={categoryName ? undefined : 'en'}
+          >
+            {categoryName
+              ? localised(categoryName, lang)
+              : (element.category ?? '').replace(/-/g, ' ')}
+          </p>
         )}
         {/* The model's one-line tip.
          *
@@ -349,7 +375,19 @@ function StopRow({
   );
 }
 
-function LunchRow({ element }: { element: TripElement }) {
+/**
+ * The lunch row — and where the lunch is.
+ *
+ * The scheduler spends the travel to the NEXT stop before lunch: the leg drawn on the stop
+ * above is the leg to the stop below, lunch begins when that travel ends, and the next stop
+ * begins when lunch ends with no travel of its own. Measured on the first generated trip,
+ * every day: Kato Paphos ends 12:00, leg 4 min, lunch 12:04–13:34, Paphos Castle 13:34.
+ * So a venue-less lunch is AT the next stop, and the sub-line says so. Without it the
+ * layout — a leg row above "Lunch break", nothing between lunch and the stop — read as a
+ * missing leg, which is what the first review reported. The line is true under the model
+ * and turns the gap into the explanation.
+ */
+function LunchRow({ element, nextName }: { element: TripElement; nextName: string | null }) {
   const { t, lang } = useI18n();
   return (
     <div className={styles.stop}>
@@ -359,7 +397,13 @@ function LunchRow({ element }: { element: TripElement }) {
       </span>
       <div className={styles.stopBody}>
         <p className={styles.stopName}>{element.name?.trim() || t('ui_trip_lunch')}</p>
-        {element.place_id == null && <p className={styles.stopSub}>{t('ui_trip_lunch_any')}</p>}
+        {/* `stopSubName`, not `stopSub`: the latter capitalises every word, which is for a
+            de-hyphenated slug and would turn this sentence into title case. */}
+        {element.place_id == null && (
+          <p className={styles.stopSubName}>
+            {nextName ? t('ui_trip_lunch_near', { name: nextName }) : t('ui_trip_lunch_any')}
+          </p>
+        )}
       </div>
       <p className={styles.time}>{formatTime(element.start_time, lang)}</p>
     </div>

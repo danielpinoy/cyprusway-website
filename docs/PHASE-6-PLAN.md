@@ -1053,3 +1053,133 @@ What changed in the tree:
 
 `typecheck`, `check:css`, `check:contrast` and the full build pass. The minified stylesheet
 keeps all four `@starting-style` blocks and both `allow-discrete` keywords.
+
+**Measured frame by frame** in a headless Chrome 152 over CDP, with `prefers-reduced-motion`
+emulated both ways — the table is in `PARKED.md` under the convention's entry. Under
+`no-preference` the drawer slides 100 → 62 → 31 → 9 → 0 % over ~190 ms and `display` flips
+to `none` ~50 ms after the slide ends; the card fades 0 → 1 and settles 0.98 → 1 over
+200 ms; focus is inside on the first frame of open and back on the trigger on the first
+frame of close. Under `reduce` every one of those is instant, with computed durations of
+`1e-05s`.
+
+**Why it was reported as not firing.** This development machine has Windows *Animation
+effects* off — `SPI_GETCLIENTAREAANIMATION` false, `MinAnimate = 0` — and that is the
+value Chrome turns into `prefers-reduced-motion: reduce`. The global clamp then does
+precisely what rule 3 says. Turning the OS setting on, or emulating `no-preference` in
+DevTools → Rendering, shows the motion; no code changes.
+
+---
+
+## 18 · First review of a generated trip — 30 August
+
+The first generated trip on this account (`d7bb89fe`, "My Paphos Trip", 3 days) read as a
+product. Three things came back from looking at it; two were checked against the stored
+document and the rendered DOM rather than the code, and the third is a design choice this
+section argues rather than builds.
+
+### 18.1 "Viewpoints Landmarks" — the ampersand was never there to lose
+
+The stored stop carries `category` as a **slug**: `trip-generate/hydrate.ts`'s
+`resolveCategory` takes `categories[0].slug` and nothing else, and `trip-edit` builds
+elements the same way. Phase 5 rendered `slug.replace(/-/g, ' ')` under a CSS
+`text-transform: capitalize`, so `viewpoints-landmarks` became "Viewpoints Landmarks" —
+while Explore, reading the same catalogue row's `categories[0].name`, showed "Viewpoints &
+Landmarks". Same defect on `castles-fortifications`.
+
+**Fixed by reading the name back from the catalogue.** `fetchCategoryNames(placeIds)` in
+`lib/places.ts` selects `id, categories` for the trip's places — one request, keyed on the
+set of ids so a reorder does not refetch and an added stop does — and `DayList` renders
+`localised(name, lang)` with the slug as the fallback while it loads or if a place has left
+the catalogue. Not a client-side slug → label map: that would be a fifth hand-maintained
+copy of the category vocabulary, and the CMS already holds the name in five languages.
+Verified in the DOM on the generated trip: *Archaeological Sites · Castles & Fortifications ·
+Historical Sites · Beaches · Viewpoints & Landmarks*, all from the row, none from the slug.
+
+### 18.2 The "missing" travel leg — the server's timeline, faithfully drawn, read wrongly
+
+Checked against the stored document and then the rendered rows. Day 1 holds a `5 min /
+car` leg on Paphos Old Town, and the editor draws *Drive for 5 min* between Old Town and
+Tombs of the Kings — so the leg before Tombs is neither missing nor dropped.
+
+What every day does have is **one gap with no leg: Lunch → the next stop.** That is the
+scheduler's model, consistent across all three days: the leg on the stop *before* lunch is
+the travel to the stop *after* it, and it is spent before lunch begins — Kato Paphos ends
+12:00, leg 4 min, lunch 12:04–13:34, Paphos Castle at 13:34 with zero travel; Kourion
+Beach ends 13:15, leg 36, lunch 13:51; Lara Beach ends 14:19, leg 51, lunch 15:10. The
+lunch is therefore *at the next stop*, and the editor's layout — the leg row above the
+lunch row, nothing between lunch and the stop — is the timeline exactly. It reads as a gap
+because "Walk for 4 min" sits above "Lunch break — Pick any spot nearby" rather than above
+the stop it leads to.
+
+**Proposed, not built:** let the lunch row say where it is. Under this model "Pick any spot
+near Paphos Castle" is a true sentence, and it dissolves the false gap without moving the
+leg row away from where the clock puts it. One string (`ui_trip_lunch_near`, "Pick any spot
+near {name}"), the next stop's name, and the existing "Pick any spot nearby" as the fallback
+for a lunch with nothing after it. If the report meant a different gap than lunch → stop,
+the document above is the place to point at.
+
+### 18.3 The date step — three options, and the argument
+
+**What is actually wrong, measured.** Two native `<input type="date">` fields, and the
+tester's browser is `en-US`, so they render `mm/dd/yyyy`. That format is the browser's, not
+the site's: a native date input always displays in the *browser's* locale and ignores the
+page's `lang` — there is no attribute that changes it. A visitor in Cyprus on an `el-CY` or
+`en-GB` browser sees `dd/mm/yyyy` from the same markup. So "US format on a Cyprus site" is a
+property of the machine it was reviewed on and will be true of every option that keeps a
+native input. The second complaint stands on its own: nothing on the screen shows the span
+as a shape.
+
+**What the frame is.** `3603-17674` is a month grid with 14–17 September highlighted and
+the start underlined. Two things about it are not for copying: its week starts on
+**Sunday**, which is a US artefact — every Cyprus locale is Monday-first (`Intl.Locale`
+`weekInfo.firstDay` = 1 for `el-CY`, `en-CY`, `en-GB`, `de`, `pl`, `sv`; 7 for `en-US` and
+`he-IL`) — and it defines no interaction for choosing the range: the app resolved that as
+duration chips plus one tap on a start date, and it hand-rolled the grid because React
+Native has no date control at all, not because a grid was judged better.
+
+| | **A · Full range grid (the frame)** | **B · Start date + duration chips + echo (the app's model)** | **C · Two native inputs + echo (what I'd do without the frame)** |
+|---|---|---|---|
+| What changes | Hand-rolled month grid, click start / click end, hover preview, month arrows, min/max disabled cells | One native start input; chips 1–7, 10, 14, 21, 31; end derived | Nothing in the inputs; one formatted line under them |
+| Build | ~500 lines: ARIA `grid` pattern with roving tabindex, arrows by day/week, PageUp/Down for months, Home/End, Enter/Space, range model with restart-on-earlier-click, `Intl` weekday/month names, week start from `weekInfo`, min/max, tests | ~100 lines: chips are a radio group, the echo is one `Intl.DateTimeFormat` call | ~20 lines |
+| Keyboard | All of it is ours to write and to get wrong; range pickers are the hardest common a11y pattern | Free: native input segments, radio arrows | Free |
+| Screen reader | Ours: `aria-selected`, a live "start" / "end" announcement, the day-of-week in each cell's name | Free | Free |
+| RTL | Ours: grid columns mirror with `direction`, but arrow-key direction has to flip too, and the frame's Sunday-first would need a locale rule on top | Free | Free |
+| Locale | Ours, via `Intl` — and the display becomes the *site's* language, which is the one thing native inputs cannot do | Input shows the browser's locale; the echo shows the site's | Same |
+| Shows the span | Yes, as a shape | As a number and a sentence | As a sentence |
+| Matches the app | No (the app is a single-date grid + chips) | Yes — both clients collect duration + start | No (the app has no To field) |
+| Risk | Highest. Every hand-rolled surface in this repo has needed a correction pass, and a11y regressions here are silent | Low | Lowest |
+
+**The argument.** The two complaints are *format* and *legibility of the range*. Option C
+answers both in one line — "Tue 15 Sep – Fri 18 Sep 2026 · 4 days", in the site's language,
+via the `formatDate` that already exists — and touches nothing that the browser currently
+does for free. Option A answers them with a component whose cost is mostly invisible
+(keyboard, screen reader, RTL, week start) and whose model the frame does not even specify,
+to match a mobile screen that was drawn around a platform limitation the web does not
+have. Option B is the honest middle if the *duration* model is wanted: it is what the app
+collects, so the two clients would agree on what a trip's length is, and chips are keyboard
+and screen-reader complete by construction.
+
+**Recommendation: C now, B if the duration model is preferred over From/To, A not
+unless the range-as-shape is judged worth its own accessibility pass.** People arriving
+with flight tickets think in From/To, which is C's case; people planning "a long weekend"
+think in durations, which is B's. Both are one sitting. A is a phase.
+
+**One fact either way:** whatever the input, `minTripStart()` (strictly after today on
+both clocks) and the 31-day bound stay where they are, and the start is re-checked at the
+moment of the spend — those are contract rules, not picker choices.
+
+### 18.4 Decisions, 30 August — built
+
+- **§18.3: option C, built.** The two native inputs stay; under them one line —
+  `formatDateLong` × 2 and the count: "Tue 15 Sept 2026 – Fri 18 Sept 2026 · 4 days" — on
+  `/plan-trip` and on `/build-trip`, which had the same two inputs and the same bare count.
+  If durations turn out to be how people think about this, B is a later swap and the line
+  survives it.
+- **Building the echo exposed a second US-first leak, fixed with it:** the site's own
+  `formatDate` / `formatDayHeading` rendered `en` month-first ("Sep 15, 2026") because
+  `Intl` resolves bare `en` to `en-US` — the review step already showed it. A `dateLocale()`
+  map (`en → en-GB`) on the date formatters, not on `formatTime` (the frames and the app draw
+  12-hour). Verified in Node for all five languages; recorded in `PARKED.md` as a standing
+  rule for any frame with a date in it.
+- **§18.2: the lunch line, built.** "Pick any spot near Paphos Castle" — the next stop's
+  name — on a venue-less lunch with a stop after it; "Pick any spot nearby" otherwise.

@@ -10,6 +10,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { useSession } from '../../lib/SessionProvider';
 import { deleteTrip, MAX_TRIP_DAYS } from '../../lib/trips';
 import { fetchIsPremium } from '../../lib/profile';
+import { fetchCategoryNames, type LocalisedName } from '../../lib/places';
 import { downloadTripPdf } from '../../lib/tripPdf';
 import { daysBetween, formatDayHeading, formatTime, parseIso } from '../../lib/tripDates';
 import type { TripElement } from '../../lib/tripEdit';
@@ -45,6 +46,9 @@ export default function Trip() {
   const [renaming, setRenaming] = useState(false);
   const [draftName, setDraftName] = useState('');
   const [premium, setPremium] = useState(false);
+  const [categoryNames, setCategoryNames] = useState<ReadonlyMap<number, LocalisedName>>(
+    () => new Map(),
+  );
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfFailed, setPdfFailed] = useState(false);
 
@@ -100,6 +104,36 @@ export default function Trip() {
     settled &&
     state.days.length > 0 &&
     requestedDays > state.days.length;
+
+  /* The stored stop carries its category as a slug; the name — with its ampersand, in
+     the reader's language — lives on the catalogue row. One read for the trip's places,
+     keyed on the set of ids so a reorder does not refetch and an added stop does. A failed
+     read leaves the slug fallback in place; it is logged, never rendered. */
+  const placeIdKey = useMemo(
+    () =>
+      [...new Set(
+        state.days.flatMap((day) =>
+          day.pois
+            .map((element) => element.place_id)
+            .filter((value): value is number => typeof value === 'number'),
+        ),
+      )]
+        .sort((a, b) => a - b)
+        .join(','),
+    [state.days],
+  );
+  useEffect(() => {
+    if (!user || placeIdKey === '') return;
+    let cancelled = false;
+    void fetchCategoryNames(placeIdKey.split(',').map(Number))
+      .then((names) => {
+        if (!cancelled) setCategoryNames(names);
+      })
+      .catch((error) => console.warn('[trip] category names read failed:', error));
+    return () => {
+      cancelled = true;
+    };
+  }, [user, placeIdKey]);
 
   const existingByDay = useMemo(
     () =>
@@ -289,6 +323,7 @@ export default function Trip() {
           {view === 'list' ? (
             <DayList
               days={state.days}
+              categoryNames={categoryNames}
               collapsed={collapsed}
               onToggleDay={(key) =>
                 setCollapsed((previous) => {

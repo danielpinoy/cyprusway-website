@@ -28,7 +28,7 @@ import {
   type PartyType,
   type TripDraft,
 } from '../../lib/tripGenerate';
-import { formatDate } from '../../lib/tripDates';
+import { formatDate, formatDateLong } from '../../lib/tripDates';
 import { CheckboxChips, OptionTiles, RadioChips } from './PlannerControls';
 import styles from './PlanTrip.module.css';
 
@@ -134,7 +134,7 @@ export function DatesStep({
   onStart: (value: string) => void;
   onEnd: (value: string) => void;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const fromId = useId();
   const toId = useId();
 
@@ -184,14 +184,24 @@ export function DatesStep({
             />
           </div>
         </div>
+        {/* The echo: the one line the design of this step rests on. The inputs above render
+            in the browser's locale and show no shape of the range; this sentence is in the
+            site's language, day-first, with the weekday — "Tue 15 Sept 2026 – Fri 18 Sept
+            2026 · 4 days". PHASE-6-PLAN §18.3. */}
         <p className={styles.groupStatus} role="status">
           {startEarly
             ? t('ui_plan_dates_early')
             : spanError
               ? t('ui_trip_span_error', { max: MAX_TRIP_DAYS })
-              : span > 0
-                ? t('ui_trip_span', { count: span })
-                : ' '}
+              : span === 1
+                ? t('ui_plan_dates_echo_one', { from: formatDateLong(draft.startIso, lang) })
+                : span > 0
+                  ? t('ui_plan_dates_echo', {
+                      from: formatDateLong(draft.startIso, lang),
+                      to: formatDateLong(draft.endIso, lang),
+                      count: span,
+                    })
+                  : ' '}
         </p>
       </fieldset>
     </div>

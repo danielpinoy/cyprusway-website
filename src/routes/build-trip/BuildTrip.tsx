@@ -15,7 +15,14 @@ import {
   MAX_TRIP_NAME,
   type BaseLocation,
 } from '../../lib/trips';
-import { addDays, daysBetween, minTripStart, parseIso, toIso } from '../../lib/tripDates';
+import {
+  addDays,
+  daysBetween,
+  formatDateLong,
+  minTripStart,
+  parseIso,
+  toIso,
+} from '../../lib/tripDates';
 import { regionOptions } from '../../lib/explore';
 import { explorePool } from '../../lib/rails';
 import { PlannerEntry } from '../plan-trip/PlannerEntry';
@@ -213,10 +220,18 @@ export default function BuildTrip() {
                     />
                   </div>
                 </div>
+                {/* Same echo as the planner's date step: the site's language, day-first,
+                    with the weekday, under inputs that render in the browser's locale. */}
                 <p className={styles.hint} role="status">
                   {spanError
                     ? t('ui_trip_span_error', { max: MAX_TRIP_DAYS })
-                    : t('ui_trip_span', { count: span })}
+                    : span === 1
+                      ? t('ui_plan_dates_echo_one', { from: formatDateLong(start, lang) })
+                      : t('ui_plan_dates_echo', {
+                          from: formatDateLong(start, lang),
+                          to: formatDateLong(end, lang),
+                          count: span,
+                        })}
                 </p>
               </fieldset>
 
