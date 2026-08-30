@@ -9,6 +9,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { useSession } from '../../lib/SessionProvider';
 import { directusImageSrcSet, directusImageUrl } from '../../lib/directusImage';
 import { fetchAllTrips, type TripSummary } from '../../lib/trips';
+import { PlannerEntry } from '../plan-trip/PlannerEntry';
 import { formatDate } from '../../lib/tripDates';
 import styles from './Trips.module.css';
 
@@ -77,6 +78,11 @@ export default function Trips() {
             </div>
           ) : (
             <>
+              {/* Both ways to make a trip, in one place: Pete builds the whole thing, or
+                  you build it yourself. Signed-in only — signed out, the panel above is
+                  the only thing on this page that can lead anywhere. */}
+              <PlannerEntry />
+
               <p className={styles.newRow}>
                 <Link to="/build-trip" className={styles.new}>
                   {t('ui_trips_new')}

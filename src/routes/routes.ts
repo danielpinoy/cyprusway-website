@@ -39,6 +39,16 @@ export const ROUTE_META: Readonly<Record<string, RouteMeta>> = {
   /* `/trips` lists one account's trips, so it is prerendered for its shell and metadata
      and kept OUT of the sitemap: there is nothing on it for a crawler, and inviting one
      to a page that is only ever a sign-in panel is a crawl error waiting to happen. */
+  /* The AI Trip Planner. Indexed like `/build-trip`, and for the same reason: what a
+     signed-out visitor — and, on this site, almost every signed-in one — actually sees is
+     the Premium explanation, which is real public content about a real feature. The
+     wizard behind it is account-gated, but nothing on the page is private. */
+  '/plan-trip': {
+    titleKey: 'ui_meta_plantrip_title',
+    descKey: 'ui_meta_plantrip_desc',
+    changefreq: 'monthly',
+    priority: '0.7',
+  },
   '/trips': {
     titleKey: 'ui_meta_trips_title',
     descKey: 'ui_meta_trips_desc',

@@ -266,6 +266,28 @@ function StopRow({
         {element.category && (
           <p className={styles.stopSub}>{element.category.replace(/-/g, ' ')}</p>
         )}
+        {/* The model's one-line tip.
+         *
+         * **This is the only text generation adds to a trip.** A generated stop carries a
+         * sentence here; a stop added by hand carries `""` (measured: 0 of 3 POIs on the
+         * one hand-built trip in the database). Phase 5 rendered none of it, which made a
+         * generated trip indistinguishable from a manual one — the whole of what was paid
+         * for, dropped on the floor. Phase 6's brief called it, and it is four lines.
+         *
+         * Trimmed, so a manual `""` renders nothing rather than an empty paragraph.
+         *
+         * NO `lang` ATTRIBUTE, deliberately. The note is written by the model in the
+         * profile's `preferred_language` at generation time, and **the row does not record
+         * which language that was** — `generation_params.user_profile_snapshot` carries
+         * pace, interests, considerations, morning and traveller type, and no language
+         * (`trip-generate/index.ts:1030-1036`). Inheriting the page language is right for
+         * everyone who has not switched languages since generating, and asserting a
+         * specific one would be a guess wearing a fact's clothes. See BACKEND-HANDOFF §6.
+         *
+         * It renders through a pending day, unlike everything else in this row: times and
+         * legs are re-derived by the server on every edit and must not show a stale
+         * number, but a note belongs to the stop and `trip-edit` returns it untouched. */}
+        {element.notes?.trim() && <p className={styles.stopNote}>{element.notes.trim()}</p>}
         <div className={styles.stopActions}>
           {coords && (
             <a

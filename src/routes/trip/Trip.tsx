@@ -11,7 +11,7 @@ import { useSession } from '../../lib/SessionProvider';
 import { deleteTrip, MAX_TRIP_DAYS } from '../../lib/trips';
 import { fetchIsPremium } from '../../lib/profile';
 import { downloadTripPdf } from '../../lib/tripPdf';
-import { formatDayHeading, formatTime } from '../../lib/tripDates';
+import { daysBetween, formatDayHeading, formatTime, parseIso } from '../../lib/tripDates';
 import type { TripElement } from '../../lib/tripEdit';
 import { AddToTrip } from './AddToTrip';
 import { DayList } from './DayList';
@@ -80,6 +80,14 @@ export default function Trip() {
       cancelled = true;
     };
   }, [user]);
+
+  /* The requested span, from the two date columns the row carries. See the notice below. */
+  const requestedDays = useMemo(() => {
+    const from = parseIso(state.tripStart);
+    const to = parseIso(state.tripEnd);
+    return from && to ? daysBetween(from, to) + 1 : 0;
+  }, [state.tripStart, state.tripEnd]);
+  const builtShort = state.days.length > 0 && requestedDays > state.days.length;
 
   const existingByDay = useMemo(
     () =>
@@ -231,6 +239,26 @@ export default function Trip() {
                       : state.notice.kind === 'blocked'
                         ? t('ui_trip_blocked')
                         : t('ui_trip_save_failed')}
+            </p>
+          )}
+
+          {builtShort && (
+            /* The trip came back with fewer days than its dates cover.
+             *
+             * `trip-generate` ships a short trip rather than refusing one — R10 is exempt
+             * at the final gate, so a model that under-delivers after the correction retry
+             * produces a 200 with `days.length < days_requested`. Zero of the 35 stored
+             * generations did it, but the path is live and the app warns on it.
+             *
+             * Derived here rather than carried from the generate response, because the
+             * derivation is durable: it survives a reload and a fresh visit, and the
+             * response is gone by then. It cannot fire wrongly on an edited trip —
+             * `trip-edit` re-derives `trip_end` from the day count on every save, so the
+             * two agree again the moment anything is changed — nor on a new manual trip,
+             * which is created with `days: []`. */
+            <p className={styles.shortNotice} role="status">
+              <strong>{t('ui_trip_short_title')}</strong>{' '}
+              {t('ui_trip_short_body', { built: state.days.length, requested: requestedDays })}
             </p>
           )}
 

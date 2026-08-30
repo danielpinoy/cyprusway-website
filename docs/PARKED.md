@@ -576,6 +576,77 @@ Premium accounts do exist, so it is not dead code.
 
 **Owner.** Product.
 
+### The paywall sheet — drawn, and every claim on it is false
+
+**What.** Figma `3603-17982` (`01-premium`): a gold sheet with a crown, "Let CyprusWay plan
+your days", three benefit rows, a "CyprusWay Premium €4.99 / month" card over the words
+"One Time Payment", and a Continue button. It is the screen the AI Trip Planner's premium
+gate would open onto.
+
+**Why parked.** There is nothing to buy. `stripeEnabled` is `false`,
+`create-checkout-session` still returns buyers to `/premium.html` and
+`/premium-success.html` — both deleted in phase 1 — and there is no premium route on this
+site. A Continue button here cannot lead anywhere. Phase 6 ships the honest explanation
+instead: what Premium unlocks, stated truthfully, and that it is not on sale here yet, with
+**no call to action**. The same call phase 4 made for "Unlock Unlimited", for the same
+reason — a dead gold button on the screen where somebody has just been told no is worse
+than no button.
+
+**Read this before rebuilding it. All four claims on the sheet are wrong** *[measured
+30 Aug 2026]*:
+
+| the sheet says | what is true |
+|---|---|
+| "All 25 full 360° tours, every aerial preview" | `places_sync.virtual_tour` is null on **182 of 182** rows. There are none. The app removed this line on 21 Aug for exactly this reason |
+| "Drawn only from our 87 curated places and 37 vetted restaurants" | **181 published, 146 plannable, 37 restaurants.** 87 is the placeholder figure already dropped from this site's hero |
+| "€4.99 / month" above "One Time Payment" | It is **one-time**. Two different products in one card |
+| "a complete day-by-day plan in about ten seconds" | **median 22 s, worst measured 57.4 s** (n=14). The app's own loading screen repeats the error as "about 15 seconds" |
+
+**What Premium actually unlocks — three things, and none of them tours:** trip generation
+at three per Cyprus day, `trip-pdf`, and unlimited Ask Pete.
+
+**Do not name a price when it comes back, unless it can be charged.** €4.99 is the App
+Store product's price; the Stripe price comes from a secret and has never taken live money.
+A price the visitor cannot be charged is the same class of error as the other four claims.
+
+**And do not restore the gold ground.** The sheet paints its body copy in grey on
+`--cw-gold`, and its heading in near-white:
+
+    contrast: #ffffff on #c49a10 = 2.63 (rejected)
+    contrast: #f5f0e8 on #c49a10 = 2.32 (rejected)
+    contrast: #1b1c21 on #c49a10 = 6.46
+
+Copy on gold is `--cw-black-1`, the ruling phase 1 made for the gold button's label.
+`scripts/check-contrast.mjs` refuses an unmeasured gold surface, so this cannot come back
+silently.
+
+**What unparks it.** The Stripe rail switched on with a landing route — the three steps are
+already written down in `BACKEND-HANDOFF.md` §1. The parked flag-conditional free cap
+(`cyprusway-directus/docs/reference/curated/free-cap-flag-scoping-2026-08-30.md`) does
+**not** unpark it: it would let free accounts generate, which removes the reason to show a
+paywall rather than giving it a button.
+
+**Owner.** Product, then design.
+
+### The AI edit drawer — "Edit trip using AI" has no endpoint
+
+**What.** Figma `3605-18809`: a sheet over the trip editor with a free-text field —
+"Tell Pete anything specific, e.g. travelling with a toddler, need wheelchair access,
+celebrating…" — a `+` and a send button.
+
+**Why parked.** Nothing behind it exists. The project has eleven deployed functions and
+none takes free text over an itinerary. `trip-edit` is deterministic **by design** and says
+so in its own contract: *"Not the AI edit box. The designer's natural-language edit stays
+parked."* `regenerate-day` was proposed and never built. The Blocked Register files
+`08-edit-itinerary` as blocked. `mike` cannot stand in — its system prompt refuses trip
+planning and redirects to the Trips tab. The app has no such screen either.
+
+**What unparks it.** A contract. And when one is written, the open question is which
+counter it draws on: `trip-edit` being **free and unlimited** is stated in its header as
+load-bearing, and a paid sibling inheriting its skeleton would erode that.
+
+**Owner.** Backend, to specify before anyone designs against the frame again.
+
 ### `trip-generate` has no timeout on either OpenAI call
 
 **What.** Not phase 5's problem and recorded so it is not discovered by a future one.
@@ -588,7 +659,52 @@ where the embedding at least aborts at 1500 ms. It also consumes `consume_trip_g
 **What unparks a web generate screen.** Timeouts on both calls, and a decision about the
 burn-on-failure. That is a backend conversation before it is a web one.
 
-**Owner.** Backend.
+**Amended 30 August 2026 — the screen was built without either.** Neither happened, and
+phase 6 built the generate screen anyway, on the owner's 30 Aug ruling to build and test
+against the real gate as designed. **The backend debt is unchanged.** What stands in for it
+on the client is not a fix and must not be mistaken for one:
+
+- a **120 s** abort — above the measured maximum of 57.4 s (n=14, median 22) and below the
+  platform's own per-request wall clock, so the client gives up roughly when the server
+  would;
+- a **polled** recovery re-query rather than a single shot (see the entry below);
+- copy that states the spend on every failure path, with the remaining count read back from
+  the row the RPC has just written.
+
+A client-side abort does not stop the server, does not stop the OpenAI call, and does not
+refund anything. It only stops this browser waiting. The generation is paid for the moment
+the request clears `index.ts:1567`, which is why the screen offers no Cancel — offering one
+would imply both.
+
+**Owner.** Backend, still.
+
+### The app's generation recovery fires one query into the race it is trying to resolve
+
+**What.** Not a web defect — recorded here because phase 6 deliberately does not copy it,
+and because it is live in the app today. `cyprusway-app`'s `startGeneration` aborts at 90 s
+and calls `recoverOrFail`, which reads the newest `itineraries` row **once, immediately**,
+and reports failure if it finds nothing newer than the pre-request snapshot.
+
+**Why that is wrong.** The abort is exactly the moment the server may still be finishing:
+`trip-generate` has no timeout of its own, `persistItinerary` runs before the response, and
+a client abort does not cancel the handler. So the sequence is — client gives up at 90 s,
+single query returns nothing, screen says *"No new trip appeared on your list"*, server
+writes the row a second later. The user is told no trip was created by a query that was
+fired too early to know, and the trip is sitting in their list.
+
+It is a narrow window and it only opens on the slowest generations — which are exactly the
+ones that reach the abort in the first place.
+
+**What phase 6 does instead.** Re-queries at 0 s, 3 s, 8 s and 15 s before concluding
+anything, and only then shows copy that stays conditional: *"if the plan finishes it will
+be in My Trips."* Four indexed reads of the caller's own rows.
+
+**What unparks it.** Nothing here — the web is already right. The entry exists so that
+whoever next opens `tripPlanner.ts` knows the one-shot is a bug rather than a simplification,
+and so the app's copy (*"We looked — no trip was created, so retrying is safe"*) is not
+trusted on the timeout path, where it is a claim the single query cannot support.
+
+**Owner.** App.
 
 ### `trip-edit` validates the request shape before it authenticates
 
@@ -727,6 +843,30 @@ photo, because the tour *is* the product.
 while the query is empty and appears with no code change the day a row lands.
 
 **Owner.** Content.
+
+### The Pete illustration spells the brand "CUPRUSWAY"
+
+**What.** `public/images/pete.webp` — the cat in the pith helmet — has **CUPRUSWAY**
+embroidered on the hat, not CyprusWay. It is the design file's own asset (`3777:33828`),
+an AI-generated illustration, and the misspelling is baked into the pixels.
+**[measured 30 Aug 2026: exported at 3× from Figma and read]**
+
+**Where it already ships.** The Book with Pete card on the homepage renders it at 108% of
+the card height at ≥900px, which is large enough to read. The Ask Pete thread avatar
+renders it at 40px, which is not. Phase 6 adds a third use — the trip planner's waiting
+screen, at 220px — where it is legible again.
+
+**Why it is recorded rather than worked around.** Cropping the hat out, shrinking the
+illustration below legibility or dropping it from the loading screen would each hide a
+brand-name typo rather than fix it, and it would still be on the homepage. It is one
+regenerated or retouched asset, and every surface that uses it picks the fix up at once
+because they all point at the same file.
+
+**What unparks it.** A corrected illustration dropped in at `public/images/pete.webp`.
+Nothing in the code changes; the app has its own copy of the same artwork
+(`assets/images/trip-planner/pete-thinking.png`) and needs the same replacement.
+
+**Owner.** Design.
 
 ### Hero images — 108 of 181 published places have none
 
@@ -1005,3 +1145,39 @@ in `src/components/ui/useDialog.ts`.
 Confirmed still fixed in phase 5, which needed it: the add-to-trip drawer's parent
 re-renders on every pending-state change during a save, and an effect keyed on `onClose`
 would have yanked focus to the first control on each one.
+
+### Every stored time was displayed shifted by the reader's timezone — FIXED in phase 6
+
+**What.** `formatTime` in `src/lib/tripDates.ts` built a `Date` with `Date.UTC(2000, 0, 1,
+h, m)` and then formatted it with `Intl.DateTimeFormat` **without `timeZone: 'UTC'`**, so
+the formatter rendered that instant in the reader's own zone. A stop stored at `09:00`
+displayed as **11:00 AM** in Cyprus and as 4:00 AM in New York. Measured in the browser on
+30 Aug 2026, Europe/Bucharest, against a real trip document.
+
+The function's own comment said the opposite the entire time — *"the stored value is the
+server's clock-of-day and carries no zone; it is displayed, never converted"* — which is
+presumably why four phases of eyes passed over it. Prose is not a test.
+
+`formatDayHeading` and `formatDate` had the same omission with the same cause. Their blast
+radius is different and smaller: a date built at midnight UTC renders correctly everywhere
+east of Greenwich and one day early everywhere west of it, so a trip dated 31 August read
+"Sun, 30 August" to a reader in New York.
+
+**Why it surfaced now.** It was always wrong, on every trip on the site. Phase 6 made it
+matter more: a generated day starts at the profile's morning threshold — 08:00, 09:00 or
+10:00 — so a Cyprus traveller was shown a plan starting two or three hours after the one
+the server actually built, with lunch and every leg shifted with it. A hand-built trip's
+times are equally wrong but nobody has an expectation to compare them against.
+
+**The fix.** `timeZone: 'UTC'` on all three formatters. One option each. The `Date.UTC`
+constructor is a way of saying "these components, no zone", and UTC is how you ask for them
+back unchanged.
+
+**What is not fixed, and is not a defect.** Which day counts as "Today" is still a
+device-clock decision, deliberately, and matched to the app — `itineraries` carries no
+timezone and the two clients agreeing matters more than either being right in isolation.
+That is a different question from rendering a stored string.
+
+**Owner.** Web — done. Recorded because the comment that described the correct behaviour
+sat directly above the code that did the opposite, and because the app's own renderers
+should be checked for the same shape.

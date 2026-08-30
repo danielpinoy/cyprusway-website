@@ -123,3 +123,136 @@ export async function fetchIsPremium(userId: string): Promise<boolean> {
   if (error || !data) return false;
   return data.is_premium === true;
 }
+
+// ---------------------------------------------------------------------------
+// The AI Trip Planner's one profile read, and its one write.
+// ---------------------------------------------------------------------------
+
+export type PacePreference = 'relaxed' | 'moderate' | 'packed';
+export type MorningPreference = 'early_bird' | 'normal' | 'late_riser';
+
+export interface PlannerProfile {
+  /**
+   * `unknown` is not `free`.
+   *
+   * `fetchIsPremium` above reads a failed read as "not premium", which is right where it
+   * is used: hiding a button nobody could have pressed is a small error. Here the same
+   * reading would tell a paying account that the feature it paid for is not for it, which
+   * is a large one. So a read failure is `unknown`, and the caller lets it through to the
+   * server — `trip-generate`'s premium gate runs BEFORE the quota (`index.ts:1555`, then
+   * `:1567`), so a 403 costs the account nothing at all. An optimistic pass is free; a
+   * false refusal is not.
+   */
+  access: 'premium' | 'free' | 'unknown';
+  /** For prefilling step 1. Null when the column is null or the read failed. */
+  pace: PacePreference | null;
+  morning: MorningPreference | null;
+  /**
+   * The stored traveller type, read for one sentence on the review step.
+   *
+   * Omitting `trip_party` from the request does not mean "no party" — the server falls
+   * back to this column (`index.ts:1630`). So a skipped step 4 sends *something* when the
+   * column is set and nothing at all when it is null, and the review has to be able to
+   * tell the reader which. It is null on almost every account here, because the web's
+   * onboarding never writes it and the app writes it on a screen the web has no
+   * equivalent of.
+   */
+  travelerType: string | null;
+  /**
+   * The daily generation counter, exactly as stored. NOT interpreted here: the day it
+   * belongs to is a Cyprus calendar day the server owns, and deriving one in the browser
+   * is the mistake decision-log entry 64 names first. `lib/tripGenerate.ts` decides what
+   * this means, and only when it has a day off the wire.
+   */
+  generationsToday: number | null;
+  /** `users.trip_generations_reset_at` — the Cyprus day the count belongs to, or null. */
+  generationsResetAt: string | null;
+}
+
+const PACE_VALUES: readonly string[] = ['relaxed', 'moderate', 'packed'];
+const MORNING_VALUES: readonly string[] = ['early_bird', 'normal', 'late_riser'];
+
+/**
+ * The planner flow's one `users` read, made once at entry.
+ *
+ * Six columns answer four questions the flow would otherwise ask three times: whether
+ * the gate opens, what step 1 starts from, how many generations are left, and what a
+ * skipped party step would fall back to. All of them
+ * are on the caller's own row, under the existing "users can read own profile" policy.
+ */
+export async function fetchPlannerProfile(userId: string): Promise<PlannerProfile> {
+  const { data, error } = await getSupabase()
+    .from('users')
+    .select(
+      'is_premium, pace_preference, morning_preference, traveler_type, trip_generations_today, trip_generations_reset_at',
+    )
+    .eq('id', userId)
+    .maybeSingle<{
+      is_premium: boolean | null;
+      pace_preference: string | null;
+      morning_preference: string | null;
+      traveler_type: string | null;
+      trip_generations_today: number | null;
+      trip_generations_reset_at: string | null;
+    }>();
+
+  if (error || !data) {
+    console.warn('[planner] profile read failed:', error?.message ?? 'no row');
+    return {
+      access: 'unknown',
+      pace: null,
+      morning: null,
+      travelerType: null,
+      generationsToday: null,
+      generationsResetAt: null,
+    };
+  }
+
+  return {
+    access: data.is_premium === true ? 'premium' : 'free',
+    pace: PACE_VALUES.includes(data.pace_preference ?? '')
+      ? (data.pace_preference as PacePreference)
+      : null,
+    morning: MORNING_VALUES.includes(data.morning_preference ?? '')
+      ? (data.morning_preference as MorningPreference)
+      : null,
+    travelerType: data.traveler_type,
+    generationsToday:
+      typeof data.trip_generations_today === 'number' ? data.trip_generations_today : null,
+    generationsResetAt: data.trip_generations_reset_at,
+  };
+}
+
+/**
+ * Step 1's write. Pace and morning are **not** request fields — sending either to
+ * `trip-generate` is a 400 that names the key (probed 30 Aug 2026). The server reads them
+ * off `public.users` itself, so the only way to make the choice take effect is to store it.
+ *
+ * Both columns are in the nine-column `UPDATE` grant `authenticated` holds, and this is the
+ * same write the app's `writeTripProfile` makes — deliberately, because two clients
+ * disagreeing about where a shared column is written is worse than either choice.
+ *
+ * **It is one row, so it also changes how the app plans trips for this account**, the same
+ * property `savePreferredLanguage` above has. And it lands on Continue rather than at the
+ * end, so a wizard abandoned at step 2 has still changed the stored preferences. That is
+ * the app's behaviour and phase 6 matches it; the alternative is a failed write arriving at
+ * the same moment as a paid action.
+ *
+ * `.select('id')` is load-bearing: without it a zero-row update — missing row, changed RLS,
+ * revoked grant — returns success and saves nothing, and the wizard would go on to generate
+ * at the stored pace while the screen showed the chosen one.
+ */
+export async function saveTripPreferences(
+  userId: string,
+  pace: PacePreference,
+  morning: MorningPreference,
+): Promise<void> {
+  const { data, error } = await getSupabase()
+    .from('users')
+    .update({ pace_preference: pace, morning_preference: morning })
+    .eq('id', userId)
+    .select('id');
+
+  if (error) throw error;
+  if (!data || data.length === 0) throw new Error('zero_rows_updated');
+}

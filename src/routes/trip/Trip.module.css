@@ -113,6 +113,24 @@
   line-height: var(--cw-body-line);
 }
 
+/* The built-short notice.
+ *
+ * The same calm treatment as the advisory warnings below, deliberately NOT `.notice`
+ * above: a short trip is not a failure. `trip-generate` ships one rather than refusing —
+ * R10 is exempt at the final gate — so the trip is real, usable and editable, and it just
+ * covers fewer days than its dates do. The alert red is for a change that did not save. */
+.shortNotice {
+  margin: 0;
+  padding-block: var(--cw-space-12);
+  padding-inline: var(--cw-space-16);
+  border-radius: var(--cw-radius-sm);
+  background-color: color-mix(in srgb, var(--cw-navy) 8%, transparent);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-navy on #e4e2de = 8.61 */
+  color: var(--cw-navy);
+}
+
 /* The advisory tier — R2/R3/R5/R7/R9. Shown, never blocking: nothing in it was refused. */
 .warnings {
   display: flex;

@@ -1,0 +1,133 @@
+/* The generation screen. The frame draws the waiting state full-bleed on navy with no
+   tab bar; on the web it sits in the wizard's own column on the sand ground, because the
+   site has a header and a footer and taking them away for one screen would be a different
+   page rather than a step. */
+
+.centre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cw-space-16);
+  padding-block: var(--cw-space-48);
+  text-align: center;
+}
+
+.pete {
+  inline-size: auto;
+  block-size: 220px;
+  max-inline-size: 100%;
+  object-fit: contain;
+}
+
+.waitingCopy {
+  margin: 0;
+  font-size: var(--cw-h4-size);
+  line-height: var(--cw-h4-line);
+  font-weight: var(--cw-h4-weight);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.waitingSub {
+  margin: 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+/* Three dots, cycling. Decoration — the sentence above is the live region, so nothing is
+   lost when the animation is suppressed. */
+.dots {
+  display: inline-flex;
+  gap: var(--cw-space-8);
+}
+
+.dot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: var(--cw-radius-pill);
+  /* contrast: --cw-gold-link on --cw-sand = 4.96 (graphic) */
+  background-color: var(--cw-gold-link);
+  opacity: 0.25;
+  animation: dot-cycle 1.2s infinite ease-in-out;
+}
+
+.dot[data-index='1'] {
+  animation-delay: 0.4s;
+}
+
+.dot[data-index='2'] {
+  animation-delay: 0.8s;
+}
+
+@keyframes dot-cycle {
+  0%,
+  66% {
+    opacity: 0.25;
+  }
+  33% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* ---- the endings ---------------------------------------------------------- */
+
+.failTitle {
+  margin: 0;
+  font-size: var(--cw-h2-size);
+  line-height: var(--cw-h2-line);
+  font-weight: var(--cw-h2-weight);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.failBody {
+  margin: 0;
+  max-inline-size: 40rem;
+  font-size: var(--cw-subtitle-size);
+  line-height: var(--cw-subtitle-line);
+  /* contrast: --cw-black-2 on --cw-sand = 9.33 */
+  color: var(--cw-black-2);
+}
+
+/* "That attempt counted — 2 of 3 left today." Deliberately not quiet: it is the sentence
+   the reader needs before deciding whether to press the button next to it. */
+.counted {
+  margin-block: var(--cw-space-8) 0;
+  font-size: var(--cw-subtitle-size);
+  line-height: var(--cw-subtitle-line);
+  font-weight: 590;
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.failActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cw-space-12);
+  margin-block-start: var(--cw-space-8);
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  font-weight: 590;
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+  text-decoration: underline;
+  cursor: pointer;
+}

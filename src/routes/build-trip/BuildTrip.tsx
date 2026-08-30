@@ -18,6 +18,7 @@ import {
 import { addDays, daysBetween, minTripStart, parseIso, toIso } from '../../lib/tripDates';
 import { regionOptions } from '../../lib/explore';
 import { explorePool } from '../../lib/rails';
+import { PlannerEntry } from '../plan-trip/PlannerEntry';
 import { useHomeData } from '../home/useHomeData';
 import { ShellError } from '../home/ShellError';
 import styles from './BuildTrip.module.css';
@@ -131,6 +132,10 @@ export default function BuildTrip() {
             </div>
           ) : (
             <form className={styles.form} onSubmit={submit}>
+              {/* The alternative to filling this in by hand, offered before the work
+                  rather than after it. */}
+              <PlannerEntry />
+
               <div className={styles.field}>
                 <label className={styles.label} htmlFor="cw-trip-name">
                   {t('ui_trip_name_label')}

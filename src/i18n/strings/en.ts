@@ -293,6 +293,154 @@ export const stringsEn = {
   ui_trips_empty_body: 'Build one and it appears here, and in the app.',
   ui_trips_days: '{count} days',
   ui_trips_open: 'Open {name}',
+  /* --- AI Trip Planner (phase 6) --------------------------------------------
+     The wizard at /plan-trip, its five steps, the generation screen and the
+     Premium explanation most visitors will see instead of any of it.
+
+     Two rules run through this block. Numbers that come from data are always
+     placeholders, never written into the sentence: {n}, {cap}, {max}, {date},
+     {built}, {requested}. And every failure that happened after the server
+     consumed the day's allowance says so — "that attempt counted" is the
+     difference between an honest message and one that invites a second spend
+     against a counter the reader cannot see. */
+  ui_plan_title: 'AI Trip Planner',
+  ui_plan_sub: 'Your Cyprus Travel Companion',
+  ui_plan_steps_label: 'Trip planner steps',
+  ui_plan_step_of: 'Step {n} of {total}',
+  ui_plan_back: 'Back',
+  ui_plan_continue: 'Continue',
+  ui_plan_skip: 'Skip',
+  /* --- step 1: the two preferences that live on the profile, not on the request --- */
+  ui_plan_prefs_title: 'How do you like to travel?',
+  ui_plan_prefs_sub:
+    'Pete uses this for every trip you plan, here and in the app. You can change it any time.',
+  ui_plan_pace_label: 'Pace preference',
+  /* "Balanced" is the frame's word; the stored value is `moderate`. The label is the
+     design's and the value is the column's, and they are allowed to differ. */
+  ui_plan_pace_relaxed: 'Relaxed',
+  ui_plan_pace_moderate: 'Balanced',
+  ui_plan_pace_packed: 'Packed',
+  ui_plan_morning_label: 'Morning preference',
+  ui_plan_morning_early: 'Early riser',
+  ui_plan_morning_normal: 'Normal',
+  ui_plan_morning_late: 'Late starter',
+  ui_plan_prefs_failed: "Those preferences couldn't be saved. Please try again.",
+  /* --- step 2: dates --- */
+  ui_plan_dates_title: 'When are you going?',
+  ui_plan_dates_sub:
+    'Trips start tomorrow at the earliest, and can run up to {max} days.',
+  /* --- step 3: base destination and interests --- */
+  ui_plan_places_title: 'Where are you based, and what do you like?',
+  ui_plan_places_sub: 'Pete plans around one base and works outwards from it.',
+  ui_plan_interests_label: 'What do you want to do?',
+  ui_plan_interests_count: '{count} of {max} chosen',
+  ui_plan_interests_full: "That's {max} — clear one to choose another.",
+  /* --- step 4: who is travelling --- */
+  /* Not the frame's "What do you want to book?", which belongs to a deleted frame and to
+     Book with Pete. The heading is written from the body. */
+  ui_plan_party_title: 'Who is travelling?',
+  ui_plan_party_sub: 'Optional. It changes the kind of places Pete picks.',
+  ui_plan_party_solo: 'Solo',
+  ui_plan_party_solo_desc:
+    'Flexible ideas, easy-to-visit places and experiences that work well on your own.',
+  ui_plan_party_couple: 'Couple',
+  ui_plan_party_couple_desc:
+    'Scenic escapes, shared experiences and places that feel special together.',
+  ui_plan_party_family: 'Family',
+  ui_plan_party_family_desc:
+    'Family-friendly places, simple days out and experiences for different ages.',
+  ui_plan_party_friends: 'Friends',
+  ui_plan_party_friends_desc:
+    'Lively places, group activities and memorable experiences to enjoy together.',
+  ui_plan_children_label: 'How old are the children?',
+  ui_plan_children_under_5: 'Under 5',
+  ui_plan_children_age_5_12: 'Ages 5–12',
+  ui_plan_children_teenagers: 'Teenagers',
+  /* --- step 5: review, and the one button that spends a generation --- */
+  ui_plan_review_title: 'Ready to plan',
+  ui_plan_review_sub: 'Pete builds the whole trip in one go. You can change all of it afterwards.',
+  ui_plan_review_where: 'Where',
+  ui_plan_review_when: 'When',
+  ui_plan_review_days: 'Days',
+  ui_plan_review_interests: 'Interests',
+  ui_plan_review_party: 'Travelling',
+  /* Shown when step 4 was skipped AND the profile carries no traveller type — which is
+     almost every account on this site. It says what will happen, not what was chosen. */
+  ui_plan_review_party_none: 'No preference',
+  ui_plan_review_party_profile: 'Your usual travel style',
+  ui_plan_create: 'Create my trip',
+  /* Measured: median 22 s, worst 57.4 s of fourteen. NOT the paywall frame's "about ten
+     seconds" and not the app's "about 15 seconds" — both are below the median. */
+  ui_plan_duration_hint: 'Usually 20 to 30 seconds. Sometimes longer.',
+  /* Three forms, because the count is only sometimes knowable. See lib/tripGenerate.ts:
+     the day a count belongs to is a Cyprus calendar day the server owns, so before this
+     session has seen one, the number is a floor rather than a fact. */
+  ui_plan_quota_known: '{n} of {cap} left today',
+  ui_plan_quota_unknown: 'Up to {cap} trips a day',
+  ui_plan_quota_none: "That's all {cap} for today. More on {date}, Cyprus time.",
+  /* --- generating --- */
+  ui_plan_building: 'Building your Cyprus route…',
+  ui_plan_building_long: 'Still working — this one is taking longer than usual.',
+  /* --- the outcomes. Every one of these says whether the attempt counted. --- */
+  ui_plan_fail_generation_title: "Pete couldn't build this trip",
+  ui_plan_fail_generation_body:
+    'Changing your dates, base or interests usually helps.',
+  ui_plan_fail_server_title: 'The planner could not finish',
+  ui_plan_fail_server_body: 'Nothing arrived, and no new trip appeared on your list.',
+  ui_plan_fail_slow_title: 'This is taking longer than expected',
+  ui_plan_fail_slow_body:
+    'Pete may still be working. If the plan finishes, it will be in My Trips.',
+  ui_plan_fail_offline_title: "Couldn't reach the planner",
+  ui_plan_fail_offline_body:
+    'We checked — no trip was created, so trying again is safe.',
+  ui_plan_fail_quota_title: "That's all for today",
+  ui_plan_fail_invalid_title: 'Something in this trip did not make sense to the planner',
+  ui_plan_fail_invalid_body: 'Go back and check your dates, base and interests.',
+  ui_plan_fail_auth_title: 'Your session expired',
+  ui_plan_fail_auth_body: 'Sign in again to plan a trip.',
+  /* The counted line, appended to the failures above that landed after the server spent
+     the allowance. Separate from the body so the two halves cannot drift apart. */
+  ui_plan_counted: 'That attempt counted — {n} of {cap} left today.',
+  ui_plan_counted_unknown: 'That attempt counted.',
+  ui_plan_recovered_title: 'Your trip was created',
+  ui_plan_recovered_body:
+    'The connection dropped on the way back, but Pete finished the plan — and that generation is already counted.',
+  ui_plan_view_trip: 'View your trip',
+  ui_plan_check_trips: 'Check My Trips',
+  ui_plan_retry: 'Try again',
+  ui_plan_change: 'Change details',
+  /* --- the Premium explanation: what a free account gets, and it is the common path ---
+     Written from what premium measurably unlocks. Not from the paywall frame, whose four
+     claims are all false — see docs/PARKED.md. No price: nothing on this site can charge
+     one. No button: there is nothing to buy. */
+  ui_plan_premium_title: 'Pete can plan the whole trip',
+  ui_plan_premium_body:
+    'Tell Pete your dates, where you are based and what you like, and he builds a complete day-by-day plan — real places from the CyprusWay catalogue, grouped by area, with lunch and travel time worked in. It arrives in your trips, ready to edit.',
+  ui_plan_premium_lead: 'Trip planning is part of CyprusWay Premium, along with:',
+  ui_plan_premium_gen: 'Three planned trips a day',
+  ui_plan_premium_gen_body:
+    'Each one a full itinerary you can reorder, add to and trim.',
+  ui_plan_premium_pdf: 'Print or download any trip as a PDF',
+  ui_plan_premium_pdf_body: 'The whole plan on paper, for the car.',
+  ui_plan_premium_pete: 'Unlimited Ask Pete',
+  ui_plan_premium_pete_body: 'No daily limit on questions.',
+  ui_plan_premium_note:
+    'Premium is not on sale on this site yet — there is nothing to buy here today. If your account already has Premium, sign in with it and the planner opens.',
+  ui_plan_premium_alt: 'Build a trip yourself',
+  ui_plan_premium_alt_body:
+    'Free and unlimited. Pick your base and your dates, then add the places you want.',
+  /* --- the entry cards on /build-trip and /trips --- */
+  ui_plan_entry_title: 'Let Pete plan it for you',
+  ui_plan_entry_body:
+    'Give Pete your dates and your base and he builds the whole itinerary, day by day.',
+  ui_plan_entry_cta: 'Open the AI Trip Planner',
+  /* --- the editor's built-short notice (phase 5's DayList) --- */
+  ui_trip_short_title: 'This trip came back short',
+  ui_trip_short_body:
+    'Pete planned {built} of the {requested} days you asked for. Add the rest yourself, or plan again.',
+  ui_meta_plantrip_title: 'AI Trip Planner — CyprusWay',
+  ui_meta_plantrip_desc:
+    'Let Pete plan your Cyprus trip day by day — your dates, your base, and a full itinerary you can edit.',
   ui_meta_buildtrip_title: 'Build My Trip — CyprusWay',
   ui_meta_buildtrip_desc:
     'Plan a Cyprus trip day by day — pick your base, your dates and your stops.',

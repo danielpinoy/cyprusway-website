@@ -170,6 +170,16 @@
   color: var(--cw-grey-3);
 }
 
+/* The model's tip. Body copy, not a caption: it is the one line on a generated trip that
+   a hand-built one does not have, and it is a sentence rather than a label. */
+.stopNote {
+  margin-block: var(--cw-space-4) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-black-2 on --cw-sand = 9.33 */
+  color: var(--cw-black-2);
+}
+
 .stopActions {
   display: flex;
   flex-wrap: wrap;

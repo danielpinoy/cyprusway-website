@@ -1,0 +1,145 @@
+/* The Premium explanation. White card on the sand ground — deliberately NOT the frame's
+   gold sheet, on which nothing light survives:
+     contrast: #ffffff on --cw-gold = 2.63 (rejected)
+     contrast: --cw-sand on --cw-gold = 2.32 (rejected)
+   and a page whose every line has to be near-black on gold is a page that wants a white
+   card. There is no gold call to action here because there is nothing to buy. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-16);
+  padding: var(--cw-space-32);
+  border-radius: var(--cw-radius-lg);
+  background-color: var(--cw-white);
+  box-shadow: var(--cw-shadow-sm);
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-gold-tint);
+  /* contrast: --cw-gold-link on --cw-gold-tint = 5.16 (graphic) */
+  color: var(--cw-gold-link);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-h2-size);
+  line-height: var(--cw-h2-line);
+  font-weight: var(--cw-h2-weight);
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.body {
+  margin: 0;
+  font-size: var(--cw-subtitle-size);
+  line-height: var(--cw-subtitle-line);
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+}
+
+.lead {
+  margin: 0;
+  font-size: var(--cw-subtitle-size);
+  line-height: var(--cw-subtitle-line);
+  font-weight: 590;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.benefits {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cw-space-12);
+}
+
+.benefitMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-navy) 8%, var(--cw-white));
+  /* contrast: --cw-navy on #edeff3 = 9.68 (graphic) */
+  color: var(--cw-navy);
+}
+
+.benefitText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-4);
+  min-inline-size: 0;
+}
+
+.benefitTitle {
+  font-size: var(--cw-subtitle-size);
+  line-height: 1.4;
+  font-weight: 590;
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+}
+
+.benefitBody {
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+/* The honest sentence: there is nothing to buy here. It is stated plainly rather than
+   dressed as a teaser, because a teaser implies a purchase is coming and none is. */
+.note {
+  margin: 0;
+  padding: var(--cw-space-12);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-sand);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-black-2 on --cw-sand = 9.33 */
+  color: var(--cw-black-2);
+}
+
+/* The thing that does work, and it is free. */
+.alt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cw-space-12);
+  padding-block-start: var(--cw-space-16);
+  border-block-start: 1px solid var(--cw-border-decorative);
+}
+
+.altBody {
+  flex: 1 1 18rem;
+  margin: 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.altLink {
+  font-size: var(--cw-button-size);
+  line-height: var(--cw-button-line);
+  font-weight: var(--cw-button-weight);
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}

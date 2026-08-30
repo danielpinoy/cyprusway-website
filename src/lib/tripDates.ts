@@ -88,7 +88,18 @@ export function relativeDayKey(date: string | null): 'today' | 'tomorrow' | null
   return null;
 }
 
-/** "Wed, 3 June" — the frame's day-header format, localised by the browser. */
+/**
+ * "Wed, 3 June" — the frame's day-header format, localised by the browser.
+ *
+ * `timeZone: 'UTC'` is not decoration. Every formatter below is handed a `Date` built
+ * with `Date.UTC`, which is a way of saying "these components, no zone" — and
+ * `Intl.DateTimeFormat` then renders it in the READER's zone unless told otherwise. West
+ * of Greenwich that turns midnight UTC into the previous evening, so a trip day dated
+ * 31 August displayed "Sun, 30 August" to a reader in New York. The trip carries no
+ * timezone and none is wanted: the stored value is the day, and UTC is how you ask for it
+ * back unchanged. Fixed in phase 6 — see formatTime, where the same omission moved every
+ * stop's clock.
+ */
 export function formatDayHeading(date: string | null, lang: string): string | null {
   const parsed = parseIso(date);
   if (!parsed) return null;
@@ -96,6 +107,7 @@ export function formatDayHeading(date: string | null, lang: string): string | nu
     weekday: 'short',
     day: 'numeric',
     month: 'long',
+    timeZone: 'UTC',
   }).format(new Date(Date.UTC(parsed.y, parsed.m - 1, parsed.d)));
 }
 
@@ -108,16 +120,31 @@ export function formatDate(date: string | null, lang: string): string {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
+    timeZone: 'UTC',
   }).format(new Date(Date.UTC(parsed.y, parsed.m - 1, parsed.d)));
 }
 
-/** Stored "HH:MM" in the reader's locale. The stored value is the server's clock-of-day
- *  and carries no zone; it is displayed, never converted. */
+/**
+ * Stored "HH:MM" in the reader's locale. The stored value is the server's clock-of-day
+ * and carries no zone; it is displayed, **never converted**.
+ *
+ * It was being converted. Without `timeZone: 'UTC'` the formatter renders the UTC instant
+ * this function builds in whatever zone the reader's device is in, so a stop stored at
+ * `09:00` displayed as **11:00 AM** in Cyprus (measured, Europe/Bucharest, 30 Aug 2026)
+ * and as 4:00 AM in New York. Every time on every trip was wrong by the reader's offset,
+ * and the comment above this function said the opposite the whole time.
+ *
+ * It matters more from phase 6 on, not less: a generated day starts at the profile's
+ * morning threshold — 08:00, 09:00 or 10:00 — and a Cyprus traveller was being shown a
+ * plan that began two or three hours after the one the server built.
+ */
 export function formatTime(hhmm: string | null | undefined, lang: string): string {
   const match = /^(\d{1,2}):(\d{2})/.exec(hhmm ?? '');
   if (!match) return '';
   const [, h, m] = match;
-  return new Intl.DateTimeFormat(lang, { hour: 'numeric', minute: '2-digit' }).format(
-    new Date(Date.UTC(2000, 0, 1, Number(h), Number(m))),
-  );
+  return new Intl.DateTimeFormat(lang, {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(2000, 0, 1, Number(h), Number(m))));
 }

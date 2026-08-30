@@ -1,0 +1,503 @@
+/* The AI Trip Planner wizard, `/plan-trip`.
+ *
+ * One frame exists for the web (`3791-27422`) and its body is the source: a centred
+ * title, a step heading with the step indicator opposite it, field groups down the
+ * column, and Continue at the foot. Two departures from what it draws, both about the
+ * column, are in docs/PHASE-6-PLAN.md §8: the frame runs Continue the full 1200px page
+ * width, and it pins the heading to the page gutter while centring a narrow stack of
+ * tiles beneath it. One column, one alignment, and a button that is a button.
+ */
+
+.page {
+  background-color: var(--cw-sand);
+  min-block-size: 70vh;
+  padding-block: var(--cw-space-48);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-32);
+  inline-size: min(720px, 100% - 2 * var(--cw-space-24));
+  margin-inline: auto;
+}
+
+.head {
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-h1-size);
+  line-height: var(--cw-h1-line);
+  font-weight: var(--cw-h1-weight);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.subtitle {
+  margin-block: var(--cw-space-8) 0;
+  font-size: var(--cw-subtitle-size);
+  line-height: var(--cw-subtitle-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+/* ---- the step, and the indicator opposite it ------------------------------ */
+
+.stepHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cw-space-16);
+}
+
+.stepText {
+  flex: 1 1 18rem;
+  min-inline-size: 0;
+}
+
+.stepTitle {
+  margin: 0;
+  font-size: var(--cw-h2-size);
+  line-height: var(--cw-h2-line);
+  font-weight: var(--cw-h2-weight);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+/* The heading takes focus when the step changes, so a keyboard or screen-reader user
+   lands on the new question rather than at the top of the document. It is not a control,
+   so the ring is the only thing that should suggest focus. */
+.stepTitle:focus {
+  outline: none;
+}
+
+.stepTitle:focus-visible {
+  outline: 2px solid var(--cw-navy);
+  outline-offset: 4px;
+}
+
+.stepSub {
+  margin-block: var(--cw-space-8) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepDot {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-4);
+}
+
+.stepMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border: 1px solid var(--cw-grey-3);
+  border-radius: var(--cw-radius-pill);
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  font-weight: 590;
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+/* Done. */
+.stepDot[data-state='done'] .stepMark {
+  border-color: var(--cw-navy);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+/* The current step.
+ *
+ * The frame rings it in --cw-gold on the sand ground, which is 2.32:1 — under the 3:1
+ * WCAG 1.4.11 asks of a component boundary, and far under 4.5 for the numeral inside it.
+ * --cw-gold-link is the same hue at 65% and clears both. The state is also carried by
+ * aria-current and by the visible "Step n of 5", so nothing depends on seeing it.
+ *   contrast: --cw-gold on --cw-sand = 2.32 (rejected)
+ *   contrast: --cw-gold-link on --cw-sand = 4.96 */
+.stepDot[data-state='current'] .stepMark {
+  border-width: 2px;
+  border-color: var(--cw-gold-link);
+  color: var(--cw-gold-link);
+}
+
+/* The connector. It carries no state — the numbering does.
+   contrast: --cw-grey-2 on --cw-sand = 1.73 (decorative) */
+.stepLine {
+  inline-size: 16px;
+  block-size: 1px;
+  background-color: var(--cw-border-decorative);
+}
+
+/* ---- field groups --------------------------------------------------------- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-32);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-12);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.groupHint,
+.groupStatus {
+  margin: 0;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+/* ---- tiles ---------------------------------------------------------------- */
+
+.tileRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--cw-space-12);
+}
+
+.tileRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-12);
+}
+
+.tile,
+.tileWide {
+  display: flex;
+  gap: var(--cw-space-12);
+  padding: var(--cw-space-16);
+  border: 1px solid var(--cw-border-interactive);
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+  cursor: pointer;
+  transition: border-color var(--cw-transition), background-color var(--cw-transition);
+}
+
+.tile {
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cw-space-8);
+  text-align: center;
+}
+
+.tileWide {
+  align-items: flex-start;
+}
+
+.tileIcon {
+  display: inline-flex;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.tileText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-4);
+  min-inline-size: 0;
+}
+
+.tileLabel {
+  font-size: var(--cw-subtitle-size);
+  line-height: 1.4;
+  font-weight: 590;
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+}
+
+.tileDesc {
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+/* Selected.
+ *
+ * NOT the mobile frame's gold fill with a white label — #ffffff on --cw-gold is 2.63 and
+ * fails at any size, the tenth instance of the family that has produced every contrast
+ * failure this project has found. Gold border, gold tint, navy label: the treatment
+ * phase 1 settled for the interest chips and phases 3 and 5 reused.
+ *   contrast: #ffffff on --cw-gold = 2.63 (rejected)
+ *   contrast: --cw-navy on --cw-gold-tint = 10.21 */
+.tile[data-selected='true'],
+.tileWide[data-selected='true'] {
+  border-width: 2px;
+  border-color: var(--cw-gold);
+  background-color: var(--cw-gold-tint);
+  padding: 15px;
+}
+
+.tile[data-selected='true'] .tileLabel,
+.tileWide[data-selected='true'] .tileLabel,
+.tile[data-selected='true'] .tileIcon,
+.tileWide[data-selected='true'] .tileIcon {
+  /* contrast: --cw-navy on --cw-gold-tint = 10.21 */
+  color: var(--cw-navy);
+}
+
+.tile[data-selected='true'] .tileDesc,
+.tileWide[data-selected='true'] .tileDesc {
+  /* contrast: --cw-black-2 on --cw-gold-tint = 9.70 */
+  color: var(--cw-black-2);
+}
+
+/* The radio itself is visually hidden, so the label has to show its focus. */
+.tile:has(input:focus-visible),
+.tileWide:has(input:focus-visible),
+.chip:has(input:focus-visible) {
+  outline: 2px solid var(--cw-navy);
+  outline-offset: 2px;
+}
+
+/* ---- chips ---------------------------------------------------------------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-8);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+  padding-block: var(--cw-space-8);
+  padding-inline: var(--cw-space-12);
+  border: 1px solid var(--cw-border-interactive);
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-white);
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+  font-size: var(--cw-body-size);
+  line-height: 20px;
+  font-weight: 510;
+  cursor: pointer;
+  transition: border-color var(--cw-transition), background-color var(--cw-transition);
+}
+
+.chipImage {
+  border-radius: var(--cw-radius-pill);
+  object-fit: cover;
+}
+
+/* contrast: --cw-navy on --cw-gold-tint = 10.21 */
+.chip[data-selected='true'] {
+  border-width: 2px;
+  border-color: var(--cw-gold);
+  background-color: var(--cw-gold-tint);
+  padding-block: 7px;
+  padding-inline: 11px;
+  color: var(--cw-navy);
+  font-weight: 700;
+}
+
+/* At the interest cap. The count line above says why; this is never the only signal. */
+.chip[data-blocked='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---- dates ---------------------------------------------------------------- */
+
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-24);
+}
+
+.dateField {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-direction: column;
+  gap: var(--cw-space-4);
+  min-inline-size: 0;
+}
+
+.dateLabel {
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-black-1 on --cw-sand = 14.99 */
+  color: var(--cw-black-1);
+}
+
+.input {
+  inline-size: 100%;
+  min-block-size: 48px;
+  padding-inline: var(--cw-space-12);
+  padding-block: var(--cw-space-8);
+  border: 1px solid var(--cw-border-interactive);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-white);
+  font: inherit;
+  font-size: var(--cw-input-size);
+  line-height: var(--cw-input-line);
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+}
+
+/* ---- review --------------------------------------------------------------- */
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+  margin: 0;
+  padding: var(--cw-space-16);
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+}
+
+.summaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-8);
+}
+
+.summaryLabel {
+  flex: 0 0 7rem;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.summaryValue {
+  flex: 1 1 12rem;
+  margin: 0;
+  min-inline-size: 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  font-weight: 590;
+  /* contrast: --cw-black-2 on --cw-white = 10.58 */
+  color: var(--cw-black-2);
+}
+
+.quota {
+  margin: 0;
+  text-align: center;
+  font-size: var(--cw-subtitle-size);
+  line-height: var(--cw-subtitle-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.hint {
+  margin: 0;
+  text-align: center;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+/* ---- footer --------------------------------------------------------------- */
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-12);
+}
+
+.footerSpacer {
+  flex: 1 1 auto;
+}
+
+.error {
+  margin: 0;
+  padding: var(--cw-space-12);
+  border-radius: var(--cw-radius-sm);
+  background-color: var(--cw-alert-tint);
+  /* contrast: --cw-alert-text on #f4d3cc = 5.11 */
+  color: var(--cw-alert-text);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+}
+
+/* ---- signed out, and the loading shell ------------------------------------ */
+
+.signIn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-16);
+  padding: var(--cw-space-16);
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+}
+
+.signInMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-navy) 10%, transparent);
+  /* contrast: --cw-navy on #e8ebf0 = 9.32 */
+  color: var(--cw-navy);
+}
+
+.signInCopy {
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+}
+
+.signInTitle {
+  margin: 0;
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.signInBody {
+  margin-block: var(--cw-space-4) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.skeletonBlock {
+  block-size: 320px;
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-skeleton-on-sand);
+}

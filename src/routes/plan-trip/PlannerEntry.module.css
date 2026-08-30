@@ -1,0 +1,55 @@
+/* The entry card, on /build-trip and /trips. White on the sand ground, like every other
+   card on those two pages — no gold surface, because nothing here is a purchase. */
+
+.card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-16);
+  padding: var(--cw-space-16);
+  border-radius: var(--cw-radius-md);
+  background-color: var(--cw-white);
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--cw-radius-pill);
+  background-color: var(--cw-gold-tint);
+  /* contrast: --cw-gold-link on --cw-gold-tint = 5.16 (graphic) */
+  color: var(--cw-gold-link);
+}
+
+.copy {
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.body {
+  margin-block: var(--cw-space-4) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.link {
+  font-size: var(--cw-button-size);
+  line-height: var(--cw-button-line);
+  font-weight: var(--cw-button-weight);
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}

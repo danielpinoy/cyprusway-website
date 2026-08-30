@@ -13,6 +13,7 @@ import Explore from './routes/explore/Explore';
 import Place from './routes/place/Place';
 import AskPete from './routes/ask-pete/AskPete';
 import BuildTrip from './routes/build-trip/BuildTrip';
+import PlanTrip from './routes/plan-trip/PlanTrip';
 import Trip from './routes/trip/Trip';
 import Trips from './routes/trips/Trips';
 
@@ -38,6 +39,7 @@ export function App() {
           <Route path="/place/:slug" element={<Place />} />
           <Route path="/ask-pete" element={<AskPete />} />
           <Route path="/build-trip" element={<BuildTrip />} />
+          <Route path="/plan-trip" element={<PlanTrip />} />
           <Route path="/trips" element={<Trips />} />
           <Route path="/trip/:id" element={<Trip />} />
           <Route element={<LayoutRoute />}>
