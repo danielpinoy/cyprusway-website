@@ -363,13 +363,27 @@ export default function AskPete() {
               either. See docs/PARKED.md. */}
           {!signedOut && !resolving && !isPremium && quota && (
             <div className={styles.counterRow}>
+              {/* The number is shown only when `certain` — when something on the wire
+                  has named the day this session. On a cold open the row may hold a count
+                  from a day that has ended (the reset is lazy: the server rewrites the
+                  row on the next call, not at midnight), and rendering it as "3 of 5
+                  today" told a reader yesterday's count was today's. `certain` already
+                  gated the composer lock for exactly this reason; it now gates the copy
+                  too. The cap is honest either way, and the exact count arrives with the
+                  first answer or the first refusal. */}
               <p
                 className={`${styles.counter} ${exhausted ? styles.counterSpent : ''}`}
                 role="status"
-                aria-label={t('ui_pete_counter_label', { used: quota.used, cap: quota.cap })}
+                aria-label={
+                  quota.certain
+                    ? t('ui_pete_counter_label', { used: quota.used, cap: quota.cap })
+                    : t('ui_pete_counter_unknown_label', { cap: quota.cap })
+                }
               >
                 <span aria-hidden="true">
-                  {t('ui_pete_counter', { used: quota.used, cap: quota.cap })}
+                  {quota.certain
+                    ? t('ui_pete_counter', { used: quota.used, cap: quota.cap })
+                    : t('ui_pete_counter_unknown', { cap: quota.cap })}
                 </span>
               </p>
             </div>

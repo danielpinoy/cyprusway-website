@@ -480,7 +480,10 @@ export interface Quota {
    * Whether `used` is known to be TODAY's count.
    *
    * False on a cold open: the row says which day it counted, and nothing on the wire has
-   * yet said which day it is now. See `fetchQuota`.
+   * yet said which day it is now. See `fetchQuota`. An uncertain count locks nothing AND
+   * prints nothing — the pill shows the cap alone until a turn or a refusal names the
+   * day. Until 30 Aug 2026 it locked nothing but printed the number anyway, which showed
+   * yesterday's count as today's on every first visit of a day.
    */
   certain: boolean;
 }

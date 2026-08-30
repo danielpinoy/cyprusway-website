@@ -1264,6 +1264,43 @@ Confirmed still fixed in phase 5, which needed it: the add-to-trip drawer's pare
 re-renders on every pending-state change during a save, and an effect keyed on `onClose`
 would have yanked focus to the first control on each one.
 
+### Ask Pete's pill showed yesterday's count as today's on every first visit of a day — FIXED in phase 6
+
+**What.** Asked three questions on one day; opened Ask Pete the next and the pill read
+"3 of 5" until the first question, then "1 of 5". Reported 30 Aug 2026.
+
+**Why.** The reset is lazy: `consume_ai_query` rewrites the counter row on the next call,
+not at midnight, so a cold read returns yesterday's count with yesterday's day. Phase 4
+knew this and handled half of it: `fetchQuota` marks such a count `certain: false`, and
+the screen refuses to lock the composer on an uncertain count. But it rendered the number
+anyway. The mark was there; the display ignored it. Not optimistic counting — nothing
+increments client-side; the "1" after the question is the server's `remaining` — just a
+stale number presented as current.
+
+**Why comparing `reset_at` to `quota_day` cannot fix it.** That comparison already exists
+(`rolledOver`) and works once a day has been named this session. On a cold open none has
+been, and persisting the last one would not help: after asking yesterday, the last
+`quota_day` seen *is* yesterday and the row's `reset_at` *is* yesterday — equal, so no
+rollover is detectable. Knowing what day it was last time says nothing about what day it
+is now, and computing the Cyprus date in the browser is what entry 64 rules out.
+
+**The fix.** The pill now has the same uncertain form the trip planner's counter has had
+since it was built — "Up to 5 a day" until the first answer or refusal names the day —
+and `certain` gates the copy as well as the lock. The trip planner's `quotaFromProfile`
+was checked for the same shape: its `certain` already gated the copy, and its first
+driven state was exactly a rolled-over row on a cold open (`certain: false`, rendered as
+"Up to 3 trips a day"). The exact cold-open count for both needs a read-only RPC; see
+`BACKEND-HANDOFF.md` §7.
+
+**Label semantics, confirmed consistent.** Ask Pete's "{used} of {cap} today" counts
+questions *asked* (the frame's limit state reads "5 of 5"); its screen-reader label says
+"used". The planner's says "{n} of {cap} *left* today" in words. Both are unambiguous in
+the accessible name; the visible Pete pill is the one that leans on the frame's wording.
+A fresh day therefore shows "Up to 5 a day" before the first question — not "0 of 5",
+which would be a claim the client cannot make — and "1 of 5 today" after it.
+
+**Owner.** Web — done.
+
 ### Every stored time was displayed shifted by the reader's timezone — FIXED in phase 6
 
 **What.** `formatTime` in `src/lib/tripDates.ts` built a `Date` with `Date.UTC(2000, 0, 1,

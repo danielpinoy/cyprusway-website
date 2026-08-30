@@ -167,6 +167,13 @@ export const stringsEn = {
   /* {used} counts questions ASKED, not left: the frame's limit state reads "5 of 5". */
   ui_pete_counter: '{used} of {cap} today',
   ui_pete_counter_label: '{used} of {cap} questions used today',
+  /* The cold-open form. Before the first turn of a session nothing on the wire has said
+     what day it is, so the stored count may belong to a day that has ended — showing it
+     as "3 of 5 today" was the defect. The number arrives with the first answer or the
+     first refusal, and the pill switches to the form above. Same shape as the trip
+     planner's `ui_plan_quota_unknown`. */
+  ui_pete_counter_unknown: 'Up to {cap} a day',
+  ui_pete_counter_unknown_label: 'Up to {cap} questions a day',
   ui_pete_input_label: 'Your question for Pete',
   ui_pete_placeholder:
     'Ask Pete anything specific, e.g. travelling with a toddler, need wheelchair access, celebrating...',

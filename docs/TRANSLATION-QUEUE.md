@@ -52,7 +52,7 @@ gets English, exactly as before.
 
 ---
 
-## The queue — 318 keys, English only
+## The queue — 320 keys, English only
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
@@ -212,7 +212,7 @@ adopted (plan Q1), that changes and these become the first thing to translate.
 | `ui_meta_place_desc` | {name} — a place to visit in {region}, Cyprus. On CyprusWay. | **Has two placeholders.** Only used where the place has no `short_description`; where one exists, that is the meta description. Deliberately plain — inventing a superlative for a place nobody has written copy for would be worse than a flat sentence |
 | `ui_meta_place_desc_any` | {name} — a place to visit in Cyprus. On CyprusWay. | The same, where the place has no region |
 
-### Ask Pete — 29, added in phase 4
+### Ask Pete — 31, added in phase 4
 
 **Pete's own replies are not here, and will never be here.** They are model output. `mike`
 reads `public.users.preferred_language` and instructs the model "Respond in {language}",
@@ -235,6 +235,7 @@ changes the language of the app on their phone. The switcher says so.
 | `ui_pete_starter_1` · `ui_pete_starter_2` · `ui_pete_starter_3` | Best beach near me · What should I do tonight? · Know about Cyprus history or culture? | The three suggestion chips. **These are sent to Pete verbatim when pressed**, so they must read as a natural question in your language, not as a label |
 | `ui_pete_counter` | {used} of {cap} today | **Has two placeholders.** `{used}` counts questions ASKED, not questions left — the frame's limit state reads "5 of 5" |
 | `ui_pete_counter_label` | {used} of {cap} questions used today | The same, spelled out for a screen reader, because "4 of 5 today" alone does not say which number is which |
+| `ui_pete_counter_unknown` · `ui_pete_counter_unknown_label` | Up to {cap} a day · Up to {cap} questions a day | **Have a placeholder.** The cold-open form, before anything on the wire has named the day: the stored count may be yesterday's, and the pill says only the cap until the first answer or refusal makes the count certain. Added 30 Aug 2026, phase 6 |
 | `ui_pete_input_label` | Your question for Pete | Visually hidden label on the composer |
 | `ui_pete_placeholder` | Ask Pete anything specific, e.g. travelling with a toddler, need wheelchair access, celebrating... | The examples matter more than the wording: they teach that specific questions work better. Adapt them if a direct translation reads oddly |
 | `ui_pete_send` · `ui_pete_sending` | Send · Pete is answering | Accessible name of the send button, and the state while a request is out |

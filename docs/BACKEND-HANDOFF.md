@@ -164,3 +164,33 @@ Additive, so it breaks nothing; rows written before it stay unmarked, and a clie
 finds no language keeps inheriting as it does today.
 
 **Owner.** Backend.
+
+---
+
+## 7 · Neither counter can be read exactly on a cold open — a read-only quota RPC would fix both
+
+**Found 30 August 2026, from a user report:** Ask Pete's pill read "3 of 5" on a new day
+until the first question, then "1 of 5".
+
+**Why.** Both daily limiters reset lazily: `consume_ai_query` and `consume_trip_generation`
+rewrite `*_today` and `*_reset_at` on the next *call*, not at midnight. So a row read
+directly off `public.users` on a new day still holds yesterday's count and yesterday's day,
+and a client cannot tell whether that day has ended without knowing today's date **in
+Cyprus** — which decision-log entry 64 rules the client must not compute. The server names
+the day only on the wire, after a call: `quota_day` on `mike`'s `meta` and 429, and on the
+trip-generate 429. Nothing names it *before* a call.
+
+**What the web does meanwhile.** Both counters render an uncertain form on a cold open
+("Up to 5 a day", "Up to 3 trips a day") and switch to the exact count the moment a turn,
+a generation or a refusal names the day. Honest, and slightly less informative than it
+could be for someone reloading on the same day.
+
+**The fix is one RPC.** `get_daily_quotas()` — `SECURITY DEFINER`, `authenticated`-callable,
+`auth.uid()`-scoped — that returns `{ quota_day, ai_used, ai_cap, trip_used, trip_cap,
+is_premium }` where `quota_day` is `(now() AT TIME ZONE 'Asia/Nicosia')::date` and each
+`*_used` is already `0` when the stored `*_reset_at` is before it. Read-only: it consumes
+nothing and writes nothing. It also retires the two client-side copies of the caps
+(`ASSUMED_FREE_DAILY_CAP = 5`, `TRIP_GENERATION_DAILY_CAP = 3`), which are documented
+defaults today because a client cannot read the env vars.
+
+**Owner.** Backend. Small; the day expression already exists in migration 0047.
