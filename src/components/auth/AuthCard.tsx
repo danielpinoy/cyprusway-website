@@ -51,7 +51,9 @@ export function AuthCard({
       <div className={styles.head}>
         <Wordmark tone="dark" />
         <h2 id={titleId} className={styles.title}>
-          {t(isSignin ? 'onb_signin_title' : 'onb_signup_title')}
+          {/* The sign-up heading is the homepage's H1, word for word — phase 1's ruling,
+              unchanged. The string it names is not, because the old one promised tours. */}
+          {t(isSignin ? 'onb_signin_title' : 'ui_hero_title')}
         </h2>
         {isSignin && <p className={styles.subtitle}>{t('onb_signin_sub')}</p>}
       </div>

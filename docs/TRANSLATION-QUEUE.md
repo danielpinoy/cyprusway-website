@@ -52,7 +52,29 @@ gets English, exactly as before.
 
 ---
 
-## The queue — 323 keys, English only
+## Translate this one first
+
+**`ui_hero_title` — "Know Cyprus before you arrive".** Added 30 Aug 2026, phase 7.
+
+It is not one of 325. It is the **homepage H1**, the **footer tagline on every page**, and
+the **sign-up card's heading** — three surfaces, one string, by phase 1's ruling that the
+Figma's hero headline and the onboarding card's are word for word the same sentence.
+
+It replaces the ported `onb_signup_title`, which existed in all five languages and promised
+"immersive 360° tours and guided narration" — a feature with `virtual_tour` null on 181 of
+181 published places. So the trade this string makes is deliberate and worth stating: **four
+languages lost a translation and gained the truth.** A Polish, German, Greek or Swedish
+visitor now reads the H1, the footer and the sign-up heading in English until a translator
+lands them. That is the standing rule here — a missing translation is visible and a wrong
+one is not — but it is the most-read string on the site, so it is the one to pay for first.
+
+**Approve the English before commissioning the other four.** It is new copy written in
+phase 7, not ported, and translating unapproved copy buys five sentences that may all be
+rewritten. `ui_about_intro` (below) is the same case and is second in line.
+
+---
+
+## The queue — 325 keys, English only
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
@@ -144,6 +166,20 @@ description of each route.
 engines only ever see the English metadata; translating them changes what a visitor sees
 in their browser tab after the page has already loaded. If per-language URLs are ever
 adopted (plan Q1), that changes and these become the first thing to translate.
+
+### The tours correction — 2 keys, added in phase 7
+
+Two ported keys were replaced rather than edited, because `src/i18n/generated/` is the
+ported vanilla dictionary and the port script owns it. Both replacements are English-only
+React strings; the originals stay in the generated dictionary, unread.
+
+| Key(s) | English | Note |
+|---|---|---|
+| `ui_hero_title` | Know Cyprus before you arrive | **The queue's first priority — see the top of this file.** Replaces `onb_signup_title` on three surfaces. Keeps "before you arrive", which was the true half; drops the mechanism, which does not exist |
+| `ui_about_intro` | CyprusWay is a mobile travel app built to help travellers experience Cyprus with confidence… | Replaces the ported `about_p1` on `/about`. **Word for word identical except one deletion** — "immersive 360° virtual tours," is gone from the list of what the product brings together — so a translator can diff the two rather than retranslate 70 words |
+
+`ui_meta_home_desc` also changed (it was the same false sentence) but is not new: it is an
+English-only React string already counted in Page metadata above.
 
 ### Homepage rails — 21, added in phase 2
 

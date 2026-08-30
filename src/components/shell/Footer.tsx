@@ -37,7 +37,9 @@ export function Footer() {
         <div className={styles.top}>
           <div className={styles.brand}>
             <Wordmark tone="light" />
-            <p className={styles.tagline}>{t('onb_signup_title')}</p>
+            {/* The same string as the homepage H1 and the sign-up heading, by phase 1's
+                ruling. See i18n/strings/en.ts for why it is no longer `onb_signup_title`. */}
+            <p className={styles.tagline}>{t('ui_hero_title')}</p>
           </div>
 
           {/* Disabled: no client-callable search endpoint exists.

@@ -962,6 +962,54 @@ about fifteen lines.
 
 ## Content gaps
 
+### The site's own copy promised the tours — swept and corrected in phase 7
+
+**What.** Nine live instances across five surfaces, all claiming a feature with zero rows.
+Swept with a script over both dictionaries, every component and the content pages, matching
+`360`, `virtual tour`, `immersive`, `narration`, `aerial`, `25 tours` — the brief named
+five; the sweep found nine, and separated them from the ones that only *look* live.
+
+| where | was | now |
+|---|---|---|
+| Homepage **H1**, **footer tagline on every page**, sign-up card heading | `onb_signup_title` — "Step inside Cyprus before you arrive with immersive 360° tours and guided narration" | `ui_hero_title` — "Know Cyprus before you arrive" |
+| Homepage `<meta name="description">` | the same sentence | places, detail, and a trip you can build |
+| `/about` | `about_p1` listed "immersive 360° virtual tours" | `ui_about_intro`, one clause deleted |
+| `/faq` ×3 | "a selection of virtual tours", "all 25 virtual tours", "all 25 immersive 360° virtual tours", "preview places in 360° virtual tours" | removed |
+| `/terms` §2 | "preview them through 360° virtual tours" | removed |
+
+**Two adjacent false claims went with them**, found in the same paragraphs: `/faq`
+promised "itinerary regeneration" and "the ability to regenerate individual days", for
+which **no endpoint exists** (`regenerate-day` was proposed and never built; `trip-edit` is
+deterministic — phase 6), and it linked to `destinations.html`, a page phase 1 deleted,
+calling a 301-to-the-homepage "our Destinations page". Repointed at `/explore`.
+
+**What was deliberately left, and why each is not a live claim:**
+
+- **The "360° Tours" nav item** (`ui_nav_tours`, header + drawer + footer). The brief's
+  ruling: it stays. It renders as a dimmed `pending` label with a visually-hidden "coming
+  soon", which is the shell's established way of naming a surface that does not exist yet.
+  **Unparks when a tour exists.**
+- **`ui_tour_badge` and `ui_rail_tours`.** Referenced by `TourCard` and `HomeContent`, but
+  the rail is gated on `tours.length > 0` and `tourPlaces()` filters on `hasTour`, false on
+  all 181 rows. Nothing ships. This is phase 2's design working, and it is the model the
+  rest of the sweep was measured against.
+- **Fourteen dormant keys in `src/i18n/generated/`** × 5 languages — `nav_vt`, `hero_desc`,
+  `intro_text`, `feat_vt_*`, `feat1_*`, `prem_vt_*`, `succ_vt`, `banner_desc`, and now
+  `onb_signup_title` and `about_p1`. **No component reads any of them.** They stay: that
+  directory is the ported vanilla dictionary, the port script owns it, and hand-editing a
+  generated file to delete strings nobody can read would be the wrong kind of tidy.
+  Recorded so a future sweep finds this note rather than panicking.
+
+**The claims are still live to the public.** `cyprusway.eu` serves the legacy site, not
+this build — `main:faq.html`, `main:terms.html` and `js/i18n.js` carry every original
+sentence, and the legacy nav's "360° Virtual Tours" dropdown is what a visitor sees today.
+Two of the corrected files are ported *from* `main` and now diverge from it deliberately;
+both carry a header saying so, because re-running `scripts/port-content.mjs` would revert
+them. **What unparks that: deploying this build, or correcting `main` in place.** It is the
+owner's call and it is the reason this entry exists rather than the work simply being done.
+
+**Owner.** Web — done here. Content, for the legacy site.
+
 ### 360° tours — `virtual_tour` null on 181/181
 
 **What.** "See Cyprus before you go" is a designed rail of three 360° tour cards.

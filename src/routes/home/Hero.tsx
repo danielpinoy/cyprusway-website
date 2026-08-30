@@ -47,7 +47,9 @@ export function Hero() {
   return (
     <section className={styles.hero}>
       <div className={styles.inner}>
-        <h1 className={styles.title}>{t('onb_signup_title')}</h1>
+        {/* `ui_hero_title`, not the ported `onb_signup_title`: that string promised
+            360° tours, and there are none. See i18n/strings/en.ts. */}
+        <h1 className={styles.title}>{t('ui_hero_title')}</h1>
         <p className={styles.sub}>{t('ui_hero_sub')}</p>
 
         <form className={styles.ask} onSubmit={ask}>

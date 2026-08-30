@@ -14,6 +14,30 @@
  */
 
 export const stringsEn = {
+  /* --- The line that replaces `onb_signup_title` -------------------------
+     THE MOST-READ STRING ON THE SITE: the homepage H1, the footer tagline on every page,
+     and the sign-up card's heading — three surfaces, one string, by phase 1's ruling that
+     the Figma's hero headline and the onboarding card's are word for word the same
+     sentence. That ruling stands; only the sentence changes.
+
+     The ported `onb_signup_title` — "Step inside Cyprus before you arrive with immersive
+     360° tours and guided narration" — promises the one feature with zero rows behind it:
+     `virtual_tour` is null on 181 of 181 published places, there is no tour in Directus
+     beyond a placeholder pointing at a test video, and docs/PARKED.md already rules that
+     a tour promise "is a broken promise above the fold … the tour *is* the product". The
+     H1 is above the fold.
+
+     Replaced rather than edited, because `i18n/generated/` is the ported vanilla
+     dictionary and is not hand-edited — the port script owns it. So this is a new React
+     string, English only, and the other four languages fall back to English until a
+     translator lands them; docs/TRANSLATION-QUEUE.md carries it as the queue's first
+     priority for that reason. `onb_signup_title` stays in the generated dictionary,
+     unread, with the twelve other dormant tour keys.
+
+     What survives from the original: "before you arrive", which is the true half — the
+     whole product is pre-trip. What goes: the mechanism, which does not exist. */
+  ui_hero_title: 'Know Cyprus before you arrive',
+
   /* --- Chrome ----------------------------------------------------------- */
   ui_skip_to_content: 'Skip to content',
   ui_language: 'Language',
@@ -468,6 +492,14 @@ export const stringsEn = {
   ui_trip_short_title: 'This trip came back short',
   ui_trip_short_body:
     'Pete planned {built} of the {requested} days you asked for. Add the rest yourself, or plan again.',
+  /* The About page's opening paragraph, replacing the ported `about_p1` for the same
+     reason and by the same mechanism as `ui_hero_title`. Identical to it word for word
+     except that "immersive 360° virtual tours," is gone from the list of what the product
+     brings together — so a translator diffing the two sees one deletion. Everything else
+     in the paragraph is true and is kept verbatim. */
+  ui_about_intro:
+    'CyprusWay is a mobile travel app built to help travellers experience Cyprus with confidence. We believe that a great trip starts with good information, knowing what a place actually looks like, whether it suits your pace and interests, and how to get there. The app brings together curated places, personalised trip planning, a friendly travel assistant, and booking help, so you can discover, plan, and arrange your entire Cyprus holiday in one place.',
+
   ui_meta_plantrip_title: 'AI Trip Planner — CyprusWay',
   ui_meta_plantrip_desc:
     'Let Pete plan your Cyprus trip day by day — your dates, your base, and a full itinerary you can edit.',
@@ -483,8 +515,9 @@ export const stringsEn = {
   ui_meta_place_desc: '{name} — a place to visit in {region}, Cyprus. On CyprusWay.',
   ui_meta_place_desc_any: '{name} — a place to visit in Cyprus. On CyprusWay.',
   ui_meta_home_title: 'CyprusWay — Discover Cyprus',
+  /* Was the same sentence as the H1, and made the same false claim. */
   ui_meta_home_desc:
-    'Step inside Cyprus before you arrive with immersive 360° tours and guided narration.',
+    'Hand-picked places across Cyprus — photos, opening hours and practical detail — and a day-by-day trip you can build yourself.',
   ui_meta_about_title: 'About — CyprusWay',
   ui_meta_about_desc: 'A travel companion for the island we love.',
   ui_meta_faq_title: 'FAQ — CyprusWay',

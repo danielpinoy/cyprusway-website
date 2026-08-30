@@ -15,7 +15,10 @@ export function AboutContent() {
       <h1>{t('about_hero_title')}</h1>
       <p>{t('about_hero_sub')}</p>
 
-      <p>{t('about_p1')}</p>
+      {/* `ui_about_intro`, not the ported `about_p1`: that paragraph listed "immersive
+          360° virtual tours" among what the product brings together, and there are none.
+          One deletion; the rest of the paragraph is verbatim. */}
+      <p>{t('ui_about_intro')}</p>
       <p>{t('about_p2')}</p>
       {/* This key carries a <strong> in all five languages — it was the vanilla
           dictionary's one data-i18n-html entry. The content is our own translation
