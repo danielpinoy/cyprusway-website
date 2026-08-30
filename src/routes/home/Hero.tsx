@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react';
-import { Compass, Search, Sparkles } from 'lucide-react';
+import { Compass, Pencil, Search, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 
 import { useT } from '../../i18n/I18nProvider';
+import { useSession } from '../../lib/SessionProvider';
+import { travelerLabelKey } from '../../contracts/travelerPools';
 import { Icon } from '../../components/ui/Icon';
 import styles from './Hero.module.css';
 
@@ -20,12 +22,14 @@ import styles from './Hero.module.css';
  * envelope shapes, and a ruling on the shared per-uid thread and daily cap.
  *
  * Explore is a real link now that the browse grid exists, and the ask box is a real
- * input now that Ask Pete has a screen — it hands the question straight to Pete. My
- * CyprusWay still names a surface with no page behind it, so it stays a labelled,
- * non-interactive card.
+ * input now that Ask Pete has a screen — it hands the question straight to Pete. And My
+ * CyprusWay is a real control as of phase 7: it opens the chooser, which is the question
+ * this card was already describing. It never became a page, because the answer changes
+ * surfaces that exist rather than needing one of its own.
  */
 export function Hero() {
   const t = useT();
+  const { user, travelerType, openChooser } = useSession();
   const navigate = useNavigate();
   const [question, setQuestion] = useState('');
 
@@ -52,6 +56,27 @@ export function Hero() {
         <h1 className={styles.title}>{t('ui_hero_title')}</h1>
         <p className={styles.sub}>{t('ui_hero_sub')}</p>
 
+        {/* The answer, once there is one. Signed-in only and rendered after the session
+            resolves — `SessionStatus` is `idle` on the server, so this is never in the
+            prerendered markup and cannot disagree with it at hydration. The pencil is the
+            way back into the chooser, which is what makes the answer changeable; without
+            it the question is asked once and never again. */}
+        {user && travelerType && (
+          <p className={styles.travelling}>
+            <span>
+              {t('ui_traveller_current', { type: t(travelerLabelKey(travelerType)) })}
+            </span>
+            <button
+              type="button"
+              className={styles.travellingEdit}
+              onClick={openChooser}
+              aria-label={t('ui_traveller_change')}
+            >
+              <Icon as={Pencil} size={14} />
+            </button>
+          </p>
+        )}
+
         <form className={styles.ask} onSubmit={ask}>
           <input
             type="text"
@@ -76,15 +101,22 @@ export function Hero() {
               </div>
             </Link>
           </li>
-          <li className={`${styles.option} ${styles.optionPending}`}>
-            <Icon as={Sparkles} size={24} className={styles.optionIcon} />
-            <div>
-              <p className={styles.optionTitle}>
-                {t('ui_hero_my_title')}
-                <span className="cw-visually-hidden">{` — ${t('ui_coming_soon')}`}</span>
-              </p>
-              <p className={styles.optionDesc}>{t('ui_hero_my_desc')}</p>
-            </div>
+          {/* Was a dimmed label with a visually-hidden "coming soon" — the shell's way of
+              naming a surface that does not exist. It exists now: not as a page, but as the
+              question this card already describes ("Tell us who you're travelling with, and
+              we'll shape Cyprus around you"), which is exactly what the chooser asks. */}
+          <li>
+            <button
+              type="button"
+              className={`${styles.option} ${styles.optionButton}`}
+              onClick={openChooser}
+            >
+              <Icon as={Sparkles} size={24} className={styles.optionIcon} />
+              <div>
+                <p className={styles.optionTitle}>{t('ui_hero_my_title')}</p>
+                <p className={styles.optionDesc}>{t('ui_hero_my_desc')}</p>
+              </div>
+            </button>
           </li>
         </ul>
       </div>

@@ -3,14 +3,10 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Armchair,
   AudioWaveform,
-  Heart,
   Moon,
-  PartyPopper,
   PersonStanding,
   SunMedium,
   Sunrise,
-  User,
-  Users,
 } from 'lucide-react';
 
 import { useI18n } from '../../i18n/I18nProvider';
@@ -20,6 +16,7 @@ import {
   interestLabelKey,
   type InterestSlug,
 } from '../../contracts/interests';
+import { TRAVELER_ICONS } from '../../contracts/travelerPools';
 import type { MorningPreference, PacePreference } from '../../lib/profile';
 import { MAX_TRIP_DAYS, type BaseLocation } from '../../lib/trips';
 import {
@@ -52,12 +49,9 @@ const MORNING_ICONS: Record<MorningPreference, LucideIcon> = {
   late_riser: Moon,
 };
 
-const PARTY_ICONS: Record<PartyType, LucideIcon> = {
-  solo: User,
-  couple: Heart,
-  family: Users,
-  friends: PartyPopper,
-};
+/* The four party glyphs live in contracts/travelerPools.ts, which owns this vocabulary
+   for both surfaces that ask the question — this step and the My CyprusWay chooser. */
+const PARTY_ICONS = TRAVELER_ICONS;
 
 export function PreferencesStep({
   pace,

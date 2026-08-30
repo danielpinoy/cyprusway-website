@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import type { User } from '@supabase/supabase-js';
 
 import { useSession } from '../../lib/SessionProvider';
 import { Modal } from '../ui/Modal';
 import { AuthCard } from './AuthCard';
 import { InterestsScreen } from './InterestsScreen';
+import { TravellerScreen } from './TravellerScreen';
 
 const TITLE_ID = 'cw-auth-title';
 
@@ -33,7 +35,10 @@ function useCardPreview(): 'signin' | 'signup' | 'interests' | null {
 const PREVIEW_USER = { id: 'preview' } as User;
 
 /** Which card is up. One object per change of card, so the exit can hold the last one. */
-type Card = { kind: 'interests'; user: User } | { kind: 'auth'; mode: 'signin' | 'signup' };
+type Card =
+  | { kind: 'interests'; user: User }
+  | { kind: 'auth'; mode: 'signin' | 'signup' }
+  | { kind: 'traveller' };
 
 /**
  * Owns which of the two cards is on screen.
@@ -46,8 +51,21 @@ type Card = { kind: 'interests'; user: User } | { kind: 'auth'; mode: 'signin' |
  * real OAuth response.
  */
 export function AuthGate() {
-  const { status, user, needsOnboarding, authMode, authFailed, openAuth, closeAuth, completeOnboarding } =
-    useSession();
+  const {
+    status,
+    user,
+    needsOnboarding,
+    authMode,
+    authFailed,
+    travelerType,
+    chooserOpen,
+    openAuth,
+    closeAuth,
+    closeChooser,
+    setTravelerType,
+    completeOnboarding,
+  } = useSession();
+  const navigate = useNavigate();
   const [interestsDismissed, setInterestsDismissed] = useState(false);
   const preview = useCardPreview();
 
@@ -75,11 +93,15 @@ export function AuthGate() {
   /* Memoised on its inputs so its identity only changes when the card does — the effect
      below keys on it, and a fresh object every render would re-run that effect every
      render. `user` is the provider's state object and is stable between session changes. */
+  /* Order is precedence, and the chooser is last on purpose: someone finishing sign-up
+     gets the interests card, not a second question stacked behind it. The chooser is only
+     ever opened by an explicit action, so it can never be competing with these anyway. */
   const card = useMemo<Card | null>(() => {
     if (showInterests && interestsUser) return { kind: 'interests', user: interestsUser };
     if (cardMode) return { kind: 'auth', mode: cardMode };
+    if (chooserOpen) return { kind: 'traveller' };
     return null;
-  }, [showInterests, interestsUser, cardMode]);
+  }, [showInterests, interestsUser, cardMode, chooserOpen]);
 
   /* The card that was last up, kept so the exit has something to fade out. Two Modals
      used to be mounted and unmounted here as the card changed, which meant the surface
@@ -98,11 +120,31 @@ export function AuthGate() {
   return (
     <Modal
       open={card !== null}
-      size={shown.kind === 'interests' ? 'interests' : 'auth'}
+      size={shown.kind === 'auth' ? 'auth' : 'interests'}
       labelledBy={TITLE_ID}
-      onClose={shown.kind === 'interests' ? () => setInterestsDismissed(true) : closeAuth}
+      onClose={
+        shown.kind === 'interests'
+          ? () => setInterestsDismissed(true)
+          : shown.kind === 'traveller'
+            ? closeChooser
+            : closeAuth
+      }
     >
-      {shown.kind === 'interests' ? (
+      {shown.kind === 'traveller' ? (
+        <TravellerScreen
+          user={user}
+          current={travelerType}
+          titleId={TITLE_ID}
+          /* Signed in, the write has already happened and the session adopts it, so the
+             homepage rail is there when they get back. Guest or not, Continue lands on
+             Explore filtered — which for a guest is the whole of where the answer lives. */
+          onChosen={(type) => {
+            setTravelerType(type);
+            navigate(`/explore?with=${type}`);
+          }}
+          onSkip={closeChooser}
+        />
+      ) : shown.kind === 'interests' ? (
         <InterestsScreen
           user={shown.user}
           titleId={TITLE_ID}

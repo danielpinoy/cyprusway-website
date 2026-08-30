@@ -74,7 +74,7 @@ rewritten. `ui_about_intro` (below) is the same case and is second in line.
 
 ---
 
-## The queue — 325 keys, English only
+## The queue — 338 keys, English only
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
@@ -180,6 +180,26 @@ React strings; the originals stay in the generated dictionary, unread.
 
 `ui_meta_home_desc` also changed (it was the same false sentence) but is not new: it is an
 English-only React string already counted in Page metadata above.
+
+### My CyprusWay — 13, added in phase 7
+
+The chooser, the rail it fills and the filter it sets.
+
+**The four cards need no strings.** Their labels and descriptions are `ui_plan_party_*` and
+`ui_plan_party_*_desc`, which the trip planner's step 4 already defines — and which are
+word for word the app's own `TRAVELER_TYPE_OPTIONS`, compared programmatically on
+30 Aug 2026, all eight identical. One vocabulary asked in two places.
+
+| Key(s) | English | Note |
+|---|---|---|
+| `ui_traveller_title` · `ui_traveller_sub` | Who are you travelling with? · We will put the places that suit you first — on the homepage, and in Explore. | The chooser's heading and sub-line |
+| `ui_traveller_shared` | Saved to your account, so it changes the app too. | **Signed-in only.** One row shared with the phone, and a control that quietly changes another device says so — the `ui_language_shared` rule. A guest's choice touches no account, so it is not shown to one |
+| `ui_traveller_skip` | Not now | Skip. The question is an invitation, never a gate |
+| `ui_traveller_failed` | That couldn't be saved. Please try again. | A zero-row update is a failure, not a silent success |
+| `ui_traveller_current` | Travelling as: {type} | **Has a placeholder**, filled with one of the four labels. The hero line and the Explore pill are the same sentence. "as: Couple" rather than "as a couple" — the labels are nouns, and an article would need four more strings to stay grammatical here and in four other languages |
+| `ui_traveller_change` · `ui_traveller_clear` | Change who you are travelling with · Show places for every traveller | Accessible names for the hero's pencil and the pill's ✕. Never drawn |
+| `ui_traveller_rail_solo` · `_couple` · `_family` · `_friends` | Perfect for solo travellers · Perfect for couples · Perfect for family trips · Perfect for friend trips | **"travellers" with two Ls**, unlike the app's "travelers": this site writes "travellers" (`about_p1`) and "personalised" throughout, and a US spelling in a rail heading would be its first. Deliberate — see `contracts/travelerPools.ts` |
+| `ui_footer_segments` | Travelling as | The footer column phase 1 dropped as "taxonomy links into browse surfaces phase 1 does not build". The surface exists now: four links to Explore. The frame's "Sole-traveler" is not used — the chooser's card says Solo |
 
 ### Homepage rails — 21, added in phase 2
 

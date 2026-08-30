@@ -145,3 +145,53 @@
   line-height: var(--cw-body-line);
   color: var(--cw-grey-1);
 }
+
+/* "Travelling as: Couple ✎" — the answer, and the way back to the question. Signed-in
+   only, and never in the prerendered markup (see Hero.tsx). */
+.travelling {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-8);
+  margin-block: var(--cw-space-16) 0;
+  font-size: var(--cw-body-size);
+  line-height: 20px;
+  font-weight: 590;
+  /* contrast: --cw-grey-1 on --cw-navy = 8.69 */
+  color: var(--cw-grey-1);
+}
+
+.travellingEdit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border: 0;
+  border-radius: var(--cw-radius-pill);
+  background-color: color-mix(in srgb, var(--cw-white) 10%, transparent);
+  /* contrast: --cw-grey-1 on #324f7a = 6.46 */
+  color: var(--cw-grey-1);
+  cursor: pointer;
+  transition: background-color var(--cw-transition);
+}
+
+.travellingEdit:hover {
+  background-color: color-mix(in srgb, var(--cw-white) 18%, transparent);
+}
+
+/* The My CyprusWay card is a button now, not a dimmed label. It has to sit beside the
+   Explore link without looking different, so it resets the button chrome and inherits the
+   card's own padding and border from `.option`. */
+.optionButton {
+  inline-size: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--cw-transition), border-color var(--cw-transition);
+}
+
+.optionButton:hover {
+  background-color: color-mix(in srgb, var(--cw-white) 12%, transparent);
+  border-color: color-mix(in srgb, var(--cw-grey-1) 45%, transparent);
+}

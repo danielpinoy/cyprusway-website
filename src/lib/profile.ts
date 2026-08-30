@@ -1,5 +1,6 @@
 import { getSupabase } from './supabase';
 import type { InterestSlug } from '../contracts/interests';
+import { isTravelerType, type TravelerType } from '../contracts/travelerPools';
 import type { LanguageCode } from '../i18n/languages';
 
 /* The profile row creates itself: the `on_auth_user_created` trigger fires inside
@@ -24,12 +25,22 @@ export interface Profile {
   /** Drives the Top Recommendations re-rank. Empty is normal, not an error: measured,
    *  4 of 11 completed users have `interests = '{}'` via the app's skip paths. */
   interests: string[];
+  /**
+   * Drives the traveller rail and the hero's "Travelling as" line.
+   *
+   * Null is the normal state and not an error: measured 30 Aug 2026, `traveler_type` is
+   * null on **25 of 25** accounts, the developer's included. That is not evidence about
+   * demand — the app's picker is reachable from one screen and has never been put to
+   * anyone — it is why the chooser exists. A null column means no rail and no prompt
+   * beyond the hero card; nothing bounces.
+   */
+  travelerType: TravelerType | null;
 }
 
 export async function fetchProfile(userId: string): Promise<Profile> {
   const { data, error } = await getSupabase()
     .from('users')
-    .select('onboarding_completed, interests')
+    .select('onboarding_completed, interests, traveler_type')
     .eq('id', userId)
     .maybeSingle();
 
@@ -39,6 +50,9 @@ export async function fetchProfile(userId: string): Promise<Profile> {
   return {
     onboardingCompleted: data.onboarding_completed === true,
     interests: Array.isArray(data.interests) ? (data.interests as string[]) : [],
+    /* Narrowed rather than cast: the column is plain text with a CHECK, and a value from
+       outside the four would otherwise reach the pool lookup as an undefined key. */
+    travelerType: isTravelerType(data.traveler_type) ? data.traveler_type : null,
   };
 }
 
@@ -63,6 +77,41 @@ export async function saveInterests(
   const { data, error } = await getSupabase()
     .from('users')
     .update({ interests, onboarding_completed: true })
+    .eq('id', userId)
+    .select('id');
+
+  if (error) throw error;
+  if (!data || data.length === 0) throw new Error('zero_rows_updated');
+}
+
+/**
+ * The chooser's write — the only thing on this site that sets `users.traveler_type`.
+ *
+ * The column is one of the nine in the `authenticated` UPDATE grant and carries a CHECK of
+ * the four values, so the vocabulary is the database's: a fifth value is a 23514 at write
+ * time rather than a silent no-op. `TravelerType` narrows to the same four on the way in.
+ *
+ * **It is one row, so it also changes what the phone shows** — the same property
+ * `savePreferredLanguage` has, and the chooser says so rather than letting it be a
+ * surprise. It also changes generated trips: `trip-generate` falls back to this column
+ * when a request carries no `trip_party`, and the planner's review step already renders
+ * "Your usual travel style" from it.
+ *
+ * `.select('id')` is required, not stylistic — the `saveInterests` rule. Without it a
+ * zero-row update (missing row, changed RLS, revoked grant) returns success and saves
+ * nothing, and the chooser would close on a write that never happened.
+ *
+ * Guests never reach here: with no session there is nothing to write to, and an answer
+ * given before there was an account is not consent to change the account. Their choice
+ * lives in the URL and nowhere else.
+ */
+export async function saveTravelerType(
+  userId: string,
+  type: TravelerType,
+): Promise<void> {
+  const { data, error } = await getSupabase()
+    .from('users')
+    .update({ traveler_type: type })
     .eq('id', userId)
     .select('id');
 

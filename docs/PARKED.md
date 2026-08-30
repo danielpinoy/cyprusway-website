@@ -250,6 +250,30 @@ which makes the mapping unnecessary.
 
 **Owner.** Product, then backend.
 
+### `travelerPools.ts` and the app's `travelerTypes.ts` must agree
+
+**What.** `src/contracts/travelerPools.ts` maps the four `traveler_type` values to badge
+slugs, and for friends to two category slugs. The app holds an identical definition in
+`cyprusway-app/src/lib/travelerTypes.ts`. **Two copies, no server backstop.**
+
+**Why it is a smaller risk than the interest map below**, and the difference is worth
+keeping straight. An interest → CMS-category map is invented on the client end to end. A
+traveller pool is three-quarters read: `badges` lives on the place row, the slugs are the
+curator's own, and `users.traveler_type` carries a CHECK of exactly these four values, so a
+fifth is a Postgres 23514 at write time rather than a silent miss.
+
+**The invented part is the friends union** — `lively-busy` ∪ `bars` ∪ `nightlife`. The app
+chose it so its twelve-card rail did not run short. Measured on the web: the union adds
+**11 places, of which 0 are scored, 0 photographed and 0 plannable**, so the six-card rail
+is byte-identical either way and only Explore's count changes (31 rather than 20). Kept for
+the Explore case — a catalogue should show the seventeen bars and clubs a group of friends
+is browsing for — and for parity, so the two clients cannot disagree about what "Friends"
+contains.
+
+**What unparks it.** The `client_config` RPC, with the interest map.
+
+**Owner.** Backend, eventually. Until then: if a pool changes, it changes in both repos.
+
 ### `interestCategories.ts` is a fifth copy of the vocabulary, and a new mapping
 
 **What.** `src/contracts/interestCategories.ts` maps each interest slug to CMS category
@@ -1009,6 +1033,53 @@ them. **What unparks that: deploying this build, or correcting `main` in place.*
 owner's call and it is the reason this entry exists rather than the work simply being done.
 
 **Owner.** Web — done here. Content, for the legacy site.
+
+### The My CyprusWay feed page — cut to a chooser, a filter and one rail
+
+**What the frame draws.** A second homepage: a 360° tour hero, a "Perfect for…" rail, two
+"Large Card" feature sections, authored per-card copy, star ratings, "Top Picks for you",
+a Food & Wine section and a gold hand-off card — `3404:12375` and `3404:12914`.
+
+**What phase 7 built instead**, on the argument in `docs/MY-CYPRUSWAY-DECISION-2026-08-30.md`:
+a chooser card, a `?with=` filter on Explore, and one rail on the homepage. No route, no
+`ROUTE_META` entry, no prerender, no sign-in gate, no third error state. "My CyprusWay" is
+the name of a question and of what its answer changes, not of a page.
+
+**Cut with no placeholder, each for a measured reason** — the same four the app cut, and
+the same reasons still hold:
+
+| cut | why | unparks when |
+|---|---|---|
+| The 360° tour hero | `virtual_tour` null on 181 of 181 published places; one Directus placeholder pointing at a test video, linked to nothing | a real tour row exists — see the tours entry below |
+| Per-traveller card copy — *"A full Cypriot meze, no company required"*, *"A taverna table, just for you"* | no column holds it, in either system. The giveaway is that the **solo** feed's own "Top Picks" cards all read *"Kayaking for Couples"* — it is mockup filler | a copy column, or authored per-place lines |
+| `traveler_scores` | null on 182 of 182 rows in both systems, no writer, no defined shape | a shape and something that writes it |
+| Star ratings | no ratings column anywhere | a ratings source |
+
+**Also not built, and worth naming so it is not rediscovered as an omission:** "Top Picks
+for you", which the app itself documents as *the catalogue by prominence, deduplicated,
+explicitly not personalised* — on this site that is the homepage, one row up.
+
+**Owner.** Design, if the page is ever wanted; nothing is owed to build it.
+
+### The couple rail is exactly six places deep
+
+**What.** `travelerRail` takes six cards. The `romantic` pool is **15 published, 7 scored,
+7 photographed** — and one of the seven is Petra tou Romiou, which a signed-out Top
+Recommendations takes. So for a signed-out-shaped ranking the rail has **exactly six
+candidates and no spare**. **[measured 30 Aug 2026]**
+
+**Why it is recorded rather than fixed.** It degrades correctly: the rail renders what it
+has and disappears below four (`TRAVELER_RAIL_MIN`), so a place losing its badge shortens
+the row rather than breaking it. But it is the one pool with no slack, and it is the reason
+the content list below leads with extending it.
+
+**What unparks it.** A curator applying `romantic` to more places. The decision doc's
+candidate set is `peaceful-quiet` minus `romantic`, scored and photographed — Konnos Bay,
+Hala Sultan Tekke, Ayia Napa Monastery, Lara Beach, Stavrovouni, Fikardou, Artemis Trail —
+seven places that would roughly double the pool's depth **if a curator agrees they are
+romantic**. That is a judgement, not a rule to encode.
+
+**Owner.** Content.
 
 ### 360° tours — `virtual_tour` null on 181/181
 

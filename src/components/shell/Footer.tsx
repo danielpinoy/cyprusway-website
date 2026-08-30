@@ -5,6 +5,7 @@ import { useT } from '../../i18n/I18nProvider';
 import { Icon } from '../ui/Icon';
 import { Wordmark } from '../ui/Wordmark';
 import { NavLabel } from './NavLabel';
+import { TRAVELER_TYPES, travelerLabelKey } from '../../contracts/travelerPools';
 import { FOOTER_ABOUT, FOOTER_DISCOVER, FOOTER_LEGAL } from './navigation';
 import styles from './Footer.module.css';
 
@@ -65,6 +66,24 @@ export function Footer() {
               {FOOTER_DISCOVER.map((item) => (
                 <li key={item.id}>
                   <NavLabel item={item} className={styles.linkLabel} />
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Four real destinations. This is where the traveller filter is discoverable
+              for anyone who never opens the chooser — and the one place the four types are
+              plain links rather than a question. */}
+          <nav className={styles.column} aria-labelledby="cw-footer-segments">
+            <h2 id="cw-footer-segments" className={styles.heading}>
+              {t('ui_footer_segments')}
+            </h2>
+            <ul className={styles.list}>
+              {TRAVELER_TYPES.map((type) => (
+                <li key={type}>
+                  <Link to={`/explore?with=${type}`} className={styles.linkLabel}>
+                    {t(travelerLabelKey(type))}
+                  </Link>
                 </li>
               ))}
             </ul>

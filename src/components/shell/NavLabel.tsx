@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 
 import { useT } from '../../i18n/I18nProvider';
+import { useSession } from '../../lib/SessionProvider';
 import { Icon } from '../ui/Icon';
 import type { NavItem } from './navigation';
 import styles from './NavLabel.module.css';
@@ -25,8 +26,31 @@ export function NavLabel({
   onNavigate?: (() => void) | undefined;
 }) {
   const t = useT();
+  const { openChooser } = useSession();
   const label = t(item.labelKey);
   const icon = showIcon && item.icon ? <Icon as={item.icon} size={20} /> : null;
+
+  /* An item that opens an overlay. A real `<button>` — it does not navigate, so it must
+     not look like a link to a screen reader — styled as one, and it closes the drawer on
+     the way (`onNavigate`) exactly as a link would, because the card would otherwise open
+     behind it. */
+  if (item.action === 'chooser') {
+    return (
+      <button
+        type="button"
+        className={[styles.item, styles.link, styles.button, className]
+          .filter(Boolean)
+          .join(' ')}
+        onClick={() => {
+          onNavigate?.();
+          openChooser();
+        }}
+      >
+        {icon}
+        <span>{label}</span>
+      </button>
+    );
+  }
 
   if (item.pending || !item.to) {
     return (

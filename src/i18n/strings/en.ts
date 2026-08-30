@@ -38,6 +38,39 @@ export const stringsEn = {
      whole product is pre-trip. What goes: the mechanism, which does not exist. */
   ui_hero_title: 'Know Cyprus before you arrive',
 
+  /* --- My CyprusWay (phase 7) ---------------------------------------------
+     The chooser, the rail it fills and the filter it sets.
+
+     THE FOUR CARDS NEED NO STRINGS. Their labels and descriptions are
+     `ui_plan_party_*` / `_desc`, which the planner's step 4 already defines and which are
+     word for word the app's own `TRAVELER_TYPE_OPTIONS` — compared programmatically, all
+     eight identical. One vocabulary asked in two places, not two vocabularies. */
+  ui_traveller_title: 'Who are you travelling with?',
+  ui_traveller_sub:
+    'We will put the places that suit you first — on the homepage, and in Explore.',
+  /* Shown to a signed-in visitor only. It is one row shared with the phone, and a control
+     that quietly changes another device should say so — the `ui_language_shared` rule. */
+  ui_traveller_shared: 'Saved to your account, so it changes the app too.',
+  ui_traveller_skip: 'Not now',
+  ui_traveller_failed: "That couldn't be saved. Please try again.",
+  /* The hero line and the Explore pill say the same thing in the same shape. "Travelling
+     as: Couple" rather than "as a couple" — the four labels are nouns and an article would
+     need four more strings to stay grammatical here and in four other languages. */
+  ui_traveller_current: 'Travelling as: {type}',
+  ui_traveller_change: 'Change who you are travelling with',
+  ui_traveller_clear: 'Show places for every traveller',
+  /* The rail's four headings. British "travellers", unlike the app's "travelers": this
+     site writes "travellers" (`about_p1`) and "personalised" throughout, and a US spelling
+     in a rail heading would be its first. Deliberate, recorded in contracts/travelerPools.ts. */
+  ui_traveller_rail_solo: 'Perfect for solo travellers',
+  ui_traveller_rail_couple: 'Perfect for couples',
+  ui_traveller_rail_family: 'Perfect for family trips',
+  ui_traveller_rail_friends: 'Perfect for friend trips',
+  /* The footer column phase 1 dropped as "taxonomy links into browse surfaces phase 1 does
+     not build". The surface exists now. The frame's "Sole-traveler" is not used — the
+     chooser's own card says Solo. */
+  ui_footer_segments: 'Travelling as',
+
   /* --- Chrome ----------------------------------------------------------- */
   ui_skip_to_content: 'Skip to content',
   ui_language: 'Language',

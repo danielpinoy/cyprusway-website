@@ -1,4 +1,5 @@
 import { categoriesForInterests } from '../contracts/interestCategories';
+import { matchesTravelerType, type TravelerType } from '../contracts/travelerPools';
 import type { Place } from './places';
 
 /**
@@ -15,6 +16,11 @@ export const TOP_RECOMMENDATIONS_COUNT = 4;
 export const POPULAR_COUNT = 6;
 export const FOOD_WINE_COUNT = 6;
 export const TOURS_COUNT = 3;
+/** The traveller rail. Six, like Popular — and exactly what the couple pool holds. */
+export const TRAVELER_RAIL_COUNT = 6;
+/** Below this the rail is absent rather than short — the standing empty-rail rule. All
+ *  four types clear it today; couple clears it by exactly nothing. */
+export const TRAVELER_RAIL_MIN = 4;
 export const SAVED_PLACES_COUNT = 4;
 
 /**
@@ -206,6 +212,72 @@ export function popularBand(pool: readonly Place[], exclude: ReadonlySet<number>
  */
 export function tourPlaces(places: readonly Place[]): Place[] {
   return places.filter((place) => place.hasTour && place.heroUrl != null).slice(0, TOURS_COUNT);
+}
+
+
+/**
+ * Perfect for {traveller type} — the one rail the traveller type buys.
+ *
+ * ## Why this rail is not a second copy of Popular
+ *
+ * The obvious objection is that a badge rail over the same pool must mostly repeat what
+ * the homepage already shows. Measured against the live catalogue on 30 August 2026, it
+ * does not, and the reason is a hole in the homepage's own banding.
+ *
+ * `TOP_RECOMMENDATIONS_COUNT` is 4 and `POPULAR_BAND_START` is 8 (0-based → rank 9). **So
+ * renderable ranks 5 to 8 appear nowhere on the homepage** for a visitor whose interests
+ * do not happen to pull them into Top Recommendations:
+ *
+ *   rank 5  Tombs of the Kings        93.6   family-friendly, solo-friendly
+ *   rank 6  Nissi Beach               93.6   lively-busy
+ *   rank 7  Cape Greco                92.4   — no traveller badge
+ *   rank 8  Ayia Napa Sculpture Park  92.0   romantic, solo-friendly
+ *
+ * Three of those four carry a traveller badge, and this rail is the only route by which
+ * they reach the page. That is the argument for it: not "a personalised row" — the
+ * homepage's Top Recommendations is already personalised, and better, because it re-ranks
+ * on eleven interests rather than one of four types — but **a structural gap that the
+ * banding creates and nothing else fills.**
+ *
+ * ## And nothing appears twice
+ *
+ * The caller adds this rail's ids to the set it passes `popularBand`, which already takes
+ * one. So the rail does not duplicate Popular; it *removes* from it. Measured, per type —
+ * how many of the six are promoted out of Popular's pool into a labelled row, how many are
+ * places the homepage could not show at all, and what Popular has left for its six slots:
+ *
+ *   solo     4 promoted · 2 unreachable otherwise (Tombs 5, Sculpture Park 8) · 18 left
+ *   couple   3 promoted · 3 unreachable otherwise (Sculpture Park 8, Lofou 57, Omeriye 105) · 19 left
+ *   family   5 promoted · 1 unreachable otherwise (Tombs 5) · 17 left
+ *   friends  3 promoted · 3 unreachable otherwise (Nissi 6, Pissouri 51, Kourion Beach 53) · 19 left
+ *
+ * Popular needs 6 and never has fewer than 17 candidates, so the trade costs it nothing.
+ * Family is the weakest case and is still not redundant — it relabels five and surfaces
+ * one. The four rails are also four different rails: pairwise overlap across their six
+ * cards is couple ∩ family 0, couple ∩ friends 0, and at most 2 anywhere else.
+ *
+ * ## The rule
+ *
+ * The RAIL pool (scored), not the Explore pool: a rail puts six places above the whole
+ * catalogue and an unscored place has no claim to that slot — `renderablePool`'s argument,
+ * unchanged. Then the badge pool, minus whatever Top Recommendations took, in the same
+ * `prominence desc nulls last, id asc` order every other rail uses.
+ *
+ * **Couple is exactly six candidates deep today** (15 published, 7 scored, one of which is
+ * Petra tou Romiou and is spent on Top Recommendations). One place losing its `romantic`
+ * badge, or being pulled into Top Recommendations by an interest re-rank, empties a slot.
+ * The rail renders what it has and disappears below four, so that degrades rather than
+ * breaks — but it is the number to watch, and the reason to extend the pool is recorded in
+ * docs/PARKED.md.
+ */
+export function travelerRail(
+  pool: readonly Place[],
+  type: TravelerType,
+  exclude: ReadonlySet<number>,
+): Place[] {
+  return pool
+    .filter((place) => !exclude.has(place.id) && matchesTravelerType(place, type))
+    .slice(0, TRAVELER_RAIL_COUNT);
 }
 
 /**

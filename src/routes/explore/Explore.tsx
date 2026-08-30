@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
+import { X } from 'lucide-react';
 
 import { Layout } from '../../components/shell/Layout';
 import { PlaceCard } from '../../components/home/PlaceCard';
 import { Button } from '../../components/ui/Button';
 import { useI18n } from '../../i18n/I18nProvider';
 import { INTEREST_SLUGS, interestLabelKey } from '../../contracts/interests';
+import { isTravelerType, travelerLabelKey } from '../../contracts/travelerPools';
+import { Icon } from '../../components/ui/Icon';
 import {
   EXPLORE_PAGE_SIZE,
   filterPlaces,
@@ -44,6 +47,7 @@ export default function Explore() {
 
   const rawRegion = params.get('region');
   const rawInterest = params.get('interest');
+  const rawWith = params.get('with');
 
   const places = useMemo(() => explorePool(data.places), [data.places]);
 
@@ -74,17 +78,31 @@ export default function Explore() {
     () => (ready && INTEREST_SLUGS.some((s) => s === rawInterest) ? rawInterest : null),
     [ready, rawInterest],
   );
+  /* Same validation and the same `ready` gate as the other two: a stale or hand-edited
+     `?with=` degrades to "all travellers" rather than to an empty grid, and nothing is
+     applied before the catalogue has loaded — the hydration rule this page already
+     carries, which applies identically to a third axis. */
+  const travelerType = useMemo(
+    () => (ready && isTravelerType(rawWith) ? rawWith : null),
+    [ready, rawWith],
+  );
 
-  const regions = useMemo(() => regionOptions(places, interest, lang), [places, interest, lang]);
-  const interests = useMemo(() => interestOptions(places, region), [places, region]);
+  const regions = useMemo(
+    () => regionOptions(places, interest, lang, travelerType),
+    [places, interest, lang, travelerType],
+  );
+  const interests = useMemo(
+    () => interestOptions(places, region, travelerType),
+    [places, region, travelerType],
+  );
   const results = useMemo(
-    () => filterPlaces(places, { region, interest }),
-    [places, region, interest],
+    () => filterPlaces(places, { region, interest, travelerType }),
+    [places, region, interest, travelerType],
   );
 
   useEffect(() => {
     setVisible(EXPLORE_PAGE_SIZE);
-  }, [region, interest]);
+  }, [region, interest, travelerType]);
 
   /* Load More moves focus to the first newly added card, so a keyboard user continues from
      where the list grew rather than being returned to the top of the page. */
@@ -96,7 +114,7 @@ export default function Explore() {
     if (card instanceof HTMLElement) card.focus();
   }, [visible]);
 
-  function select(key: 'region' | 'interest', value: string | null) {
+  function select(key: 'region' | 'interest' | 'with', value: string | null) {
     const next = new URLSearchParams(params);
     if (value == null) next.delete(key);
     else next.set(key, value);
@@ -148,6 +166,24 @@ export default function Explore() {
             />
           </div>
 
+          {/* The traveller filter, as one dismissible pill rather than a third chip row.
+              See ExploreFilters.travelerType for the measurement behind that. */}
+          {travelerType && (
+            <p className={styles.pill}>
+              <span>
+                {t('ui_traveller_current', { type: t(travelerLabelKey(travelerType)) })}
+              </span>
+              <button
+                type="button"
+                className={styles.pillClear}
+                onClick={() => select('with', null)}
+                aria-label={t('ui_traveller_clear')}
+              >
+                <Icon as={X} size={14} />
+              </button>
+            </p>
+          )}
+
           <div className={styles.summary}>
             <p className={styles.count} role="status">
               {loading
@@ -172,6 +208,7 @@ export default function Explore() {
               places={places}
               region={region}
               interest={interest}
+              travelerType={travelerType}
               onClear={() => setParams(new URLSearchParams(), { replace: false })}
               onPickInterest={(value) => select('interest', value)}
             />

@@ -18,6 +18,7 @@ import {
   signOut as signOutRequest,
 } from './auth';
 import { fetchProfile } from './profile';
+import type { TravelerType } from '../contracts/travelerPools';
 import { getSupabase } from './supabase';
 
 /**
@@ -57,7 +58,31 @@ interface SessionValue {
   /** The person's interest slugs. Empty for a guest, and legitimately empty for a
    *  signed-in user who skipped the step in the app. */
   interests: string[];
+  /**
+   * The stored traveller type, or null — which is the state of every account today.
+   *
+   * Read from the same `fetchProfile` call as `interests`, one column further along, so
+   * the flow makes no second request. Null for a guest, always: the chooser writes nothing
+   * without a session, so a guest's answer lives in the URL and never here.
+   */
+  travelerType: TravelerType | null;
+  /** True while the chooser card is up. It is a card in the `AuthGate` family, not a route. */
+  chooserOpen: boolean;
   openAuth: (mode: AuthMode) => void;
+  /**
+   * Open the traveller chooser.
+   *
+   * The same mechanism as `openAuth` — the precedent for a control opening an overlay
+   * rather than navigating, set by the header's Sign In button. (An earlier brief cited a
+   * `data-cw-auth` attribute; no such thing exists in this repo. The precedent is this
+   * callback.) It is what lets the "My CyprusWay" nav item ask a question instead of
+   * pointing at a page that does not need to exist.
+   */
+  openChooser: () => void;
+  closeChooser: () => void;
+  /** Called by the chooser once the write has succeeded, so the rail appears without a
+   *  refetch — the `completeOnboarding` pattern. */
+  setTravelerType: (type: TravelerType) => void;
   closeAuth: () => void;
   authMode: AuthMode | null;
   completeOnboarding: (interests: string[]) => void;
@@ -76,6 +101,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [authFailed, setAuthFailed] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [interests, setInterests] = useState<string[]>([]);
+  const [travelerType, setTravelerTypeState] = useState<TravelerType | null>(null);
+  const [chooserOpen, setChooserOpen] = useState(false);
 
   /* Dev-only: `?interests=beach_coast,ancient_ruins` overrides the profile's interests, so
      the Top Recommendations ranking can be exercised for any combination without a real
@@ -148,6 +175,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setUser(session.user);
         setNeedsOnboarding(!profile.onboardingCompleted);
         setInterests(profile.interests);
+        setTravelerTypeState(profile.travelerType);
         setStatus('ready');
       } catch {
         if (!cancelled) setStatus('error');
@@ -172,6 +200,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         if (!session) {
           setNeedsOnboarding(false);
           setInterests([]);
+          setTravelerTypeState(null);
         }
       });
       subscription = result.data.subscription;
@@ -204,11 +233,23 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setNeedsOnboarding(false);
     setInterests([]);
+    setTravelerTypeState(null);
   }, []);
 
   const retry = useCallback(() => {
     setStatus('idle');
     setAttempt((n) => n + 1);
+  }, []);
+
+  const openChooser = useCallback(() => setChooserOpen(true), []);
+  const closeChooser = useCallback(() => setChooserOpen(false), []);
+
+  /* Adopted rather than refetched, exactly as `completeOnboarding` adopts the interests
+     the card just wrote: the row is the truth and it has just been written, so a second
+     read would only be slower. The rail appears on the next render. */
+  const setTravelerType = useCallback((type: TravelerType) => {
+    setTravelerTypeState(type);
+    setChooserOpen(false);
   }, []);
 
   const value = useMemo<SessionValue>(
@@ -218,8 +259,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       authFailed,
       needsOnboarding,
       interests,
+      travelerType,
+      chooserOpen,
       authMode,
       openAuth,
+      openChooser,
+      closeChooser,
+      setTravelerType,
       closeAuth,
       completeOnboarding,
       signOut,
@@ -231,8 +277,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       authFailed,
       needsOnboarding,
       interests,
+      travelerType,
+      chooserOpen,
       authMode,
       openAuth,
+      openChooser,
+      closeChooser,
+      setTravelerType,
       closeAuth,
       completeOnboarding,
       signOut,

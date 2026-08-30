@@ -1,5 +1,6 @@
 import { INTEREST_SLUGS, type InterestSlug } from '../contracts/interests';
 import { categoriesForInterests } from '../contracts/interestCategories';
+import { matchesTravelerType, type TravelerType } from '../contracts/travelerPools';
 import type { Place } from './places';
 import type { LanguageCode } from '../i18n/languages';
 import { localised } from './places';
@@ -20,6 +21,21 @@ export const EXPLORE_PAGE_SIZE = 20;
 export interface ExploreFilters {
   region: string | null;
   interest: string | null;
+  /**
+   * The traveller type, from `?with=`.
+   *
+   * A THIRD AXIS BUT NOT A THIRD CHIP ROW, and the measurement is why. Traveller ×
+   * interest is **20 of 44 cells empty** — solo × local_food 0, couple × beach_coast 0,
+   * friends × nature_trails 0, and `hidden_gems` 0 for all four because it maps to nothing
+   * by design — before a region is even chosen. A row of five chips beside the existing
+   * eleven would invite combining axes that mostly produce the empty state, on a page whose
+   * two rows already overflow at common widths (`FilterRow`'s own note).
+   *
+   * So it is set elsewhere — the chooser, the footer's four links, a shared URL — and shown
+   * here as one dismissible pill. Explore looks exactly as it did for anyone who has not
+   * set a type, which is every visitor who has not been through the chooser.
+   */
+  travelerType: TravelerType | null;
 }
 
 export interface RegionOption {
@@ -49,7 +65,10 @@ function matchesInterest(place: Place, interest: string | null): boolean {
 
 export function filterPlaces(places: readonly Place[], filters: ExploreFilters): Place[] {
   return places.filter(
-    (place) => matchesRegion(place, filters.region) && matchesInterest(place, filters.interest),
+    (place) =>
+      matchesRegion(place, filters.region) &&
+      matchesInterest(place, filters.interest) &&
+      (filters.travelerType == null || matchesTravelerType(place, filters.travelerType)),
   );
 }
 
@@ -65,6 +84,7 @@ export function regionOptions(
   places: readonly Place[],
   interest: string | null,
   lang: LanguageCode,
+  travelerType: TravelerType | null = null,
 ): RegionOption[] {
   const seen = new Map<string, RegionOption>();
   for (const place of places) {
@@ -76,7 +96,12 @@ export function regionOptions(
         count: 0,
       });
     }
-    if (matchesInterest(place, interest)) {
+    /* The traveller filter counts too: a chip saying "Paphos 17" while the grid shows 4
+       would be describing a click that does not happen. */
+    if (
+      matchesInterest(place, interest) &&
+      (travelerType == null || matchesTravelerType(place, travelerType))
+    ) {
       (seen.get(place.regionSlug) as RegionOption).count += 1;
     }
   }
@@ -96,6 +121,7 @@ export function regionOptions(
 export function interestOptions(
   places: readonly Place[],
   region: string | null,
+  travelerType: TravelerType | null = null,
 ): InterestOption[] {
   return INTEREST_SLUGS.map((slug) => {
     const wanted = categoriesForInterests([slug]);
@@ -105,6 +131,7 @@ export function interestOptions(
       count: places.filter(
         (place) =>
           matchesRegion(place, region) &&
+          (travelerType == null || matchesTravelerType(place, travelerType)) &&
           place.categorySlug != null &&
           wanted.has(place.categorySlug),
       ).length,

@@ -23,3 +23,19 @@
   opacity: 0.55;
   cursor: default;
 }
+
+/* The chooser item. A button that has to sit in a row of links without looking like an
+   odd one out — no chrome of its own, and `text-align: start` because a button centres
+   its text by default and the drawer's rows are left-aligned. */
+.button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: var(--cw-button-size);
+  font-weight: var(--cw-button-weight);
+  line-height: var(--cw-button-line);
+  text-align: start;
+  cursor: pointer;
+}

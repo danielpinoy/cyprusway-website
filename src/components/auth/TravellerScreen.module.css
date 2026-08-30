@@ -1,0 +1,49 @@
+/* The chooser card. It sits inside the shared `Modal` (size="interests"), so the scrim,
+   the radius, the ground, the focus trap and the enter/exit motion are all the modal's —
+   this file is only the card's own stack. Deliberately close to InterestsScreen.module.css,
+   which is the sibling card in the same family. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-24);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-h2-size);
+  line-height: var(--cw-h2-line);
+  font-weight: var(--cw-h2-weight);
+  /* contrast: --cw-black-2 on --cw-sand = 9.33 */
+  color: var(--cw-black-2);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--cw-subtitle-size);
+  line-height: var(--cw-subtitle-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+/* "Saved to your account, so it changes the app too." Quiet, but present: a control that
+   changes another device says so. Signed-in only — a guest's choice touches no account. */
+.shared {
+  margin: 0;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-12);
+}

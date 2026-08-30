@@ -32,6 +32,16 @@ export interface NavItem {
   readonly labelKey: TranslationKey;
   readonly to?: string;
   readonly pending?: true;
+  /**
+   * An item that opens an overlay rather than navigating.
+   *
+   * "My CyprusWay" is the name of a question — who are you travelling with — and of what
+   * the answer changes: a rail on the homepage, a filter on Explore, the party the trip
+   * planner falls back to. None of that is a page, so the item asks instead of pointing at
+   * one. The precedent is the header's Sign In button, which opens the auth card through
+   * `openAuth()` on the session context; this is the same mechanism one item along.
+   */
+  readonly action?: 'chooser';
   readonly icon?: LucideIcon;
 }
 
@@ -39,7 +49,7 @@ export interface NavItem {
  *  in phase 4 and Build My Trip in phase 5; My CyprusWay and 360° Tours are still ahead. */
 export const PRIMARY_NAV: readonly NavItem[] = [
   { id: 'explore', labelKey: 'ui_nav_explore', to: '/explore' },
-  { id: 'my-cyprusway', labelKey: 'ui_nav_my_cyprusway', pending: true },
+  { id: 'my-cyprusway', labelKey: 'ui_nav_my_cyprusway', action: 'chooser' },
   { id: 'ask-pete', labelKey: 'nav_ap', to: '/ask-pete' },
   { id: 'tours', labelKey: 'ui_nav_tours', pending: true },
   { id: 'build-trip', labelKey: 'ui_nav_build_trip', to: '/build-trip' },
@@ -49,7 +59,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 export const MENU_NAV: readonly NavItem[] = [
   { id: 'home', labelKey: 'nav_home', to: '/', icon: Home },
   { id: 'explore', labelKey: 'ui_nav_explore', to: '/explore', icon: Compass },
-  { id: 'my-cyprusway', labelKey: 'ui_nav_my_cyprusway', pending: true, icon: Sparkles },
+  { id: 'my-cyprusway', labelKey: 'ui_nav_my_cyprusway', action: 'chooser', icon: Sparkles },
   { id: 'ask-pete', labelKey: 'nav_ap', to: '/ask-pete', icon: MessageCircleQuestion },
   /* The frame marks Book with Pete "PRO". The 14 Aug audit recorded that as inverted —
      `book-with-pete-route` is guest-reachable — so the badge is not carried. */

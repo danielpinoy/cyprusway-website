@@ -2,6 +2,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { interestLabelKey, type InterestSlug } from '../../contracts/interests';
 import { categoriesForInterests } from '../../contracts/interestCategories';
 import { suggestInterestForRegion } from '../../lib/explore';
+import { matchesTravelerType, type TravelerType } from '../../contracts/travelerPools';
 import { localised, type Place } from '../../lib/places';
 import { Button } from '../../components/ui/Button';
 import styles from './ExploreEmpty.module.css';
@@ -28,12 +29,16 @@ export function ExploreEmpty({
   places,
   region,
   interest,
+  travelerType,
   onClear,
   onPickInterest,
 }: {
   places: readonly Place[];
   region: string | null;
   interest: string | null;
+  /** The `?with=` filter, if one is set. It narrows the pool the suggestion is drawn
+   *  from, so a suggested interest could otherwise be another dead end. */
+  travelerType: TravelerType | null;
   onClear: () => void;
   onPickInterest: (slug: InterestSlug) => void;
 }) {
@@ -46,7 +51,14 @@ export function ExploreEmpty({
 
   /* The interest reaches no category at all — a different problem from having no places. */
   const unmapped = interest != null && categoriesForInterests([interest]).size === 0;
-  const suggestion = suggestInterestForRegion(places, region, interest);
+  /* Suggested out of the pool the traveller filter leaves, not the whole catalogue: the
+     point of the suggestion is that it "can never suggest something that is also empty",
+     and with `?with=couple` set a suggestion drawn from all 181 places could be exactly
+     that. */
+  const reachable = travelerType
+    ? places.filter((place) => matchesTravelerType(place, travelerType))
+    : places;
+  const suggestion = suggestInterestForRegion(reachable, region, interest);
 
   return (
     <div className={styles.empty} role="status">
