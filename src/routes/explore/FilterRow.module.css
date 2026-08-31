@@ -3,6 +3,12 @@
 }
 
 .scroller {
+  /* The containing block for the chips' visually-hidden count spans (position: absolute).
+     Without this their containing block was .row - OUTSIDE this scroll container - so the
+     spans escaped its clipping and widened the document itself. Measured 30 Aug 2026,
+     live: document scrollWidth 1770 on a 1440 viewport, 1674 at 390 - the whole page
+     scrolled sideways. With it: 1425 and 390. docs/PERF-MEASUREMENT-2026-08-30.md. */
+  position: relative;
   display: flex;
   gap: var(--cw-space-8);
   overflow-x: auto;
