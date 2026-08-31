@@ -44,6 +44,7 @@ export function PlaceCard({
   place,
   size,
   select,
+  priority = false,
 }: {
   place: Place;
   size: PlaceCardSize;
@@ -56,6 +57,15 @@ export function PlaceCard({
    * likely to drift.
    */
   select?: { selected: boolean; disabled?: boolean; onToggle: () => void } | undefined;
+  /**
+   * True only for the four Top Recommendations cards. The desktop LCP element lives in
+   * that rail (measured 30 Aug 2026: LCP 1224 ms, ~39% of it the photo's own fetch -
+   * docs/PERF-MEASUREMENT-2026-08-30.md), and a lazy image cannot be requested until
+   * layout proves it visible, at the lowest network priority. Everything below the fold
+   * stays lazy, which is the treatment's whole value - so this must never be set on a
+   * card inside a rail that renders more than its first screenful.
+   */
+  priority?: boolean;
 }) {
   const { lang } = useI18n();
 
@@ -83,14 +93,14 @@ export function PlaceCard({
         disabled={select.disabled ?? false}
         onClick={select.onToggle}
       >
-        <Body place={place} slot={slot} region={region} category={category} />
+        <Body place={place} slot={slot} region={region} category={category} priority={priority} />
       </button>
     );
   }
 
   return (
     <Link to={`/place/${place.slug}`} className={className} aria-label={label}>
-      <Body place={place} slot={slot} region={region} category={category} />
+      <Body place={place} slot={slot} region={region} category={category} priority={priority} />
     </Link>
   );
 }
@@ -102,11 +112,13 @@ function Body({
   slot,
   region,
   category,
+  priority,
 }: {
   place: Place;
   slot: { width: number; height: number };
   region: string;
   category: string;
+  priority: boolean;
 }) {
   const CategoryGlyph = categoryIcon(place.categorySlug);
   return (
@@ -119,7 +131,12 @@ function Body({
           width={slot.width}
           height={slot.height}
           alt=""
-          loading="lazy"
+          /* All 26 homepage images used to leave at Low priority within ~2 ms of each
+             other, against an origin whose per-image spread was 423-1040 ms - so the LCP
+             card queued behind twenty-two images nobody could see. Priority cards jump
+             that queue; every other card keeps lazy/Low. Measured 30 Aug 2026. */
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : undefined}
           decoding="async"
         />
       ) : null}

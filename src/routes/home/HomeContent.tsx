@@ -106,7 +106,10 @@ export function HomeContent({ data }: { data: HomeData }) {
         {top.length > 0 && (
           <Rail titleKey="ui_rail_top_recommendations" scrollBy={306}>
             {top.map((place) => (
-              <PlaceCard key={place.id} place={place} size="large" />
+              /* priority: this rail holds the desktop LCP element, and it is exactly
+                 TOP_RECOMMENDATIONS_COUNT (4) cards - one screenful - so no below-fold
+                 image is ever marked. See the prop's doc comment on PlaceCard. */
+              <PlaceCard key={place.id} place={place} size="large" priority />
             ))}
           </Rail>
         )}

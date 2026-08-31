@@ -7,6 +7,19 @@
     <meta name="theme-color" content="#1b3b6b" />
     <title>CyprusWay</title>
     <meta name="description" content="Step inside Cyprus before you arrive with immersive 360 degree tours and guided narration." />
+
+    <!-- Both backends are contacted on every page: the catalogue fetch goes to Supabase
+         during hydration and the card photos come from Directus right after. Opening the
+         connections up front moves ~120 ms (DNS 5 + TCP 55 + TLS 60, measured from Cyprus
+         30 Aug 2026) off the critical path - docs/PERF-MEASUREMENT-2026-08-30.md.
+         The Directus host is hard-coded because it exists only in the data (places_sync
+         rows carry absolute URLs); if a CDN hostname ever fronts it, change this line and
+         directusImage.ts together.
+         crossorigin on the Supabase line only: fetch() runs in CORS mode and draws from
+         the uncredentialed connection pool; <img> is no-cors and draws from the
+         credentialed pool. Each preconnect must match the pool its consumer uses. -->
+    <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
+    <link rel="preconnect" href="https://cyprusway-directus-production.up.railway.app" />
     <script>
       /* Applies the stored language's direction to <html> before first paint, so an
          RTL visitor never sees a frame of LTR layout. Only touches attributes outside

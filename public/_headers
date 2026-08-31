@@ -1,0 +1,9 @@
+# Cloudflare Pages' default for every file is `max-age=0, must-revalidate`, so every
+# page open revalidated the JS, the CSS and the font: two-three 304 round trips,
+# measured at 22 ms in-browser (57-67 ms via curl) from Cyprus on 30 Aug 2026 —
+# docs/PERF-MEASUREMENT-2026-08-30.md. Everything under /assets/ is content-hashed by
+# Vite, so a year + immutable is safe: a changed file is a new URL, never a stale hit.
+#
+# /images/ and the other public/ files are NOT hashed. Do not add them here.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
