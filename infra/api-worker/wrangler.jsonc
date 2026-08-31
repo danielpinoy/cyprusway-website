@@ -1,0 +1,42 @@
+// Config for the Book with Pete resolver Worker ONLY — deploy with
+//   npx wrangler deploy --config infra/api-worker/wrangler.jsonc
+// The repo root has its own wrangler.jsonc for the site, and infra/cdn-worker has
+// the assets CDN's; this file is scoped here so the three deploys cannot touch
+// each other.
+{
+  "name": "cyprusway-api-resolver",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-01",
+
+  // DIVERGENCE from the CDN Worker's convention, on purpose: cdn.cyprusway.eu is
+  // bound manually in the dashboard; this hostname is committed. The DNS record
+  // for api.cyprusway.eu was DELETED after the 1014 CNAME finding (see the scope
+  // doc's 1 Sep addendum), so nothing exists for a deploy to conflict with, and
+  // committing the route makes the binding reproducible instead of a dashboard
+  // memory. Unbinding remains a dashboard action either way.
+  "routes": [{ "pattern": "api.cyprusway.eu", "custom_domain": true }],
+
+  "vars": {
+    // "1" = scoped plain proxy: no cache, no rate-limit binding — the no-rebuild
+    // revert for cache or limiter misbehaviour. Scope, CORS and header-stripping
+    // stay. NOTE: a dashboard edit of this var is overwritten by the next
+    // `wrangler deploy` from this file; re-flip it after, or change it here first.
+    "PASSTHROUGH": "0"
+  },
+
+  // The Workers rate-limiting binding (GA 2025-09-19; wrangler >= 4.36 required,
+  // repo has 4.127). ~30 POSTs / 60 s per client IP, counted PER CLOUDFLARE
+  // LOCATION (not global) — generous on purpose: a CGNAT hotel shares one bucket
+  // in one colo, and the zone rule in front (10/10s, dashboard) is the blunt
+  // flood cap. Period may only be 10 or 60. namespace_id must be unique within
+  // the account; this is the first ratelimit namespace, numbered 1001.
+  "ratelimits": [
+    {
+      "name": "RESOLVER_RL",
+      "namespace_id": "1001",
+      "simple": { "limit": 30, "period": 60 }
+    }
+  ],
+
+  "observability": { "enabled": true }
+}
