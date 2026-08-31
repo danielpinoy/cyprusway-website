@@ -1557,3 +1557,31 @@ executed and its output is quoted.** Where a run is not possible, the entry says
 
 **Owner.** Whoever audits next. This entry is the reason the phase-6 audit
 (`PHASE-6-PLAN.md` §16) opened with the comments and not with the code.
+
+## House rules
+
+### Replacing a place photo means uploading a new file — never replacing in place
+
+**What.** A Directus asset URL is a pure function of the file UUID (`/assets/<uuid>` — no
+version, no filename), and three caches now hold what it returns: every visitor's browser
+for 30 days (the shipped `Cache-Control`), Directus's own derivative objects in the
+bucket (581 of them, measured 31 Aug 2026), and — once `cdn.cyprusway.eu` is bound — the
+Cloudflare edge. The Files module's replace-in-place keeps the UUID, so every layer keeps
+serving the old bytes: before the CDN that was one returning visitor's browser at a time;
+with it, everyone, until a purge that on the free plan is exact-URL-only — ~16–20 URLs
+per asset for the site's slot matrix alone, more for the app's sizes.
+
+**The rule.** A new image is a new upload: upload, re-point the place row, delete the old
+file. New UUID → new URL → nothing anywhere can be stale, and no purge story needs to
+exist. This is the converse of what the Directus repo's recovery note already treats as
+sacred — files were restored *at their original UUIDs* precisely because the UUID is the
+identity everything hangs on.
+
+**The mechanical fallback, if the rule is ever broken.** The sync appends
+`?v=<file modified_on>` when composing `hero_image_url` and gallery URLs — a backend-only
+change: the site's builder already joins onto an existing query correctly
+(`directusImage.ts` `transform()`: `includes('?') ? '&' : '?'`), so no client change is
+needed. Unparks when a stale image is observed in the wild, or when an editor who cannot
+follow the rule has write access.
+
+**Owner.** Content (the rule). Backend (the fallback, only if needed).
