@@ -207,6 +207,39 @@ first** (`STORAGE_LOCATIONS=supabase,local` — decision log §642), which is a 
 source of the ~250–290 ms per-request origin overhead: an asset request that misses the
 local derivative cache reads from Supabase Storage before it can stream.
 
+### Item 6 follow-up — Supabase-direct serving, measured (31 Aug)
+
+The question raised by the storage-driver finding: if Directus round-trips to Supabase
+Storage per request, is the round trip removable rather than one to cache around — can
+the derivative come straight from Supabase's CDN? Measured with read-only service-key
+probes (key from the Directus repo's local env, never a write):
+
+| probe | result |
+|---|---|
+| `/server/ping` — no storage, no DB work | **205–281 ms.** The Railway/app floor by itself |
+| bucket `directus-files` metadata | `"public": false` — deliberate and recorded: licensed stock assets, access governed by the Directus permission layer |
+| unauthenticated public-path fetch | 400 for every extension tried — not reachable, as designed |
+| authenticated original fetch (487 KB) | 441 ms cold (CF MISS) → **59–64 ms warm (CF HIT, `public, max-age=3600`)** |
+| the `__` derivative-cache object Directus re-fetches per request (49 KB) | 597 ms cold → 57–68 ms warm |
+| `render/image` transform API | **`FeatureNotEnabled`** — "feature not enabled for this tenant"; Supabase image transformations are a paid-plan feature this project does not have |
+| bucket contents | 747 objects: 166 originals + **581 `__` derivative-cache objects** — Directus's transform cache lives in the bucket, so even a "cached" derivative is a Railway→Supabase fetch + pipe |
+| extensions | jpg 170, webp 490, avif 70, jpeg 13, 4 others — **not uniform**, so the storage key (`<uuid>.<ext>`) is not derivable from `hero_image_url` |
+| `directus_files` via PostgREST anon | PGRST205, no such table — Directus's database is not the Supabase Postgres; nothing exposed |
+
+**What it means.** The storage hop is real but it is the smaller half: ping alone costs
+205–281 ms, so the Supabase fetch plus streaming accounts for roughly 100–150 ms of the
+340–420 ms derivative TTFB. Serving straight from Supabase would indeed be fast
+(~60 ms warm) — but three gates close the host-swap route today: the transform API is
+not enabled for this tenant; the bucket is private by a recorded decision this
+measurement does not overturn; and the varying extensions mean `directusImage.ts`
+cannot build the storage key from the asset URL — the sync would have to carry
+`filename_disk`. Item 6 therefore **stays an ops task**: a CDN in front of Directus
+lands at the same ~50–60 ms endpoint without touching the plan, the privacy decision,
+or the data contract. Complementary rather than alternative: the Railway service itself
+(~150–225 ms behind an edge whose TCP RTT is 55 ms — region or sizing) is worth
+checking regardless, because with a CDN it only matters on a MISS, but every admin and
+API call pays it today.
+
 Expected after 1–4 and 7: desktop homepage LCP 1.2 s → ~0.8–0.9 s (the Directus origin
 remains the floor until 6); throttled-mobile time-to-photos 3.6 s → ~2 s.
 
