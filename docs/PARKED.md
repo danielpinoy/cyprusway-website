@@ -1260,8 +1260,11 @@ Continue.
 **Why parked.** The function contract is completely clear from source — but the card is not
 a valid client of it. Four separate problems: **[measured 28 Aug]**
 
-1. It collects **one of four** required fields. `booking_type`, the subtype and the hotel
-   preference have no input anywhere in the design.
+1. It collects **one of five** required fields. `booking_type`, the subtype, the hotel
+   preference and `locale` have no input anywhere in the design — and `locale` is required
+   in practice: the resolver 400s without it even though it discards the value after
+   validating. (Corrected 31 Aug from "one of four": "validated then discarded" reads as
+   optional, and is not. The card would send the site language.)
 2. Its chips are not the region vocabulary. Design: *Pafos, Ayia Napa, Larnaka, Limassol,
    Paralimni, Not Sure.* Backend: *paphos, limassol, larnaka, famagusta, troodos, nicosia.*
    "Ayia Napa" and "Paralimni" are both `famagusta`; "Not Sure" is not a region; Troodos and
