@@ -1564,6 +1564,63 @@ executed and its output is quoted.** Where a run is not possible, the entry says
 **Owner.** Whoever audits next. This entry is the reason the phase-6 audit
 (`PHASE-6-PLAN.md` §16) opened with the comments and not with the code.
 
+### An assertion that reads state off the wrong element passes vacuously
+
+**What.** Phase 8's first browser run asserted "the card is closed" by reading `data-open`
+off the element carrying `role="dialog"`. `Modal` puts `data-open` and `inert` on the
+**overlay** and `role`/`aria-modal`/`aria-labelledby` on the **inner card**, so the read
+returned `null`, `null !== 'true'` is `false`, and every *negative* assertion — "not open
+yet", "closed after cancel", "closed after success" — passed for the wrong reason. Three
+green checks, nothing tested. The bug surfaced only because the one *positive* assertion
+using the same helper failed, which is the only reason anybody looked. **[measured 1 Sep 2026]**
+
+**Why it belongs here.** It is the failure mode this section already describes, one level
+down: not "a grep is not a run" but **"a run is not a test if the assertion cannot fail."**
+A negative assertion built on a selector that matches nothing is indistinguishable from a
+passing one, and a suite of them reads as thorough.
+
+**What to do about it.** When an assertion says something is absent, closed, or empty,
+prove the selector can also see the opposite state — assert the positive case with the
+same helper in the same run, and treat a `null` read as an error rather than as `false`.
+
+**Owner.** Whoever writes the next browser test.
+
+### The app has no clear-conversation control, and the RPC is already there for it
+
+**What.** Phase 8 ships "Clear conversation" on the web. `clear_ai_conversation()`
+(migration 0051) is granted to `authenticated` and keyed on `auth.uid()`, so the app can
+call it unchanged — it needs no new backend work, no parameter, and no permission change.
+The app has no such control today (**measured 1 Sep 2026**: no reference to the RPC or to
+any clearing UI in `cyprusway-app/src`).
+
+**Why it is recorded rather than built.** This repo is the website. But the confirmation
+copy the web now shows says *"You have one conversation, so this clears it in the app
+too"* — a true statement, load-bearing, and one the app currently cannot make in reverse:
+a person who clears on the phone has no way to, and a person who clears on the web is
+told about an app that offers them nothing equivalent.
+
+**One thing to carry over when it is built.** The phone's *data* is gone the instant the
+call returns, but a screen already showing the old messages updates on its next history
+read. The web's string says "in the app too" and deliberately does not promise another
+device's screen; the app's own copy should be equally careful about the web.
+
+**Owner.** App.
+
+### `rpc(name, anything)` on a parameterless PostgREST function is a 404, not an error
+
+**What.** `clear_ai_conversation()` takes no arguments. PostgREST resolves function
+overloads by argument *name*, so `supabase.rpc('clear_ai_conversation', { … })` does not
+find an overload and returns **404** — not a message naming the problem. `rpc(name)` sends
+`{}` and is correct. **[measured 31 Aug 2026 against the deployed function]**
+
+**Why it is worth recording.** Under this client's rule — any non-2xx is a failure — a 404
+from a stray argument is indistinguishable from a real outage, and would be reported to
+the user as "that couldn't be cleared" forever, on every attempt, with nothing in the
+message pointing at the cause. The guard is the comment on `clearConversation` in
+`src/lib/askPete.ts`; this entry is the backstop for whoever adds the second RPC call.
+
+**Owner.** Whoever writes the next `rpc()` call.
+
 ## House rules
 
 ### Replacing a place photo means uploading a new file — never replacing in place

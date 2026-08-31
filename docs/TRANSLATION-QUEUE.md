@@ -74,10 +74,30 @@ rewritten. `ui_about_intro` (below) is the same case and is second in line.
 
 ---
 
-## The queue — 338 keys, English only
+## The queue — 346 keys, English only
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
+
+### Clearing the Ask Pete conversation — 8, added in phase 8
+
+The control and its confirmation. **Cancel is `ui_trip_cancel`, reused** — one word, and a
+second key for it would be a place for two translations of "Cancel" to drift apart.
+
+**Every line of the confirmation is a checked claim, not a reassurance.** The four points
+were verified against the deployed RPC (`clear_ai_conversation`, migration 0051) before
+they were written, and a translator must keep each one *true*, not merely fluent:
+
+| Key(s) | English | Note |
+|---|---|---|
+| `ui_pete_clear` | Clear conversation | The trigger, and the confirming button — one string for both, as `ui_trip_delete` does |
+| `ui_pete_clear_title` | Clear this conversation? | The card's heading |
+| `ui_pete_clear_everywhere` | You have one conversation, so this clears it in the app too. | **True by database constraint**: `ai_conversations` carries `UNIQUE (user_id)`, so an account has exactly one thread and the app reads the same rows. Says "in the app too", NOT "on your phone right now" — the data is gone the instant the call returns, but a phone already showing the old messages updates on its next read, and the sentence must not promise a screen it does not control |
+| `ui_pete_clear_forgets` | Pete forgets what you talked about. | `mike`'s only memory is `ai_messages`, read per turn; there is no summary and no conversation embedding, and the delete cascades. After it, `getOrCreateConversation` starts a fresh row |
+| `ui_pete_clear_no_refund` | It doesn't give back today's questions. | The one line a user might hope is false. `consume_ai_query` writes `public.users`; this RPC touches only the two ai tables — measured end to end in 0051 (`quota_used STILL 2` after a clear). **Do not soften this in translation** |
+| `ui_pete_clear_permanent` | It cannot be undone. | A hard `DELETE` with `ON DELETE CASCADE`. Neither table has a soft-delete column and neither carries a trigger |
+| `ui_pete_cleared` | Conversation cleared. | Announced in the screen's polite live region on success |
+| `ui_pete_clear_failed` | That couldn't be cleared. Please try again. | Shown inside the card, which stays open, as `role="alert"`. Retry is honest here: unlike a spent Pete question, a failed clear consumed nothing |
 
 ### Chrome — 3
 

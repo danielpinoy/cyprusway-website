@@ -4,12 +4,14 @@ import { UserPlus } from 'lucide-react';
 
 import { Layout } from '../../components/shell/Layout';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
 import { Icon } from '../../components/ui/Icon';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useSession } from '../../lib/SessionProvider';
 import {
   applyLimit,
   ASSUMED_FREE_DAILY_CAP,
+  clearConversation,
   currentAccessToken,
   fetchHistory,
   fetchPlaceRefs,
@@ -77,6 +79,13 @@ export default function AskPete() {
   const [historyResolved, setHistoryResolved] = useState(false);
   /** The finished answer, announced once. See the live region below. */
   const [announcement, setAnnouncement] = useState('');
+
+  /* Clearing the thread. Three flags rather than one enum because they are genuinely
+     independent: the card can be open while idle, open while the delete is in flight,
+     and open showing a failure the user may retry from. */
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [clearFailed, setClearFailed] = useState(false);
 
   const scroller = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
@@ -333,6 +342,48 @@ export default function AskPete() {
   const showGreeting = historyResolved && items.length === 0;
 
   /**
+   * The clear control renders only when there is a thread to clear.
+   *
+   * Not on the counter row, which is where it first wanted to go: that row is hidden for
+   * premium (`!isPremium` in its own condition), and a premium account has a thread like
+   * anyone else — the control would be invisible to exactly the people who use Pete most.
+   * So it gets its own row, on its own condition.
+   *
+   * `items.length > 0` rather than a signed-in check alone: offering to clear nothing is
+   * noise, the RPC's "nothing to clear" branch is then unreachable from this UI, and the
+   * control disappears by itself after a successful clear — which is part of how the
+   * cleared state reads as cleared.
+   */
+  const canClear = !signedOut && !resolving && items.length > 0;
+
+  /**
+   * Success is any 2xx (see `clearConversation`). On success the thread empties and the
+   * greeting returns, because `showGreeting` is derived from `items.length`.
+   *
+   * `quota` is deliberately NOT touched and NOT refetched. Clearing does not refund the
+   * daily allowance — `consume_ai_query` writes `public.users` and the RPC touches only
+   * the two ai tables, measured in migration 0051's own end-to-end run — so the pill must
+   * keep reading exactly what it read. A refetch would return the same numbers and risk
+   * disturbing `certain` for nothing.
+   */
+  async function clear() {
+    setClearing(true);
+    setClearFailed(false);
+    try {
+      await clearConversation();
+      setItems([]);
+      setConfirmClear(false);
+      setAnnouncement(t('ui_pete_cleared'));
+    } catch {
+      /* The card stays open on the failure, which is where the user already is and where
+         the retry is. Announced as well as shown — see the alert region in the card. */
+      setClearFailed(true);
+    } finally {
+      setClearing(false);
+    }
+  }
+
+  /**
    * A question a signed-out visitor is holding — typed into the homepage hero, or chosen
    * from a starter chip — shown where it will be asked.
    *
@@ -389,6 +440,27 @@ export default function AskPete() {
             </div>
           )}
 
+          {/* Above the thread it acts on, and as far from Send as the page allows — the
+              composer is at the other end. Disabled mid-turn: the server handles the race
+              correctly (0051 traces it — the turn is simply not persisted), but an answer
+              streaming into a thread the user has just cleared is a frame nobody should
+              have to interpret. */}
+          {canClear && (
+            <div className={styles.threadTools}>
+              <button
+                type="button"
+                className={styles.clear}
+                onClick={() => {
+                  setClearFailed(false);
+                  setConfirmClear(true);
+                }}
+                disabled={sending}
+              >
+                {t('ui_pete_clear')}
+              </button>
+            </div>
+          )}
+
           <div className={styles.scroller} ref={scroller} onScroll={onScroll}>
             {resolving ? (
               <div className={styles.loading} aria-busy="true">
@@ -437,6 +509,41 @@ export default function AskPete() {
           )}
         </div>
       </div>
+
+      {/* The `Modal` family, so this inherits the focus trap, Escape, the scroll lock and
+          phase 6's enter/exit motion without opting into any of them — the same card
+          Trip's delete confirmation uses. Four separate lines rather than one sentence:
+          each is independently true, each was verified against the deployed RPC before it
+          was written, and a four-clause sentence about a destructive action reads as
+          boilerplate nobody finishes. */}
+      <Modal
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        labelledBy="cw-pete-clear-title"
+      >
+        <h2 id="cw-pete-clear-title" className={styles.confirmTitle}>
+          {t('ui_pete_clear_title')}
+        </h2>
+        <ul className={styles.confirmPoints}>
+          <li>{t('ui_pete_clear_everywhere')}</li>
+          <li>{t('ui_pete_clear_forgets')}</li>
+          <li>{t('ui_pete_clear_no_refund')}</li>
+          <li>{t('ui_pete_clear_permanent')}</li>
+        </ul>
+        {clearFailed && (
+          <p className={styles.confirmError} role="alert">
+            {t('ui_pete_clear_failed')}
+          </p>
+        )}
+        <div className={styles.confirmActions}>
+          <Button variant="primary" disabled={clearing} onClick={() => void clear()}>
+            {t('ui_pete_clear')}
+          </Button>
+          <Button variant="provider" onClick={() => setConfirmClear(false)}>
+            {t('ui_trip_cancel')}
+          </Button>
+        </div>
+      </Modal>
     </Layout>
   );
 }

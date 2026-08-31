@@ -735,3 +735,35 @@ export async function fetchPlaceRefs(
   }
   return out;
 }
+
+/**
+ * Delete this account's whole Ask Pete thread — `clear_ai_conversation()`, migration
+ * 0051, deployed 31 Aug 2026.
+ *
+ * **Any 2xx is success.** The RPC returns two success shapes and they mean different
+ * things to a human but nothing to this client:
+ *
+ *   {"cleared": true,  "messages_deleted": 12}   a thread existed and is gone
+ *   {"cleared": false, "messages_deleted": 0}    there was nothing to clear
+ *
+ * Both leave the account with no thread, which is the state the caller is asking for,
+ * so both resolve. `messages_deleted` is read off the wire and deliberately dropped:
+ * the migration's own header calls it informational and says no client behaviour may
+ * branch on it, and it can legitimately skew by up to 2 against a concurrently
+ * committing turn (READ COMMITTED). A count that is allowed to be wrong must never
+ * reach a sentence a user reads.
+ *
+ * Failure is any non-2xx, which supabase-js hands back as `error`: 401 `42501` when the
+ * session has expired (the function is granted to `authenticated` only — verified live
+ * against the deployed function with a bare anon key, 31 Aug), or transport/5xx. This
+ * throws on all of them, so the one call site has exactly one branch.
+ *
+ * **Takes no argument, and must not be given one.** The function has zero parameters,
+ * and PostgREST resolves overloads by argument name — `rpc(name, { anything })` is a
+ * **404**, not an error naming the problem. Measured 31 Aug. `rpc(name)` sends `{}`,
+ * which is correct.
+ */
+export async function clearConversation(): Promise<void> {
+  const { error } = await (await getSupabase()).rpc('clear_ai_conversation');
+  if (error) throw new Error(`clear_ai_conversation failed: ${error.message}`);
+}

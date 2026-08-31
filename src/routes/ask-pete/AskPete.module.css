@@ -66,6 +66,78 @@
   color: var(--cw-alert-text);
 }
 
+/* ---- Clear conversation -----------------------------------------------------
+   Destructive, and coloured as such — the same treatment as Trip's delete control,
+   because it is the same kind of act and a second visual language for "this destroys
+   something" would be one too many. Aligned to the inline end so it sits away from the
+   reading edge of the thread it tops. */
+.threadTools {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.clear {
+  border: 0;
+  padding: 0;
+  background: none;
+  font-size: var(--cw-small-size);
+  line-height: var(--cw-small-line);
+  font-weight: 590;
+  /* contrast: --cw-alert-text on --cw-sand = 6.31 */
+  color: var(--cw-alert-text);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Mid-turn. Kept visible rather than removed: a control that vanishes while an answer
+   streams reads as a bug, and it returns a second later. */
+.clear:disabled {
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
+/* ---- The confirmation card --------------------------------------------------
+   Inside `Modal`, so the ground is --cw-white and the scrim, radius, focus trap and
+   motion are the modal's. This file owns only the card's own stack. */
+.confirmTitle {
+  margin: 0;
+  font-size: var(--cw-h3-size);
+  line-height: var(--cw-h3-line);
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.confirmPoints {
+  margin-block: var(--cw-space-12) var(--cw-space-16);
+  padding-inline-start: var(--cw-space-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-8);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+/* Shown only when the delete failed, and the card stays open around it. `role="alert"`
+   in the markup, so it is spoken as well as seen — the destructive action's own live
+   region, separate from the screen's polite one. */
+.confirmError {
+  margin-block: 0 var(--cw-space-16);
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-alert-text on --cw-white = 7.16 */
+  color: var(--cw-alert-text);
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-12);
+}
+
 /* ---- Thread ----------------------------------------------------------------
    Scrolls on the BLOCK axis, where direction changes nothing — so this deliberately
    does not reach for scrollByInline or inlineArrowStep. The horizontally scrolling

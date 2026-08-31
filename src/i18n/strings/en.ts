@@ -257,6 +257,17 @@ export const stringsEn = {
   ui_pete_err_transport: "Couldn't reach Pete. Check your connection and try again.",
   ui_pete_err_server: 'Pete is having trouble right now. Try again in a moment.',
   ui_pete_err_stream: 'Pete stopped mid-answer. That one still counted, sorry.',
+  /* Clearing the thread. Every line of the confirmation was checked against the deployed
+     RPC (migration 0051) before it was written — see docs/TRANSLATION-QUEUE.md, which
+     records what each claim rests on. */
+  ui_pete_clear: 'Clear conversation',
+  ui_pete_clear_title: 'Clear this conversation?',
+  ui_pete_clear_everywhere: 'You have one conversation, so this clears it in the app too.',
+  ui_pete_clear_forgets: 'Pete forgets what you talked about.',
+  ui_pete_clear_no_refund: "It doesn't give back today's questions.",
+  ui_pete_clear_permanent: 'It cannot be undone.',
+  ui_pete_cleared: 'Conversation cleared.',
+  ui_pete_clear_failed: "That couldn't be cleared. Please try again.",
   /* The language switcher writes preferred_language for a signed-in visitor, and the
      control has to say so — it changes Pete's language on their phone too. */
   ui_language_shared: 'Also changes the app',
