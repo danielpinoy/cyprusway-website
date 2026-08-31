@@ -12,14 +12,16 @@
          during hydration and the card photos come from Directus right after. Opening the
          connections up front moves ~120 ms (DNS 5 + TCP 55 + TLS 60, measured from Cyprus
          30 Aug 2026) off the critical path - docs/PERF-MEASUREMENT-2026-08-30.md.
-         The Directus host is hard-coded because it exists only in the data (places_sync
-         rows carry absolute URLs); if a CDN hostname ever fronts it, change this line and
-         directusImage.ts together.
+         The image host is cdn.cyprusway.eu — the Cloudflare Worker in front of Directus
+         (infra/cdn-worker/worker.js). It reverts together with CDN_HOST in
+         directusImage.ts: flip that to null, point this line back at the Railway host,
+         one commit. (The misbehaving-cache revert is the Worker's PASSTHROUGH var and
+         needs no change here.)
          crossorigin on the Supabase line only: fetch() runs in CORS mode and draws from
          the uncredentialed connection pool; <img> is no-cors and draws from the
          credentialed pool. Each preconnect must match the pool its consumer uses. -->
     <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
-    <link rel="preconnect" href="https://cyprusway-directus-production.up.railway.app" />
+    <link rel="preconnect" href="https://cdn.cyprusway.eu" />
     <script>
       /* Applies the stored language's direction to <html> before first paint, so an
          RTL visitor never sees a frame of LTR layout. Only touches attributes outside

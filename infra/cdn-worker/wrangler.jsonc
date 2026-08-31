@@ -1,0 +1,18 @@
+// Config for the assets CDN Worker ONLY — deploy with
+//   npx wrangler deploy --config infra/cdn-worker/wrangler.jsonc
+// The repo root has its own wrangler.jsonc for the site itself; this file is scoped
+// here precisely so the two deploys cannot touch each other.
+{
+  "name": "cyprusway-cdn-assets",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-01",
+  // The hostname is deliberately not committed: it is bound manually in the dashboard
+  // (Settings → Domains & Routes → Custom Domain: cdn.cyprusway.eu), so binding and
+  // unbinding stay a dashboard action, not a deploy.
+  "vars": {
+    // "1" = plain proxy, no caching — the no-rebuild revert for cache misbehaviour.
+    // NOTE: a dashboard edit of this var is overwritten by the next `wrangler deploy`
+    // from this file; re-flip it after deploying, or change it here first.
+    "PASSTHROUGH": "0"
+  }
+}

@@ -20,13 +20,52 @@
  * Re-verified from this repo on 28 Aug 2026: a 432 KB source JPEG returns a 45 KB WebP at
  * 564×600, with the 30-day Cache-Control intact.
  *
- * The host is whatever the mirror row carries — deliberately not validated, rewritten or
- * hardcoded. All stored URLs are currently pinned to the Railway hostname; if that moves,
- * the fix is re-syncing `places_sync`, not client code.
+ * The STORED host is whatever the mirror row carries — still not validated, and if the
+ * Directus origin itself ever moves, the fix is still re-syncing `places_sync`. What DID
+ * change on 31 Aug 2026: at render time the Railway host is re-routed through
+ * cdn.cyprusway.eu, the Cloudflare Worker in infra/cdn-worker/, because a cached
+ * derivative from the Amsterdam origin costs a Cyprus visitor ~320 ms warm-connection
+ * and a Larnaca edge hit costs ~50 (docs/PERF-MEASUREMENT-2026-08-30.md). The re-route
+ * lives HERE, not in a re-sync, precisely so it reverts in one edit — a re-sync is not a
+ * one-edit revert, and it would drag the app along with it. See CDN_HOST below.
+ *
+ * DO NOT add `crossorigin` to any <img> that renders these URLs. They are fetched
+ * no-cors; the Worker strips `Vary` and serves cached copies. `crossorigin` flips the
+ * request into CORS mode — and against the direct Railway origin (the reverted state,
+ * which answers `Vary: Origin`) the browser rejects responses whose
+ * Access-Control-Allow-Origin does not match, so the images break, silently, and only
+ * in whichever environment happens to bypass the Worker. The Worker sets ACAO:* to
+ * blunt the cdn path, but the rule stands: if pixel access (canvas/fetch) is ever
+ * needed, revisit infra/cdn-worker/worker.js FIRST, then add the attribute.
  */
 
 const SOURCE_MAX_PX = 2000;
 const QUALITY = 70;
+
+/**
+ * The render-time route to the assets. `null` sends every URL back to the stored
+ * Railway host.
+ *
+ * THE REVERT MATRIX (agreed 31 Aug 2026):
+ * - The Worker MISBEHAVES (stale, wrong bytes): flip PASSTHROUGH to "1" on the Worker
+ *   in the Cloudflare dashboard. Plain proxy, no rebuild, nothing changes here.
+ * - The Worker is DEAD: set this to null and rebuild (~3 min). One edit — but a
+ *   rebuild, because Vite inlines the constant; accepted in exchange for not adding a
+ *   runtime config fetch to every page.
+ * - index.html's image preconnect points at the same host. The two change together.
+ *
+ * Deploy ordering: cdn.cyprusway.eu must be bound (Worker custom domain) BEFORE a
+ * build with this non-null ships — prerendered pages bake these URLs. `npm run dev`
+ * bypasses the swap so local work never depends on the binding existing.
+ */
+const CDN_HOST: string | null = 'https://cdn.cyprusway.eu';
+const DIRECTUS_ORIGIN = 'https://cyprusway-directus-production.up.railway.app';
+
+function swapHost(assetUrl: string): string {
+  if (CDN_HOST === null || import.meta.env.DEV) return assetUrl;
+  if (!assetUrl.startsWith(DIRECTUS_ORIGIN + '/')) return assetUrl;
+  return CDN_HOST + assetUrl.slice(DIRECTUS_ORIGIN.length);
+}
 
 interface Slot {
   /** CSS pixels the image occupies at its largest rendered size. */
@@ -35,6 +74,9 @@ interface Slot {
 }
 
 function transform(assetUrl: string, slot: Slot, scale: number): string {
+  /* The only place the query string is composed is also the only place the route is
+     chosen: every image URL passes through here, so the swap cannot be half-applied. */
+  assetUrl = swapHost(assetUrl);
   const width = Math.min(Math.round(slot.width * scale), SOURCE_MAX_PX);
   const params = [`width=${width}`];
   if (slot.height !== undefined) {
