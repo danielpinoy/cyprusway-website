@@ -1,4 +1,5 @@
-import { getSupabase } from './supabase';
+import { catalogueRequest } from './catalogueQuery';
+import { getSupabase, MissingCredentialsError } from './supabase';
 import type { LanguageCode } from '../i18n/languages';
 
 /**
@@ -72,43 +73,25 @@ export interface Place {
   badges: Badge[];
 }
 
-const SELECT = [
-  'id',
-  'slug',
-  'name:translations->en->>name',
-  'short:translations->en->>short_description',
-  'description:translations->en->description',
-  'hero_image_url',
-  'gallery',
-  'virtual_tour',
-  'destination',
-  'categories',
-  'badges',
-  'prominence',
-  'visit_duration_minutes',
-  /* Only the trip picker reads this, and it reads it as a filter rather than a field —
-     the 35 published-but-unplannable places must never be offered as a stop, because
-     trip-edit refuses a NEW stop at one (place_not_plannable). Measured 28 Aug: 181
-     published, 146 plannable, and all 146 carry coordinates. */
-  'plannable',
-].join(',');
 
 export async function fetchPlaces(): Promise<Place[]> {
-  const { data, error } = await getSupabase()
-    .from('places_sync')
-    .select(SELECT)
-    .eq('status', 'published')
-    /* Both keys matter. Six places are tied at prominence 85.0 exactly, and without a
-       deterministic second key Postgres may order ties differently between requests —
-       which would let Top Recommendations and Popular draw the same place despite
-       taking disjoint rank bands. */
-    .order('prominence', { ascending: false, nullsFirst: false })
-    .order('id', { ascending: true })
-    .returns<PlaceRow[]>();
+  /* Plain fetch, not the SDK — the whole reason is the critical path. This is the one
+     request every rail page makes before it can render a card, and going through the
+     SDK meant (a) waiting for the SDK's chunk, (b) an apikey HEADER, which makes the
+     request non-simple and costs a CORS preflight (measured 82 ms), and (c) a URL the
+     build could not reproduce. catalogueRequest() is shared with vite.config.ts, which
+     injects the same URL into every prerendered <head> as <link rel="preload"
+     as="fetch"> — so by the time this line runs, the response is usually already in
+     flight or in the preload cache. docs/PERF-MEASUREMENT-2026-08-30.md. */
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) throw new MissingCredentialsError();
 
-  if (error) throw error;
+  const response = await fetch(catalogueRequest(url, anonKey));
+  if (!response.ok) throw new Error(`catalogue_http_${response.status}`);
 
-  return (data ?? []).map(toPlace);
+  const rows = (await response.json()) as PlaceRow[];
+  return rows.map(toPlace);
 }
 
 /** Gallery entries are asset URLs; tolerate an object shape in case the sync changes. */
@@ -194,7 +177,7 @@ export async function fetchCategoryNames(
   const ids = [...new Set(placeIds)].filter((id) => Number.isInteger(id));
   if (ids.length === 0) return new Map();
 
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('places_sync')
     .select('id, categories')
     .in('id', ids)

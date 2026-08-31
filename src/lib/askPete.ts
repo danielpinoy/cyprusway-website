@@ -462,7 +462,7 @@ export async function streamAskPete({
  */
 export async function currentAccessToken(): Promise<string | null> {
   try {
-    const { data } = await getSupabase().auth.getSession();
+    const { data } = await (await getSupabase()).auth.getSession();
     return data.session?.access_token ?? null;
   } catch {
     return null;
@@ -562,7 +562,7 @@ export async function fetchQuota(
   userId: string,
   serverDay: string | null = null,
 ): Promise<Quota | null> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('users')
     .select('ai_queries_today, ai_queries_reset_at, is_premium')
     .eq('id', userId)
@@ -640,7 +640,7 @@ interface HistoryRow {
  * history it never confirmed. That distinction decides whether the greeting renders.
  */
 export async function fetchHistory(userId: string): Promise<HistoryMessage[] | null> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('ai_messages')
     .select('id, role, content, created_at, retrieved_place_ids')
     .eq('user_id', userId)
@@ -715,7 +715,7 @@ export async function fetchPlaceRefs(
   const unique = [...new Set(ids)];
   if (unique.length === 0) return new Map();
 
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('places_sync')
     .select(`id, slug, name:translations->${lang}->>name, fallback:translations->en->>name`)
     .eq('status', 'published')

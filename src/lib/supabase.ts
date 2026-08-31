@@ -1,11 +1,18 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-/* One client for the whole app, created lazily.
+/* One client for the whole app, created lazily — and since phase "perf" (31 Aug 2026),
+ * LOADED lazily too. The `import type` above is erased at compile time; the SDK's code
+ * arrives through the dynamic import() below, in its own chunk.
  *
- * Lazily, for two reasons. The prerender pass runs in Node with no `window` and no
- * `localStorage`, and it must never construct an auth client. And a visitor who is
- * not signed in and has no OAuth parameters in the URL never needs one at all — the
- * client and its chunk are only fetched when there is something to resolve.
+ * Before this, `supabase.ts` was statically imported by ten modules, which put the SDK
+ * in the main chunk of every page: 203 KB raw / ~59 KB compressed, 30% of the chunk —
+ * on the critical path of the catalogue fetch that every rail page makes before it can
+ * render a card. Measured in docs/PERF-MEASUREMENT-2026-08-30.md. The catalogue read
+ * itself no longer touches this module at all (see ./catalogueQuery.ts); what remains
+ * behind getSupabase() is auth, profile, saved places, trips and Ask Pete.
+ *
+ * The prerender pass runs in Node with no `window` and no `localStorage`, and it must
+ * never construct an auth client — nothing on that path calls getSupabase().
  *
  * flowType: 'pkce' — the auth code arrives in the query string and the SDK exchanges
  * it. The vanilla implementation used the implicit flow, which put tokens in the
@@ -24,11 +31,18 @@ export class MissingCredentialsError extends Error {
   }
 }
 
-let client: SupabaseClient | null = null;
+let pending: Promise<SupabaseClient> | null = null;
 
-export function getSupabase(): SupabaseClient {
-  if (client) return client;
+export async function getSupabase(): Promise<SupabaseClient> {
+  /* The rejected promise is deliberately cached: the credentials are build-time
+     constants, so a failure today cannot succeed on retry, and every caller awaits —
+     the same MissingCredentialsError surfaces at each call site, exactly as the old
+     synchronous throw did. */
+  pending ??= createLazily();
+  return pending;
+}
 
+async function createLazily(): Promise<SupabaseClient> {
   const url = import.meta.env.VITE_SUPABASE_URL;
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -41,7 +55,9 @@ export function getSupabase(): SupabaseClient {
     throw new MissingCredentialsError();
   }
 
-  client = createClient(url, anonKey, {
+  const { createClient } = await import('@supabase/supabase-js');
+
+  return createClient(url, anonKey, {
     auth: {
       flowType: 'pkce',
       detectSessionInUrl: true,
@@ -49,6 +65,4 @@ export function getSupabase(): SupabaseClient {
       autoRefreshToken: true,
     },
   });
-
-  return client;
 }

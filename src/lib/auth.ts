@@ -81,7 +81,7 @@ export function hasStoredSession(): boolean {
 /** Sign in and sign up are the same action: signInWithOAuth creates the account if
  *  it does not exist, which is why there is no separate sign-up screen. */
 export async function signInWithProvider(provider: Provider): Promise<void> {
-  const { error } = await getSupabase().auth.signInWithOAuth({
+  const { error } = await (await getSupabase()).auth.signInWithOAuth({
     provider,
     options: {
       /* Built from the current origin at click time, never hardcoded. The allowlist
@@ -96,13 +96,13 @@ export async function signInWithProvider(provider: Provider): Promise<void> {
 }
 
 export async function getSession(): Promise<Session | null> {
-  const { data, error } = await getSupabase().auth.getSession();
+  const { data, error } = await (await getSupabase()).auth.getSession();
   if (error) throw error;
   return data.session;
 }
 
 export async function signOut(): Promise<void> {
-  const { error } = await getSupabase().auth.signOut();
+  const { error } = await (await getSupabase()).auth.signOut();
   if (error) throw error;
 }
 

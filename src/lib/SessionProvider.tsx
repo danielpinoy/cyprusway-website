@@ -192,23 +192,36 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (status === 'idle') return;
 
+    let cancelled = false;
     let subscription: { unsubscribe: () => void } | null = null;
-    try {
-      const result = getSupabase().auth.onAuthStateChange((_event, session) => {
-        if (!mounted.current) return;
-        setUser(session?.user ?? null);
-        if (!session) {
-          setNeedsOnboarding(false);
-          setInterests([]);
-          setTravelerTypeState(null);
+    void (async () => {
+      try {
+        const client = await getSupabase();
+        const result = client.auth.onAuthStateChange((_event, session) => {
+          if (!mounted.current) return;
+          setUser(session?.user ?? null);
+          if (!session) {
+            setNeedsOnboarding(false);
+            setInterests([]);
+            setTravelerTypeState(null);
+          }
+        });
+        subscription = result.data.subscription;
+        /* The effect can be cleaned up while the SDK chunk is still in flight; a
+           subscription created after that must not outlive the effect. */
+        if (cancelled) {
+          subscription.unsubscribe();
+          subscription = null;
         }
-      });
-      subscription = result.data.subscription;
-    } catch {
-      /* Missing credentials already surfaced through the bootstrap above. */
-    }
+      } catch {
+        /* Missing credentials already surfaced through the bootstrap above. */
+      }
+    })();
 
-    return () => subscription?.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription?.unsubscribe();
+    };
   }, [status]);
 
   const openAuth = useCallback((mode: AuthMode) => {

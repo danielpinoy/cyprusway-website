@@ -100,7 +100,7 @@ function toTrip(row: TripRow, today: string, isActive: boolean): Trip {
  */
 export async function fetchTrips(): Promise<Trip[]> {
   const today = localTodayIso();
-  const supabase = getSupabase();
+  const supabase = (await getSupabase());
 
   const active = await supabase
     .from('itineraries')
@@ -183,7 +183,7 @@ const SUMMARY_COLUMNS =
 /** Every trip the caller owns, newest edit first. RLS scopes it; no user filter is
  *  needed and none is added, matching the rest of this file. */
 export async function fetchAllTrips(): Promise<TripSummary[]> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('itineraries')
     .select(SUMMARY_COLUMNS)
     .order('updated_at', { ascending: false })
@@ -224,7 +224,7 @@ export interface TripDetail {
 }
 
 export async function fetchTrip(id: string): Promise<TripDetail | null> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('itineraries')
     .select('id, name, base_location, trip_start, trip_end, type, updated_at, itinerary_data')
     .eq('id', id)
@@ -275,7 +275,7 @@ export async function createTrip(input: {
   startIso: string;
   endIso: string;
 }): Promise<string> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('itineraries')
     .insert({
       user_id: input.userId,
@@ -305,7 +305,7 @@ export async function createTrip(input: {
  * success, and the screen would navigate away from a trip that is still there.
  */
 export async function deleteTrip(id: string): Promise<void> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('itineraries')
     .delete()
     .eq('id', id)

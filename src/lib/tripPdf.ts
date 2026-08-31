@@ -12,7 +12,7 @@ import { getSupabase } from './supabase';
  * link: the blob is turned into an object URL, handed to a synthetic anchor, and revoked.
  */
 export async function downloadTripPdf(itineraryId: string, name: string | null): Promise<void> {
-  const { data } = await getSupabase().auth.getSession();
+  const { data } = await (await getSupabase()).auth.getSession();
   const token = data.session?.access_token;
   if (!token) throw new Error('no_session');
 

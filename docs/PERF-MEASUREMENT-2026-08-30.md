@@ -209,3 +209,55 @@ local derivative cache reads from Supabase Storage before it can stream.
 
 Expected after 1–4 and 7: desktop homepage LCP 1.2 s → ~0.8–0.9 s (the Directus origin
 remains the floor until 6); throttled-mobile time-to-photos 3.6 s → ~2 s.
+
+## Addendum — item 7 as built and verified (31 Aug)
+
+The catalogue read is plain `fetch` of a URL built once in `catalogueQuery.ts` —
+`apikey` in the query string, so the request is CORS-simple — and `vite.config.ts`
+injects the same URL, from the same function, into every prerendered `<head>` as
+`<link rel="preload" as="fetch">`. `getSupabase()` is async and pulls the SDK through a
+dynamic `import()`; all 26 remaining call sites await it.
+
+Verified headless against the rebuilt dist:
+
+- The catalogue fetch starts at **10–14 ms** (it could not start before 165 ms locally,
+  319 ms on production desktop, 1,750 ms on throttled mobile). **One** request, **zero**
+  preflights, priority High, on every surface tried (`/`, `/explore`, a place page).
+- The index chunk: 675,318 → **467,048 B raw**; 197.5 → **144.6 KB gzip (−27%)**, zero
+  GoTrue markers. The SDK's own chunk (208.7 KB raw / 53.4 KB gz) turned out better
+  than "off the critical path": **a visitor with no stored session never downloads it
+  at all** — status stays `idle`, so no auth listener, and the catalogue no longer
+  touches the client.
+- Sign-in works end-to-end through the dynamic import: Google button →
+  `/auth/v1/authorize` → the accounts.google sign-in page.
+- Same-machine LCP, minutes apart: `/` 1,604 → **1,092 ms**, `/explore` 1,212 → 944,
+  place page 1,284 → 876. Directus origin noise applies; the fetch-start numbers are
+  the solid part.
+
+**The payload, per field** — 181 rows, 311.5 KB raw JSON (~100 KB wire), measured with
+the live query:
+
+| field | raw | share |
+|---|---:|---:|
+| `description` | 95.2 KB | 30.6% |
+| `badges` | 85.2 KB | 27.3% |
+| `categories` | 29.6 KB | 9.5% |
+| `short` | 29.6 KB | 9.5% |
+| `destination` | 24.0 KB | 7.7% |
+| `gallery` | 11.1 KB | 3.6% |
+| `hero_image_url` | 10.6 KB | 3.4% |
+| everything else | ≈ 26 KB | < 2% each |
+
+The expected heavy field is `description`; the surprise is `badges` — each badge
+carries a five-language name blob plus icon and color, per badge, per place. A
+card-only projection (no `description`, badges thinned to slugs) would be roughly 40%
+of today's payload. Measured, not built: that split belongs with a decision about
+where the place page gets its description from.
+
+A local-harness footnote: `vite preview` serves deep links through the SPA fallback
+(the homepage template), so local place-page numbers **understate** production, where
+the per-path prerendered HTML lets the parser — and the `<link rel="preload"
+as="image">` React 19's SSR hoists for a `fetchPriority="high"` image — start the
+gallery hero at ~30 ms. (React SSR emits the attribute camel-cased, `fetchPriority`;
+HTML parses attribute names case-insensitively, and a case-sensitive grep is how it
+briefly looked missing.)

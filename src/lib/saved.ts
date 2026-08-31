@@ -14,7 +14,7 @@ import { getSupabase } from './supabase';
  * the thing that would unpark this rail.
  */
 export async function fetchSavedPlaceIds(limit: number): Promise<number[]> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('saved_places')
     .select('place_id, saved_at')
     .order('saved_at', { ascending: false })
@@ -36,7 +36,7 @@ export async function fetchSavedPlaceIds(limit: number): Promise<number[]> {
  * `id` is GENERATED ALWAYS, so no shape sent from here may include it.
  */
 export async function savePlace(userId: string, placeId: number): Promise<void> {
-  const { error } = await getSupabase()
+  const { error } = await (await getSupabase())
     .from('saved_places')
     .upsert({ user_id: userId, place_id: placeId }, { onConflict: 'user_id,place_id' });
 
@@ -45,13 +45,13 @@ export async function savePlace(userId: string, placeId: number): Promise<void> 
 
 /** RLS scopes the delete to the caller's own row, so no user_id filter is needed. */
 export async function unsavePlace(placeId: number): Promise<void> {
-  const { error } = await getSupabase().from('saved_places').delete().eq('place_id', placeId);
+  const { error } = await (await getSupabase()).from('saved_places').delete().eq('place_id', placeId);
   if (error) throw error;
 }
 
 /** Whether this place is already saved. One row, or none. */
 export async function isPlaceSaved(placeId: number): Promise<boolean> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('saved_places')
     .select('place_id')
     .eq('place_id', placeId)

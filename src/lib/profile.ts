@@ -38,7 +38,7 @@ export interface Profile {
 }
 
 export async function fetchProfile(userId: string): Promise<Profile> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('users')
     .select('onboarding_completed, interests, traveler_type')
     .eq('id', userId)
@@ -74,7 +74,7 @@ export async function saveInterests(
   userId: string,
   interests: readonly InterestSlug[],
 ): Promise<void> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('users')
     .update({ interests, onboarding_completed: true })
     .eq('id', userId)
@@ -109,7 +109,7 @@ export async function saveTravelerType(
   userId: string,
   type: TravelerType,
 ): Promise<void> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('users')
     .update({ traveler_type: type })
     .eq('id', userId)
@@ -141,7 +141,7 @@ export async function savePreferredLanguage(
   userId: string,
   language: LanguageCode,
 ): Promise<void> {
-  const { error } = await getSupabase()
+  const { error } = await (await getSupabase())
     .from('users')
     .update({ preferred_language: language })
     .eq('id', userId)
@@ -163,7 +163,7 @@ export async function savePreferredLanguage(
  * error than showing one that 403s.
  */
 export async function fetchIsPremium(userId: string): Promise<boolean> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('users')
     .select('is_premium')
     .eq('id', userId)
@@ -230,7 +230,7 @@ const MORNING_VALUES: readonly string[] = ['early_bird', 'normal', 'late_riser']
  * are on the caller's own row, under the existing "users can read own profile" policy.
  */
 export async function fetchPlannerProfile(userId: string): Promise<PlannerProfile> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('users')
     .select(
       'is_premium, pace_preference, morning_preference, traveler_type, trip_generations_today, trip_generations_reset_at',
@@ -296,7 +296,7 @@ export async function saveTripPreferences(
   pace: PacePreference,
   morning: MorningPreference,
 ): Promise<void> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await (await getSupabase())
     .from('users')
     .update({ pace_preference: pace, morning_preference: morning })
     .eq('id', userId)

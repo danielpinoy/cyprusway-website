@@ -377,7 +377,7 @@ type Snapshot = { ok: true; newest: ItineraryStamp | null } | { ok: false };
 /** RLS scopes it; no user filter is needed and none is added, matching `lib/trips.ts`. */
 async function snapshotItineraries(): Promise<Snapshot> {
   try {
-    const { data, error } = await getSupabase()
+    const { data, error } = await (await getSupabase())
       .from('itineraries')
       .select('id, created_at')
       .order('created_at', { ascending: false })
