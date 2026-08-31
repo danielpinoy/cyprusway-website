@@ -294,3 +294,80 @@ as="image">` React 19's SSR hoists for a `fetchPriority="high"` image — start 
 gallery hero at ~30 ms. (React SSR emits the attribute camel-cased, `fetchPriority`;
 HTML parses attribute names case-insensitively, and a case-sensitive grep is how it
 briefly looked missing.)
+
+## Correction, and the CDN decision — 31 Aug, evening
+
+### The attribution correction
+
+The backend's scoping doc (`cyprusway-directus/docs/reference/curated/`
+`directus-latency-floor-2026-08-31.md`) disproves this report's residual attribution.
+Two statements above are superseded by it: the item-6 follow-up's "`/server/ping` …
+**205–281 ms.** The Railway/app floor by itself" and the origin-shape framing of
+"~150–225 ms behind the edge … region or sizing". The error was subtracting one RTT
+instead of the full TCP+TLS setup plus the request leg. The measured decomposition:
+Cyprus→Barcelona-edge→Amsterdam-container geometry ~80 ms on a kept-alive connection
+(re-verified from this machine: ping 94–102 ms reused), a per-request permission walk of
+~60–100 ms that no cache flag removes (their A3 addendum, from source), a Frankfurt
+storage fetch of ~100–250 ms — and **Directus itself at 2–8 ms**. Re-verified here: a
+cached derivative on a kept-alive connection is **318–325 ms** from Cyprus. The process
+was never the cost; there is nothing in-app to fix and no closer Railway region exists.
+The correction *strengthens* item 6: it removes every alternative to caching.
+
+### The decision, at the resized claim
+
+| condition | expected desktop LCP from Cyprus |
+|---|---|
+| deployed main, measured 30 Aug | 1,224 ms |
+| phase-7 branch, no CDN (re-measured after item 7) | ~1,000–1,100 ms |
+| phase-7 + CDN, edge **hit** | **~600 ms** |
+| phase-7 + CDN, edge miss | ~1,000 ms (today + ~10–20 ms proxy) |
+
+Per-image the original claim holds on hits (~320 ms warm / 420–780 cold → 39–54 ms
+measured at the same edge). Page-level honesty: **~1.0 s → ~0.6 s on hits, unchanged on
+misses**, and at pre-launch traffic the benefit rounds to zero until there is traffic —
+the 8 LCP-critical URLs (4 top cards × 1×/2×) are requested on every homepage view and
+stay warm first. Inventory, counted: 73 heroes, 92 gallery entries, 8 confirmed slots
+× 2 scales ≈ **1,100 realistically requestable URLs** (upper bound ~1,540 with the
+DayList/Trips slots; the tour slot serves zero today — `hasTour && heroUrl` matches
+nothing). 581 derivatives already exist at origin, so transform-cold (0.9–1.1 s first
+generation) is mostly behind us; the recurring cost is edge-cold. Phone win: rail fill,
+450–1,550 ms per card → ~50–100 warm.
+
+What it does not fix: the ~390 ms catalogue fetch; the ~550 ms render-sequencing floor —
+item 8's territory, and item 8 is now the **larger** single homepage-LCP lever
+(prerendered cards request images at ~30 ms; ~400–550 ms LCP even without the CDN,
+~150–250 stacked with it) but stays held behind the recorded re-rank flash and covers
+only the homepage; admin/API geometry (backend's §3); the app, until it swaps hosts too.
+
+### The shape as built
+
+A Worker (`infra/cdn-worker/`), not a proxied CNAME: a CNAME needs the hostname
+registered on the Railway service plus the Full-SSL cert dance; the Worker fetches the
+railway.app URL directly — zero Railway config, allowlist in code. Status-aware TTLs via
+the **Cache API**, because `cacheTtlByStatus` is Enterprise-only and a bare `cacheTtl`
+can pin an error for 30 days: only 200s are stored (carrying Directus's own 30-day
+`Cache-Control`), everything else passes through uncached. GET/HEAD only; the path
+allowlist is UUID-shaped; `Vary` stripped; `Access-Control-Allow-Origin: *` and
+`Timing-Allow-Origin: *` set — the standing warning against `crossorigin` on these
+images lives in `directusImage.ts`, where every such URL is born. Cache API is per-colo
+(the zone's Tiered Cache toggle does not apply to it); at this traffic, the same
+reality. Observability: `x-cw-cdn: HIT | MISS | PASS | BYPASS`.
+
+**The revert matrix:** cache misbehaves → `PASSTHROUGH=1` on the Worker (dashboard edit,
+no rebuild). Worker dead → `CDN_HOST = null` in `directusImage.ts` + rebuild (~3 min).
+Zero-rebuild cover for the dead-Worker case would be registering the hostname on Railway
+as a fallback origin — ops, optional, not done.
+
+### Invalidation
+
+Decided: the editorial convention — **replacing an image means uploading a new file,
+never replacing in place** — recorded as a house rule in PARKED.md, with the mechanical
+`?v=<file modified_on>` sync fallback noted there. One correction to the argued view as
+messaged: `transform()` already joins onto an existing query (`includes('?') ? '&' :
+'?'`), so the fallback would be sync-only — no client change.
+
+### Deploy ordering
+
+Bind `cdn.cyprusway.eu` (Worker custom domain) **before** this branch deploys:
+prerendered pages bake the cdn URLs. `npm run dev` bypasses the swap; a built preview
+shows no images until the hostname exists.
