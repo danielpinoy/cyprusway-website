@@ -465,8 +465,11 @@ disabled for the same reason.
 **What unparks it.** Authored, territory-approved rows in `affiliate_routes`.
 
 **And the thing that breaks next, recorded here because it belongs with this park:** CJ
-rotates its redirect host across `anrdoezrs.net`, `dpbolvw.net`, `tkqlhce.com` and
-`jdoqocy.com`, and `book-with-pete-route`'s `HOST_ALLOWLIST` admits only the first. The moment
+rotates its redirect host across `anrdoezrs.net`, `jdoqocy.com`, `dpbolvw.net`,
+`tkqlhce.com` and `kqzyfj.com` — the canonical five-host set, per the authoring reference
+`cyprusway-directus/docs/CyprusWay_BookingCom_URL_Parameters.md` (revised 31 Aug 2026;
+the rotation observed by hand had undercounted it at four, and `url.ts`'s own comment
+still lists four) — and `book-with-pete-route`'s `HOST_ALLOWLIST` admits only the first. The moment
 routes are authored, any route CJ serves from one of the other three returns
 `unavailable / invalid_target_url`. Recorded in `CyprusWay_Decision_Log_v3_0.md:1289` and
 still open. See also `docs/BACKEND-HANDOFF.md` §4.
