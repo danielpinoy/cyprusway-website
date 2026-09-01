@@ -23,7 +23,14 @@
   text-decoration: none;
 }
 
-/* Centred in the frame; below 900px the drawer carries navigation instead. */
+/* Centred in the frame; below the breakpoint the drawer carries navigation instead.
+   960px, not the 900 this started at. Phase 8 added a sixth item (the AI planner) and
+   measured the result: at a 900px device the row needs 908px of document against 885px
+   of viewport, so the page scrolled sideways in a ~40px band from roughly 885 to 905.
+   940 cleared it; 960 is that plus margin, because the row's width is the sum of six
+   translated labels and German and Greek are longer than English on every one of them.
+   Nothing is lost below it — the hamburger is present at every width, and MENU_NAV
+   carries all six plus four more. */
 .nav {
   display: none;
   flex: 1;
@@ -31,7 +38,7 @@
   gap: var(--cw-space-24);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 960px) {
   .nav {
     display: flex;
   }
@@ -58,7 +65,12 @@
   }
 }
 
-@media (min-width: 900px) {
+/* Paired with the nav's breakpoint above and moved with it. `margin-inline-start: auto`
+   is what pushes the actions to the end while there is no nav; once the nav renders its
+   `flex: 1` does that job instead. Leaving this at 900 while the nav moved to 960 would
+   give the 900-959 band a header with no nav AND no push — the actions would sit against
+   the logo. The two values are one decision. */
+@media (min-width: 960px) {
   .actions {
     margin-inline-start: 0;
   }

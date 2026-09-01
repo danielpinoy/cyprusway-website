@@ -10,6 +10,7 @@ import {
   Settings,
   Sparkles,
   Ticket,
+  Wand2,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -45,13 +46,28 @@ export interface NavItem {
   readonly icon?: LucideIcon;
 }
 
-/** The five items across the top of the Figma header. Explore landed in phase 3, Ask Pete
- *  in phase 4 and Build My Trip in phase 5; My CyprusWay and 360° Tours are still ahead. */
+/**
+ * The header's top row. Six items now, not the frame's five.
+ *
+ * **The AI planner is the addition, and it reverses a phase-7 decision.** Q1 of that phase
+ * answered "no nav item" for it, on the reasoning that the cards on /build-trip and /trips
+ * were entry enough. They are not: the only way to reach the site's most substantial
+ * feature was to know the path and type it, which is what the owner ended up doing on the
+ * deployed site. A feature nobody can find is not shipped.
+ *
+ * It carries `ui_plan_title` — the page's own H1, "AI Trip Planner" — rather than a
+ * nav-only label, so the word someone clicks is the word that greets them. No new string
+ * to add, and no second name to drift out of step with the page.
+ *
+ * It sits immediately before Build My Trip because those two are the same errand offered
+ * two ways: let it plan, or plan it yourself.
+ */
 export const PRIMARY_NAV: readonly NavItem[] = [
   { id: 'explore', labelKey: 'ui_nav_explore', to: '/explore' },
   { id: 'my-cyprusway', labelKey: 'ui_nav_my_cyprusway', action: 'chooser' },
   { id: 'ask-pete', labelKey: 'nav_ap', to: '/ask-pete' },
   { id: 'tours', labelKey: 'ui_nav_tours', pending: true },
+  { id: 'plan-trip', labelKey: 'ui_plan_title', to: '/plan-trip' },
   { id: 'build-trip', labelKey: 'ui_nav_build_trip', to: '/build-trip' },
 ];
 
@@ -65,6 +81,7 @@ export const MENU_NAV: readonly NavItem[] = [
      `book-with-pete-route` is guest-reachable — so the badge is not carried. */
   { id: 'book-pete', labelKey: 'ui_menu_book_pete', pending: true, icon: BookMarked },
   { id: 'tours', labelKey: 'ui_nav_tours', pending: true, icon: MapPinned },
+  { id: 'plan-trip', labelKey: 'ui_plan_title', to: '/plan-trip', icon: Wand2 },
   { id: 'build-trip', labelKey: 'ui_nav_build_trip', to: '/build-trip', icon: Route },
   { id: 'my-trips', labelKey: 'ui_menu_my_trips', to: '/trips', icon: Ticket },
   { id: 'saved-places', labelKey: 'ui_menu_saved_places', pending: true, icon: Heart },
