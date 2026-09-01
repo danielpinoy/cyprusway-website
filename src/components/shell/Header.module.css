@@ -24,13 +24,16 @@
 }
 
 /* Centred in the frame; below the breakpoint the drawer carries navigation instead.
-   960px, not the 900 this started at. Phase 8 added a sixth item (the AI planner) and
-   measured the result: at a 900px device the row needs 908px of document against 885px
-   of viewport, so the page scrolled sideways in a ~40px band from roughly 885 to 905.
-   940 cleared it; 960 is that plus margin, because the row's width is the sum of six
-   translated labels and German and Greek are longer than English on every one of them.
+   1060px — the third value this has held, and this time it is measured against every
+   language rather than only English. History: 900 fit five English items; phase 8's
+   sixth item (the AI planner) needed 908px of document at a 900px device, so it moved
+   to 960 "plus margin for German and Greek". The margin was a guess and it was wrong:
+   with all four translations shipped (1 Sep 2026), the row measured at the built site
+   overflows 960 in every language — Greek needs ~1041px of viewport (scrollWidth 1026
+   at client 1009), Polish ~1024, German ~1008, Swedish ~989. 1060 clears the worst
+   with margin. Do not lower this without re-measuring in GREEK, the longest nav.
    Nothing is lost below it — the hamburger is present at every width, and MENU_NAV
-   carries all six plus four more. */
+   carries all six items plus four more. */
 .nav {
   display: none;
   flex: 1;
@@ -38,7 +41,7 @@
   gap: var(--cw-space-24);
 }
 
-@media (min-width: 960px) {
+@media (min-width: 1060px) {
   .nav {
     display: flex;
   }
@@ -70,7 +73,7 @@
    `flex: 1` does that job instead. Leaving this at 900 while the nav moved to 960 would
    give the 900-959 band a header with no nav AND no push — the actions would sit against
    the logo. The two values are one decision. */
-@media (min-width: 960px) {
+@media (min-width: 1060px) {
   .actions {
     margin-inline-start: 0;
   }
