@@ -1,7 +1,7 @@
 import { getSupabase } from './supabase';
 
 /**
- * `saved_places` — read only.
+ * `saved_places` — read and write.
  *
  * RLS scopes every read to the caller's own rows, so no `user_id` filter is needed; the
  * app's `unsavePlace` relies on the same property.
@@ -10,8 +10,11 @@ import { getSupabase } from './supabase';
  * withdraws rather than deletes precisely so bookmarks survive, and the app documents the
  * resulting state as "the expected steady state, never a failure".
  *
- * Phase 3 adds the write, from the place detail page — the affordance phase 2 recorded as
- * the thing that would unpark this rail.
+ * The write shipped in phase 3, from the place detail page — `savePlace` and `unsavePlace`
+ * below, driven by the save button on `/place/<slug>`. (This header said "read only" and
+ * "phase 3 adds the write" until 1 Sep 2026, while sitting directly above both writes.)
+ * The button is hidden entirely for a signed-out visitor: `anon` has nothing on this table,
+ * so offering it would be an invitation to a 42501.
  */
 export async function fetchSavedPlaceIds(limit: number): Promise<number[]> {
   const { data, error } = await (await getSupabase())

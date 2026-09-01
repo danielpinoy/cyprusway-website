@@ -21,7 +21,7 @@
     "deploy": "npm run build && wrangler deploy",
     "port-i18n": "node scripts/port-i18n.mjs",
     "check:env": "node scripts/check-env.mjs",
-    "setup:env": "node -e \"const f=require('fs');if(f.existsSync('.env')){console.log('.env already exists — left untouched');}else{f.copyFileSync('.env.example','.env');console.log('created .env from .env.example — now fill in VITE_SUPABASE_ANON_KEY');}\""
+    "setup:env": "node -e \"const f=require('fs');if(f.existsSync('.env')){console.log('.env already exists — left untouched');}else{f.copyFileSync('.env.example','.env');console.log('created .env from .env.example — the anon key is already in it, nothing to fill in');}\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",

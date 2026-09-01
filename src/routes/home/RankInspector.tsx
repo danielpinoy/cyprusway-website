@@ -61,7 +61,11 @@ export function RankInspector({
         <dd>{wanted.size === 0 ? '(none)' : [...wanted].join(', ')}</dd>
         <dt>renderable pool</dt>
         <dd>
-          {pool.length} of {places.length} published (scored AND hero-bearing)
+          {/* "scored", not "scored AND hero-bearing": phase 3 dropped the photograph
+              requirement from renderablePool and this label was not updated with it, so it
+              understated the pool by 35 places to anyone reading the panel. Corrected
+              1 Sep 2026. */}
+          {pool.length} of {places.length} published (prominence-scored)
         </dd>
         {unknown.length > 0 && (
           <>

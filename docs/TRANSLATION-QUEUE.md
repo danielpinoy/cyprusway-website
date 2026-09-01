@@ -1,4 +1,4 @@
-# Translation queue — phases 1 to 6
+# Translation queue — phases 1 to 8
 
 The React rebuild introduces strings the vanilla dictionary never had. They ship in English
 only, and the other four languages fall back to English — the same fallback the vanilla
@@ -56,7 +56,7 @@ gets English, exactly as before.
 
 **`ui_hero_title` — "Know Cyprus before you arrive".** Added 30 Aug 2026, phase 7.
 
-It is not one of 325. It is the **homepage H1**, the **footer tagline on every page**, and
+It is not one of 348. It is the **homepage H1**, the **footer tagline on every page**, and
 the **sign-up card's heading** — three surfaces, one string, by phase 1's ruling that the
 Figma's hero headline and the onboarding card's are word for word the same sentence.
 
@@ -74,10 +74,22 @@ rewritten. `ui_about_intro` (below) is the same case and is second in line.
 
 ---
 
-## The queue — 346 keys, English only
+## The queue — 348 keys, English only
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
+
+**348 is the file count, measured 1 Sep 2026** — `src/i18n/strings/en.ts` holds 348 keys and
+the other four language files hold none. This heading said 346 and the section above said
+325; neither was re-counted as phases 6 to 8 landed. **The list below names ~311 of them
+individually**, so it is a guide to the work rather than a register of it — the file is the
+register. Mostly absent from the list: `ui_meta_*`, the `ui_plan_fail_*_body` set, the
+party and traveller-rail labels, and the strings added with the clear-conversation control.
+Re-count with:
+
+```bash
+node -e "const f=require('fs');console.log([...f.readFileSync('src/i18n/strings/en.ts','utf8').matchAll(/^\s{2}(?:'([\w]+)'|([\w]+)):/gm)].length)"
+```
 
 ### Clearing the Ask Pete conversation — 8, added in phase 8
 

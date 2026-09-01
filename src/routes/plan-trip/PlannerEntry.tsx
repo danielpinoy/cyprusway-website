@@ -13,9 +13,18 @@ import styles from './PlannerEntry.module.css';
  * this card, on `/build-trip` beside the manual builder it is the alternative to, and on
  * `/trips` where somebody is already thinking about trips.
  *
- * It says Premium in plain words rather than wearing a gold badge. Nobody can buy it here,
- * so a badge would be decoration on a door that does not open; a sentence at least
- * explains itself, and the page behind the link explains it properly.
+ * **This card does not mention Premium at all**, and that is a live product question rather
+ * than a settled decision — see docs/PARKED.md, "The planner entry card does not say
+ * Premium". Until 1 Sep 2026 this comment claimed it "says Premium in plain words rather
+ * than wearing a gold badge"; the three strings it renders — `ui_plan_entry_title`,
+ * `ui_plan_entry_body`, `ui_plan_entry_cta` — have never contained the word, so a free
+ * account meets the gate only after following the link. The comment asserted an intention
+ * as a fact and hid the question for as long as it stood.
+ *
+ * The reasoning that IS settled: no gold badge, because nobody can buy Premium here and a
+ * badge would be decoration on a door that does not open. The page behind the link explains
+ * the gate properly. Whether the card should say so up front is the owner's to rule on;
+ * behaviour is unchanged pending that.
  */
 export function PlannerEntry() {
   const { t } = useI18n();

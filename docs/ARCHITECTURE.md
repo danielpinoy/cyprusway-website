@@ -92,6 +92,15 @@ Everything is written in **directory form** (`dist/privacy/index.html`), never
 `privacy.html` — that is what keeps `/privacy.html` unmatched by the asset layer so the Worker
 can own its 301 (`prerender.mjs:65-70`).
 
+**An unknown `/place/<slug>` returns 200, not 404 — so a 200 is not proof a place exists.**
+`src/worker.ts` serves the SPA shell for any `/place/*` (and `/trip/*`) the asset layer does
+not match, so a place published since the last deploy still opens; the cost is a soft 404 for
+a slug that was never real. The shell sets `noindex` and the page renders its own not-found
+view, so nothing is indexed and no human is misled — but **anything testing slugs
+programmatically must compare the `<title>`, not the status**: a prerendered page carries the
+place's own title, the shell carries the site default. `[OBSERVED — `/place/kourion` returns
+200 with the default title; `/place/petra-tou-romiou` returns 200 with its own]`
+
 **Place pages carry a seed.** One row — the page's own — is embedded as
 `<script id="cw-seed" type="application/json">` beside `#root` (`prerender.mjs:79-82`,
 `:173-176`). `lib/prerenderSeed.ts` reads it into `useHomeData`'s initial state and then
@@ -485,11 +494,13 @@ structurally this session without printing the value]`
 The anon key is public by design — it identifies the project, is constrained by RLS, and Vite
 inlines it into every built bundle. It lives in a file so it is configured per environment.
 
-Two things in this repo now contradict that and should not be trusted: **`README.md:28` says
-"The example's key is blank"** — it is not — and `npm run setup:env` prints "now fill in
-VITE_SUPABASE_ANON_KEY", when there is nothing to fill in. The safety rule survives the stale
-reasoning: **never delete `.env` to "clean up"** — it is untracked, so nothing restores it
-from git, and the failure looks like a data outage rather than a config problem.
+Both the README and the `setup:env` message used to say the example's key was blank and had
+to be filled in; **corrected 1 Sep 2026** — it never was. The safety rule survives the stale
+reasoning, for a narrower reason than the one it was given: **never `cp` over an existing
+`.env`, and never delete one to "clean up"**. The two files are byte-identical today so a copy
+costs nothing today; the rule is about the day `.env` points at a different project, when the
+copy silently replaces it and the failure looks like a data outage rather than a config
+problem. `setup:env` refuses to overwrite.
 
 Both variables must **also** be set in the Cloudflare build environment. Vite reads them at
 build time, so a deployment built without them ships `undefined` credentials.
@@ -536,13 +547,15 @@ something was forgotten. The short orientation:
   without a hero, so the card and gallery fallbacks cannot disagree `[OBSERVED — measured to
   close an open question in the code]`. Unphotographed cards carry the place's
   `short_description` instead of a picture.
-- **The Book with Pete card is inert**, and note *why*: `PARKED.md` and the card's own comment
-  say it is because `affiliate_routes` is empty. **That reason has expired** — the table now
-  holds **42 rows, 38 active and territory-approved** `[OBSERVED]`, and the live resolver
-  returns `ready` with a real URL. Three of the card's four reasons still stand (it collects
-  one of five required fields; its chips are not the region vocabulary; it says "choose as
-  many as apply" where the API takes one). The card should stay disabled; its stated reason
-  needs updating.
+- **The Book with Pete card is inert**, and note *why*: the fourth of its four stated reasons
+  — that `affiliate_routes` is empty — **expired on 31 Aug 2026**. The table now holds **42
+  rows, 38 active and territory-approved** `[OBSERVED]` and the live resolver returns `ready`
+  with a real URL. Three reasons still stand and are what keeps Continue disabled: the card
+  collects one of five required fields, its chips are not the region vocabulary, and it says
+  "choose as many as apply" where the API takes exactly one. The expired reason is struck
+  rather than deleted in both the card and `PARKED.md`, because the tempting move on finding
+  it stale is to switch the card on. What actually unparks it is a design decision about
+  where the missing four inputs live.
 
 ## 11. Where the two repos disagree, and which wins
 
@@ -553,11 +566,23 @@ until a `client_config` RPC replaces it.
 
 Concretely, and all three verified this session:
 
-| Claim | Where it is stale | Authority |
-|---|---|---|
-| "`affiliate_routes` holds zero rows" | `docs/PARKED.md`, `BookWithPeteCard.tsx:20-22` | the table — 42 rows, 38 live |
-| "The example's key is blank" | `README.md:28`, `package.json` `setup:env` | the file — a working key |
-| "219 English-only strings" | `docs/PARKED.md:1346`; the queue says 346 | the files — **348**, and 0 translated |
+| Claim | Where it was stale | Authority | Status |
+|---|---|---|---|
+| "`affiliate_routes` holds zero rows" | `PARKED.md`, `BookWithPeteCard.tsx` | the table — 42 rows, 38 live | struck in both, 1 Sep |
+| "The example's key is blank" | `README.md`, `setup:env` | the file — a working key | corrected, 1 Sep |
+| "219 English-only strings" | `PARKED.md`; the queue said 346/325 | the files — **348**, 0 translated | reconciled, 1 Sep |
+| "170 ported keys" | `scripts/port-i18n.mjs` | the blob — **177**, no gaps | corrected, 1 Sep |
+
+A pattern worth naming rather than listing: **this repo's comments assert intentions as
+facts**, and the assertion outlives the intention. Six were found and fixed on 1 Sep 2026 —
+the four above plus `saved.ts` headed "read only" above its own write, `HomeContent` claiming
+`saved_places` "has never held a row" after the save button shipped, `worker.ts` saying it
+serves the shell for `/place/*` "and only" while also serving `/trip/*`, `RankInspector`
+labelling its pool "scored AND hero-bearing" after the hero requirement was dropped, and
+`PlannerEntry` claiming to say "Premium in plain words" in three strings that never contained
+the word. None changed behaviour; each would have misled the next reader. When a comment and
+the code disagree here, **the code is the subject** — and the comment is a defect, not a
+footnote.
 
 Use the Decision Log in **`cyprusway-directus/docs/reference/curated/`** and take the highest
 version number (v3.4 today). The copy inside `cyprusway-app` is v3.0, stops at entry 49, and
@@ -571,9 +596,11 @@ reading it has produced wrong work three times.
 - **The Ask Pete streaming path end to end.** `lib/askPete.ts:15-18` still records it as
   unverified against a live signed-in stream; the transport and every auth-failure shape are
   confirmed. I did not drive a signed-in stream this session.
-- **`?dir=rtl` in production.** The React-side override is stripped by a `DEV` guard, but
-  `index.html`'s inline script that sets `<html dir>` is not — so the flag still flips document
-  direction on the live site while the dictionary does not follow. Read from the code, not
-  exercised. `[INFERRED]`
+- ~~**`?dir=rtl` in production.**~~ **Fixed 1 Sep 2026.** The React-side override was stripped
+  by a `DEV` guard and `index.html`'s inline script was not, so the flag flipped the live
+  document's direction while the dictionary stayed put. `import.meta.env.DEV` does not reach a
+  plain inline script, so the fix is a build-only Vite plugin (`cw-strip-dev-only`) that
+  removes the two lines marked `/* cw:dev-only */` and **throws if it removes none** — a
+  silent no-op would restore the bug exactly. `npm run dev` is unchanged.
 - **Anything about the mobile app's current state.** This document is about the web client;
   app claims here come from cross-repo comments, not from reading that repo this session.

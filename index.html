@@ -26,17 +26,24 @@
       /* Applies the stored language's direction to <html> before first paint, so an
          RTL visitor never sees a frame of LTR layout. Only touches attributes outside
          the React root, so it cannot cause a hydration mismatch. The dictionary itself
-         is swapped by React after hydration, exactly as the vanilla site did. */
+         is swapped by React after hydration, exactly as the vanilla site did.
+
+         The `?dir=` override is the same DEV-ONLY review affordance as the one in
+         I18nProvider, and until 1 Sep 2026 only that half was stripped: its two lines
+         shipped to production, so `?dir=rtl` flipped the document's direction on the live
+         site while the dictionary stayed put. They are removed at build time now, so this
+         script reads shorter here than in the repo. See `cw-strip-dev-only` in
+         vite.config.ts before editing either line. */
       (function () {
         try {
           var dirs = { en: 'ltr', pl: 'ltr', de: 'ltr', el: 'ltr', sv: 'ltr' };
           var stored = localStorage.getItem('cw_lang');
-          var override = new URLSearchParams(location.search).get('dir');
+          var override = new URLSearchParams(location.search).get('dir'); /* cw:dev-only */
           if (stored && dirs[stored]) {
             document.documentElement.lang = stored;
             document.documentElement.dir = dirs[stored];
           }
-          if (override === 'rtl' || override === 'ltr') document.documentElement.dir = override;
+          if (override === 'rtl' || override === 'ltr') document.documentElement.dir = override; /* cw:dev-only */
         } catch (e) {}
       })();
     </script>

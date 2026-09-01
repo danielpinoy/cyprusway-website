@@ -20,16 +20,23 @@ no pointer cursor, no hover state and no place in the tab order.
 
 ```bash
 npm install
-npm run setup:env         # then fill in VITE_SUPABASE_ANON_KEY
+npm run setup:env         # copies .env.example, which already carries the key
 npm run dev               # http://localhost:5173
 ```
 
+**`.env.example` is not a template — it carries the working anon key**, and `.env` is a copy of
+it. `.gitignore` ignores `.env` and `.env.*` and then re-includes `!.env.example`, so the
+example is tracked and the copy is not. `npm run setup:env` therefore produces a file you can
+use immediately, with nothing to fill in. *(Corrected 1 Sep 2026: this paragraph and the
+`setup:env` message both said the example's key was blank and had to be filled in. It never
+was — the key has been in the tracked file, valid, the whole time.)*
+
 **Never `cp .env.example .env` over an existing file, and never delete `.env` to "clean up".**
-The example's key is blank, so the copy silently replaces a working file with a broken one,
-and the resulting failure looks like a data outage rather than a config problem.
-`npm run setup:env` refuses to overwrite. `.env` is gitignored (`.gitignore:5-6`) and has never
-been tracked on any branch, so it cannot be staged, committed, or removed by a branch switch —
-there is nothing to clean up before committing.
+The two are byte-identical today, so a copy costs nothing *today* — the rule is about the day
+they differ, when `.env` points at another project or another environment and the copy silently
+replaces it. `npm run setup:env` refuses to overwrite for that reason. `.env` is gitignored and
+has never been tracked on any branch, so it cannot be staged, committed, or removed by a branch
+switch — there is nothing to clean up before committing.
 
 The anon key is public by design — it identifies the project and is constrained by RLS, not by
 secrecy — but it lives in an env file so it is configured per environment rather than compiled

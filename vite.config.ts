@@ -37,6 +37,33 @@ export default defineConfig(({ mode }) => {
           ];
         },
       },
+      {
+        /* Strip the dev-only lines from index.html's inline direction script.
+           `import.meta.env.DEV` does not reach a plain inline <script>, so the guard the
+           rest of the repo uses is unavailable there and the `?dir=` override shipped to
+           production — flipping the live document's direction while the dictionary,
+           whose override IS stripped (I18nProvider), stayed put.
+
+           Build-only (`apply: 'build'`), so `npm run dev` keeps the affordance. Removes
+           whole lines ending in the marker, and THROWS if it removes none: a silent
+           no-op here would put the flag back in production exactly as before, which is
+           the failure this plugin exists to end. Same rule as the prerender's
+           "nothing was substituted" throw. */
+        name: 'cw-strip-dev-only',
+        apply: 'build',
+        transformIndexHtml(html: string) {
+          const devOnly = /^[^\n]*\/\* cw:dev-only \*\/[^\n]*\n/gm;
+          const stripped = html.replace(devOnly, '');
+          if (stripped === html) {
+            throw new Error(
+              'cw-strip-dev-only: no `/* cw:dev-only */` lines found in index.html. ' +
+                'The marker was renamed or removed — the ?dir= override would ship to ' +
+                'production. Restore the marker or delete this plugin deliberately.',
+            );
+          }
+          return stripped;
+        },
+      },
     ],
     css: {
       modules: {

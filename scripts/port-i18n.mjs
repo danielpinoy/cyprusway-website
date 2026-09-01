@@ -1,9 +1,13 @@
 /**
  * Port the vanilla translation dictionary into typed locale modules.
  *
- * Source of truth is `js/i18n.js` on the `web-onboarding` branch, which is a strict
- * superset of `main` (170 keys vs 140 — verified) and carries the 30 `onb_*` keys the
- * onboarding work added in all five languages.
+ * Source of truth is `js/i18n.js` on the `web-onboarding` branch, which carries the
+ * `onb_*` keys the onboarding work added in all five languages.
+ *
+ * **177 keys, five languages, no gaps** — measured 1 Sep 2026 by evaluating the blob the
+ * way this script does. The header previously said "170 keys vs 140 — verified"; the first
+ * number was wrong, and the second can no longer be re-run at all because `js/i18n.js` was
+ * deleted from `main` (which is the whole reason this script reads from git, below).
  *
  * Read from git rather than the working tree, so this stays runnable after the vanilla
  * files are deleted. Nothing here is transcribed by hand; the transform is the diff.

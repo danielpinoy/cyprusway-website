@@ -11,13 +11,23 @@ import { LEGACY_REDIRECTS, PLACE_PATH_PREFIX, TRIP_PATH_PREFIX } from './routes/
  *     Done here rather than in `public/_redirects` because a Worker is needed anyway
  *     for (2), and one mechanism cannot drift from the other.
  *
- *  2. Serves the SPA shell for `/place/*`, and only for `/place/*`. Every published place
- *     is prerendered, so this runs for exactly two cases: a place published in Directus
- *     since the last deploy, which renders client-side rather than 404ing until someone
- *     redeploys, and a slug that does not exist, which renders the page's own not-found
- *     view. The second is a soft 404 — a 200 for a page that is not there — and it is the
- *     price of the first. The not-found view sets `<meta name="robots" content="noindex">`
- *     so it cannot be indexed, and the 181 real slugs return prerendered 200s.
+ *  2. Serves the SPA shell for `/place/*` and `/trip/*`. Every published place is
+ *     prerendered, so the place prefix runs for exactly two cases: a place published in
+ *     Directus since the last deploy, which renders client-side rather than 404ing until
+ *     someone redeploys, and a slug that does not exist, which renders the page's own
+ *     not-found view. The second is a soft 404 — a 200 for a page that is not there — and
+ *     it is the price of the first. **So an HTTP 200 on `/place/<slug>` is not proof the
+ *     place exists**; the prerendered pages carry their own titles and the shell carries
+ *     the site default, which is how to tell them apart from outside. The not-found view
+ *     sets `<meta name="robots" content="noindex">` so it cannot be indexed, and the 181
+ *     real slugs return prerendered 200s.
+ *
+ *     `/trip/*` is here for a different reason and is never prerendered: a trip is one
+ *     person's itinerary behind their session, a file per trip would be a file per private
+ *     document, and the page sets `noindex` unconditionally rather than only on its
+ *     not-found branch. (This header said "and only for `/place/*`" until 1 Sep 2026; the
+ *     trip prefix has been in the code below the whole time — see `routes.ts`, which
+ *     documented it correctly.)
  *
  *     The alternative was a generated slug manifest checked here, which gives real 404s
  *     but leaves a just-published place broken until the next deploy. A shared link to a

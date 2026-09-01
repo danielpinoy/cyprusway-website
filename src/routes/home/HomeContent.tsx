@@ -33,9 +33,14 @@ import styles from './HomeContent.module.css';
  * nothing is a promise the page cannot keep, and phase 1 set the precedent by hiding the
  * hero's tour carousel rather than filling it.
  *
- * Today that means "See Cyprus before you go", "Saved Places" and "Continue your trip"
- * are all absent: 0 tours exist, `saved_places` has never held a row, and only one
- * itinerary spans today.
+ * Today that means "See Cyprus before you go" is absent for everybody: `virtual_tour` is
+ * null on all 182 catalogue rows, so `tourPlaces()` returns nothing (measured 1 Sep 2026).
+ *
+ * "Saved Places" and "Continue your trip" are absent only for an account with nothing in
+ * them. Saving shipped in phase 3 — the place page writes `saved_places` and this rail is
+ * its reader — so the rail appears as soon as someone saves a place. (Until 1 Sep 2026 this
+ * comment said `saved_places` "has never held a row", which was true when phase 2 wrote it
+ * and stopped being true the moment the save button shipped.)
  */
 export function HomeContent({ data }: { data: HomeData }) {
   const t = useT();

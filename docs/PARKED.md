@@ -504,6 +504,39 @@ somebody has just been told they have run out is worse than no call to action at
 
 **Owner.** Product, then design.
 
+### The planner entry card does not say Premium — a free user meets the gate after clicking
+
+**What.** `PlannerEntry` is the only route to the AI Trip Planner: a card on `/build-trip`
+and `/trips` reading *"Let Pete plan it for you" / "Give Pete your dates and your base and he
+builds the whole itinerary, day by day." / "Open the AI Trip Planner"*. **None of those three
+strings contains the word Premium** — `ui_plan_entry_title`, `ui_plan_entry_body`,
+`ui_plan_entry_cta`, measured 1 Sep 2026. So a free account follows the link and discovers
+the gate on the next screen.
+
+**Why it is recorded now.** The behaviour was not decided; it was *asserted*. The card's own
+comment claimed it "says Premium in plain words rather than wearing a gold badge", and while
+that stood there was nothing to notice — the comment described a card that does not exist and
+read as a settled trade-off. Corrected in the file 1 Sep 2026; the question it was covering
+is this entry.
+
+**The question, stated so it can be ruled on.** Should the entry card name Premium before the
+click, or is discovering it on a page that explains it properly the better introduction?
+
+Both readings are defensible and that is why this is not being decided in code:
+
+- **Say it up front.** A free user currently spends a click to be told no, on the one screen
+  whose job is to offer them something. That is the shape phase 4 removed elsewhere.
+- **Leave it.** The gate page is a genuinely good explanation — what Premium includes, that
+  it is not on sale here, and a working alternative in the manual builder. A "Premium" label
+  on the card is a closed door with no explanation attached, and the card sits directly
+  beside the free builder it is the alternative to. Naming a price is separately forbidden
+  (nothing here can charge one).
+
+**What unparks it.** An owner ruling. If the answer is "say it", it is one string and no
+layout change; the gate page stays as it is either way.
+
+**Owner.** The owner.
+
 ### The composer's `+` — drawn, undefined
 
 **What.** A 32px `--cw-grey-1` circle with a Carbon Add-Large glyph at the inline start of
@@ -1258,7 +1291,8 @@ published as something a second client can build against.
 Continue.
 
 **Why parked.** The function contract is completely clear from source — but the card is not
-a valid client of it. Four separate problems: **[measured 28 Aug]**
+a valid client of it. Three separate problems, and a fourth that has since expired:
+**[measured 28 Aug, re-measured 1 Sep]**
 
 1. It collects **one of five** required fields. `booking_type`, the subtype, the hotel
    preference and `locale` have no input anywhere in the design — and `locale` is required
@@ -1270,19 +1304,27 @@ a valid client of it. Four separate problems: **[measured 28 Aug]**
    "Ayia Napa" and "Paralimni" are both `famagusta`; "Not Sure" is not a region; Troodos and
    Nicosia are missing.
 3. It says "Choose as many as apply". The API takes exactly one region.
-4. **Every call returns `unavailable / no_active_route` today** — verified against three
+4. ~~**Every call returns `unavailable / no_active_route` today** — verified against three
    different valid requests. `affiliate_routes` is empty, so a perfectly wired card would
-   show "we have no option for that" to every visitor for every input.
+   show "we have no option for that" to every visitor for every input.~~
+   **EXPIRED 31 Aug 2026. Do not unblock the card on it.** Re-measured 1 Sep:
+   `affiliate_routes` holds **42 rows, 38 active and territory-approved**, and the deployed
+   resolver answers a valid request with `ready` and a real `target_url`. Struck rather than
+   deleted because the tempting move on finding it stale — "the routes exist now, switch the
+   card on" — ships a card that still cannot build a valid request. Problems 1–3 are
+   untouched by routes existing, and they are what keeps Continue disabled.
 
 Phase 2 builds the card with single-select chips against the six real slugs and Continue
 disabled. The request builder and the three-outcome handling (`ready`, `reduced_filters`,
 `unavailable` — all HTTP 200, all outcomes rather than errors) are specified in the phase-2
 plan §7 and can be switched on without redesign.
 
-**What unparks it.** Authored, territory-approved rows in `affiliate_routes`, plus a
-decision on where the booking-type and subtype steps live on web.
+**What unparks it.** ~~Authored, territory-approved rows in `affiliate_routes`, plus~~ a
+decision on where the booking-type, subtype, hotel-preference and `locale` inputs live on
+web. The routes half is **done** (see 4); the flow half is not, and it is now the only
+blocker.
 
-**Owner.** Content for routes; product for the flow.
+**Owner.** ~~Content for routes;~~ product for the flow.
 
 ---
 
@@ -1343,14 +1385,22 @@ it. Both URLs 301 to `/` from the Worker, so it degrades to a wrong-but-not-brok
 
 ## Copy and translation
 
-### 219 English-only interface strings
+### 348 English-only interface strings
 
-**What.** The rebuild has introduced 219 `ui_*` strings the vanilla dictionary never had —
-62 in phase 1, 21 in phase 2 for the homepage rails, 30 in phase 3 for Explore and the place
-page, 29 in phase 4 for Ask Pete, and 78 in phase 5 for Build My Trip, less one phase-1
-string that was deleted rather than translated because it said Ask Pete was unavailable on
-the web. They render English in all five
-languages via the fallback the switcher already used.
+**What.** The rebuild has introduced **348** `ui_*` strings the vanilla dictionary never had.
+They render English in all five languages via the fallback the switcher already used.
+
+**The number, and why it kept being wrong.** Counted directly from the files 1 Sep 2026:
+`src/i18n/strings/en.ts` holds **348** keys and `strings/{el,pl,de,sv}.ts` hold **0 each** —
+they are empty objects. The ported dictionary in `src/i18n/generated/` is a separate 177 keys
+and *is* complete in all five languages. So the site's translated surface is the 177 keys
+carried over from the vanilla site, and everything the rebuild added is English everywhere.
+
+This entry said **219** and gave a per-phase breakdown (62 + 21 + 30 + 29 + 78, less one).
+That was correct through phase 5 and was never updated as phases 6 to 8 added the trip
+planner, the generate screen, the traveller rail and the clear-conversation control — which
+is most of the growth. The breakdown is dropped rather than corrected: it was three numbers
+that had to be maintained by hand to stay true, and the file count is one command.
 
 **Pete's own replies are not in this count and never will be.** They are model output,
 generated once in one language — `mike` reads `preferred_language` and tells the model to
