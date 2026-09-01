@@ -90,6 +90,39 @@ a:hover {
   border: 0;
 }
 
+/* Reserve the scrollbar's gutter permanently, so the lock below cannot move the page.
+ *
+ * Without this, `overflow: hidden` removes the classic scrollbar and the viewport gets
+ * 15px wider, so every centred container re-centres and the whole page slides right the
+ * instant an overlay opens. Measured at 1440x900 in Chrome: clientWidth 1425 -> 1440,
+ * innerWidth unchanged at 1440, and the header, the h1 and the footer all move
+ * 88.5 -> 96 — **7.5px, half the scrollbar** — snapping back exactly on close. With this
+ * line the same measurement reads 0.0px.
+ *
+ * It costs nothing today: every page measured (/, /about, /privacy, /faq, /explore)
+ * already scrolls at this height, so the gutter is already reserved and no content moves.
+ *
+ * **It was not the nav change.** The identical numbers were measured on the DEPLOYED
+ * phase-7 build — before the six-item header, before `.actions`' breakpoint moved, and
+ * before the perf round put `position: relative` on `.scroller`. This is as old as the
+ * lock; it went unnoticed because 7.5px arrives at the same instant a large overlay
+ * takes the eye.
+ *
+ * One line rather than per-lock JS because the lock is shared: `useDialog` is the single
+ * owner, so this was one bug in six places — the drawer, the auth card, the interests
+ * chooser, the traveller chooser, the trip confirmations and the clear-conversation
+ * dialog — and nobody would have found the seventh either. The alternative (measure the
+ * scrollbar, add compensating padding at lock time) also measures 0.0px, but it is state
+ * that has to be right every time; this is a property of the page.
+ *
+ * Safari before 18.2 does not support `scrollbar-gutter` and keeps today's behaviour.
+ * Where the scrollbar is an overlay (macOS default, touch), its width is 0, nothing is
+ * reserved and nothing ever moved.
+ */
+:root {
+  scrollbar-gutter: stable;
+}
+
 /* Scroll lock while a modal or the drawer is open. */
 body.cw-scroll-locked {
   overflow: hidden;
