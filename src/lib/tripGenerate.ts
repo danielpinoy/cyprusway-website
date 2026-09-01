@@ -45,9 +45,24 @@ const TRIP_GENERATE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tri
 /**
  * How long one generation may sit on the wire before this client stops waiting.
  *
- * Fourteen wall clocks are on record: min 12.8 s, **median 22**, p75 ≈ 32, **max 57.4**.
- * Two `gpt-4.1-mini` completions plus an embedding set the band, not trip length — the
- * 14-day trip sat in the middle at 37 s. **Neither OpenAI call carries a timeout or an
+ * Fifteen wall clocks are on record: min 12.8 s, **median 22**, p75 ≈ 32, **max 57.4**.
+ * Two `gpt-4.1-mini` completions plus an embedding set the band, not trip length.
+ *
+ * **The two longest trips ever generated are the evidence for that, and they disagree
+ * with each other**: 14 days took **37 s**, 13 days took **53.8 s** — one day apart in
+ * length, 45% apart in time. The fifteenth sample is the 13-day trip of 1 Sep 2026, read
+ * as `execution_time_ms` from `function_edge_logs` (53,776 ms, HTTP 200) rather than from
+ * a stopwatch. Output size *is* linear in days — measured across all 37 stored AI trips
+ * at roughly 1,270 chars/day at these lengths, against ~2,000 at three days — but the
+ * elapsed time does not track it, because the fixed costs dominate.
+ *
+ * Two consequences worth keeping straight. **Crossing `GENERATE_SLOW_AFTER_MS` is not a
+ * near-miss**: at 45 s the copy escalates, and the worst sample ever recorded is 57.4 s,
+ * which is 48% of the bound below. And **nothing longer than 14 days has ever been
+ * generated**, while the server accepts 31 — see `docs/PARKED.md`. No length is known to
+ * exceed the bound; no length above 14 is known at all.
+ *
+ * **Neither OpenAI call carries a timeout or an
  * abort signal** (`llm.ts:109`, `index.ts:2348`), so the only real ceilings are OpenAI's
  * own and the platform's per-request wall clock — 150 s on the Supabase Free plan
  * according to prior reports; the project's plan is not exposed by the Management API, so

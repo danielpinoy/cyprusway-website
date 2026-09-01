@@ -1671,6 +1671,38 @@ message pointing at the cause. The guard is the comment on `clearConversation` i
 
 **Owner.** Whoever writes the next `rpc()` call.
 
+### The planner accepts 31 days; nothing longer than 14 has ever been generated
+
+**What.** `trip-generate` takes up to 31 days inclusive (probed 28 Aug 2026). Across all
+**37** AI-generated itineraries in the live table, the longest ever produced is **14 days**,
+and only two exceed four days at all — 14 and 13. **[measured 1 Sep 2026 via audit_ro]**
+
+**Why it matters, and why the date step says nothing about it.** The obvious worry is the
+client's 120 s bound. On the evidence there is no length known to breach it: fifteen wall
+clocks give min 12.8 s, median 22, max **57.4** — and the two longest trips disagree with
+each other, 14 days at 37 s against 13 days at **53.8 s**. Time is set by two completions
+plus an embedding, not by length. So a warning on the date step — "long trips may take
+longer" — would assert a relationship the measurements do not show, on a screen where the
+cost of a wrong claim is somebody choosing a shorter holiday than they wanted.
+
+**The honest gap is a different one**: days 15 to 31 are not slow, they are **untested**.
+Nobody has generated one, so nothing is known about the schedule quality over that span,
+the lunch and travel rules across it, the correction retry's behaviour on a draft that
+long, or the time. The cap permits more than twice the longest thing ever produced.
+
+**What unparks it.** One generation at around 21 days and one at 31, with the wall clock
+read from `function_edge_logs.execution_time_ms` (which costs nothing beyond the
+generation itself) and the output read for schedule quality. That is two premium
+generations — counted before the model runs, with no refund — which is why it is a
+decision and not a chore. If either is slow, the finding belongs in
+`GENERATE_TIMEOUT_MS`'s comment; if either is *bad*, it belongs in the date step.
+
+**A note on the logs, for whoever runs it.** `function_edge_logs` retention on this
+project is under a day — a 7-day window returned nothing while an 8-hour window returned
+the run. Read the timing the same day, or it is gone.
+
+**Owner.** Whoever is willing to spend two generations.
+
 ## House rules
 
 ### Replacing a place photo means uploading a new file — never replacing in place
