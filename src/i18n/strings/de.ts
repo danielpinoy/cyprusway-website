@@ -1,13 +1,425 @@
-/* Phase-1 UI strings in de.
+/* UI strings in German — all 348 keys, translated 1 Sep 2026.
  *
- * Deliberately empty. The React shell introduces strings the vanilla dictionary never
- * had, and inventing translations for them would be worse than falling back: a wrong
- * translation is invisible, a missing one is not. Every key resolves to English until
- * a translator fills it in, which is the same fallback the vanilla switcher used.
+ * Register: formal **Sie**, because the ported dictionary (generated/de.ts) uses Sie
+ * throughout and the two voices must not mix on one page. "Frag Pete" stays as the
+ * ported nav settled it; "Ask Pete" as a bare product name stays English where the
+ * brand rule applies (page H1, meta titles). CyprusWay, My CyprusWay, Google and
+ * Apple are never translated.
  *
- * The queue is docs/TRANSLATION-QUEUE.md. Adding a key here is all that is needed —
- * it is type-checked against the English shape, so a typo will not compile.
+ * Settled terms reused from the ported dictionary: KI-Reiseplaner, Reiseroute,
+ * Reisebegleiter, kuratierte Orte, the eleven onb_i_* category names, Geheimtipps,
+ * "Anmelden"/"Abmelden", "Weiter mit Google/Apple".
+ *
+ * Keys whose whole value is a brand name or identical to English
+ * (ui_pete_title, ui_nav_my_cyprusway, ui_hero_my_title, ui_404_code,
+ * ui_meta_askpete_title) are deliberately ABSENT and fall back to English.
+ *
+ * Length: German runs long. Keys where this translation is materially longer than
+ * the English are listed in docs/TRANSLATION-QUEUE.md rather than trimmed here.
  */
+
 import type { UiKey } from './en';
 
-export const stringsDe: Partial<Record<UiKey, string>> = {};
+export const stringsDe: Partial<Record<UiKey, string>> = {
+  ui_hero_title: 'Kennen Sie Zypern, bevor Sie ankommen',
+  ui_traveller_title: 'Mit wem reisen Sie?',
+  ui_traveller_sub:
+    'Wir zeigen Ihnen die passenden Orte zuerst — auf der Startseite und unter Entdecken.',
+  ui_traveller_shared: 'Wird in Ihrem Konto gespeichert und gilt auch in der App.',
+  ui_traveller_skip: 'Jetzt nicht',
+  ui_traveller_failed: 'Das konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.',
+  ui_traveller_current: 'Unterwegs als: {type}',
+  ui_traveller_change: 'Ändern, mit wem Sie reisen',
+  ui_traveller_clear: 'Orte für alle Reisenden zeigen',
+  ui_traveller_rail_solo: 'Perfekt für Alleinreisende',
+  ui_traveller_rail_couple: 'Perfekt für Paare',
+  ui_traveller_rail_family: 'Perfekt für Familien',
+  ui_traveller_rail_friends: 'Perfekt für Reisen mit Freunden',
+  ui_footer_segments: 'Unterwegs als',
+  ui_skip_to_content: 'Zum Inhalt springen',
+  ui_language: 'Sprache',
+  ui_coming_soon: 'Bald verfügbar',
+  ui_nav_explore: 'Jetzt entdecken',
+  ui_nav_tours: '360°-Touren',
+  ui_nav_build_trip: 'Meine Reise planen',
+  ui_header_search: 'Suche',
+  ui_header_saved: 'Gespeicherte Orte',
+  ui_header_account: 'Ihr Konto',
+  ui_header_menu_open: 'Menü öffnen',
+  ui_header_menu_close: 'Menü schließen',
+  ui_header_signin: 'Anmelden',
+  ui_header_home: 'CyprusWay Startseite',
+  ui_nav_primary: 'Hauptnavigation',
+  ui_hero_sub:
+    'Entdecken Sie handverlesene Orte, holen Sie sich persönlichen Rat von Pete und planen Sie Tag für Tag das Zypern, das Sie erleben möchten.',
+  ui_hero_ask_placeholder: 'Fragen Sie mich alles …',
+  ui_hero_explore_title: 'Jetzt entdecken',
+  ui_hero_explore_desc: 'Handverlesene Orte sofort durchstöbern. Ganz ohne Fragen.',
+  ui_hero_my_desc: 'Sagen Sie uns, mit wem Sie reisen, und wir richten Zypern nach Ihnen aus.',
+  ui_menu_title: 'Menü',
+  ui_menu_search_placeholder: 'Alles auf Zypern suchen',
+  ui_menu_book_pete: 'Mit Pete buchen',
+  ui_menu_my_trips: 'Meine Reisen',
+  ui_menu_saved_places: 'Gespeicherte Orte',
+  ui_menu_settings: 'Einstellungen',
+  ui_menu_logout: 'Abmelden',
+  ui_menu_feedback: 'Feedback geben',
+  ui_menu_report: 'Problem melden',
+  ui_footer_search_placeholder: 'Orte und Erlebnisse auf Zypern finden',
+  ui_footer_discover: 'Entdecken',
+  ui_footer_about_heading: 'Über uns',
+  ui_footer_faq: 'FAQ',
+  ui_loading: 'Wird geladen',
+  ui_error_title: 'Zypern ist noch da',
+  ui_error_body:
+    'Wir konnten es nur gerade nicht laden. Prüfen Sie Ihre Verbindung, und wir holen die Insel zurück.',
+  ui_error_reload: 'Neu laden',
+  ui_error_persist: 'Passiert das öfter?',
+  ui_error_report: 'Problem melden',
+  ui_404_title: 'Seite nicht gefunden',
+  ui_404_body: 'Die gesuchte Seite existiert nicht oder wurde verschoben.',
+  ui_404_home: 'Zur Startseite',
+  ui_cookie_text:
+    'Diese Website verwendet Cookies für grundlegende Funktionen und zur Zuordnung von Affiliate-Buchungen.',
+  ui_cookie_learn: 'Mehr erfahren',
+  ui_cookie_accept: 'Akzeptieren',
+  ui_cookie_decline: 'Ablehnen',
+  ui_cookie_label: 'Cookie-Einwilligung',
+  ui_rail_previous: 'Zurück',
+  ui_rail_next: 'Weiter',
+  ui_rail_top_recommendations: 'Top-Empfehlungen',
+  ui_rail_tours: 'Sehen Sie Zypern vor der Reise',
+  ui_rail_popular: 'Gerade beliebt',
+  ui_rail_food_wine: 'Essen & Wein',
+  ui_rail_saved: 'Gespeicherte Orte',
+  ui_categories_title: 'Kategorien',
+  ui_home_ready: 'Empfehlungen geladen',
+  ui_tour_badge: '360°-Tour',
+  ui_trip_continue: 'Fortsetzen',
+  ui_trip_active: 'Aktive Reise',
+  ui_trip_day: 'Tag {current} von {total}',
+  ui_trip_untitled: 'Reiseplanung fortsetzen',
+  ui_trip_untitled_region: 'Reiseplanung für {region} fortsetzen',
+  ui_bwp_title: 'Mit Pete buchen',
+  ui_bwp_lede: 'Sagen Sie Pete, was Sie brauchen, und er findet das passende lokale Angebot',
+  ui_bwp_question: 'Wohin geht es?',
+  ui_bwp_hint: 'Eine Region wählen',
+  ui_bwp_continue: 'Weiter',
+  ui_bwp_unavailable: 'Buchungsoptionen sind im Web noch nicht verfügbar.',
+  ui_explore_title: 'Zypern entdecken',
+  ui_explore_all_regions: 'Alle Regionen',
+  ui_explore_all_interests: 'Alle Interessen',
+  ui_explore_region_filter: 'Nach Region filtern',
+  ui_explore_interest_filter: 'Nach Interesse filtern',
+  ui_explore_count: '{count} Orte',
+  ui_explore_count_partial: '{shown} von {count} Orten',
+  ui_explore_load_more: 'Mehr laden',
+  ui_explore_empty_title: 'Kein {interest} in {region}',
+  ui_explore_empty_title_any: 'Unter {interest} noch nichts',
+  ui_explore_empty_suggestion: 'Unter {interest} gibt es hier mehr zu sehen.',
+  ui_explore_empty_untagged_title: '{interest} ist an den Orten noch nicht markiert',
+  ui_explore_empty_untagged_body:
+    'Die anderen zehn Interessen sind es. Dieses braucht erst markierte Orte, bevor es etwas zeigen kann.',
+  ui_explore_clear: 'Filter zurücksetzen',
+  ui_place_features: 'Ausstattung',
+  ui_place_about: 'Über {name}',
+  ui_place_duration: 'Etwa {minutes} Minuten',
+  ui_place_gallery: 'Fotos',
+  ui_place_photo_of: 'Foto {index} von {total}',
+  ui_place_save: 'Diesen Ort speichern',
+  ui_place_saved: 'Gespeichert',
+  ui_place_save_failed:
+    'Dieser Ort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.',
+  ui_place_not_found_title: 'Diesen Ort gibt es hier nicht',
+  ui_place_not_found_body:
+    'Der Link ist vielleicht veraltet, oder der Ort wurde entfernt. Unter Entdecken lässt sich gut neu anfangen.',
+  ui_place_not_found_cta: 'Zypern entdecken',
+  ui_meta_explore_title: 'Zypern entdecken — CyprusWay',
+  ui_meta_explore_desc:
+    'Handverlesene Orte auf ganz Zypern durchstöbern — nach Region und nach Ihren Interessen.',
+  ui_pete_subtitle: 'Ihr Reiseassistent für Zypern',
+  ui_pete_greeting: 'Hallo! 👋 Ich bin Pete — Ihr lokaler Guide für Zypern. Womit kann ich helfen?',
+  ui_pete_starter_1: 'Bester Strand in meiner Nähe',
+  ui_pete_starter_2: 'Was kann ich heute Abend unternehmen?',
+  ui_pete_starter_3: 'Etwas über Zyperns Geschichte oder Kultur?',
+  ui_pete_counter: '{used} von {cap} heute',
+  ui_pete_counter_label: '{used} von {cap} Fragen heute genutzt',
+  ui_pete_counter_unknown: 'Bis zu {cap} pro Tag',
+  ui_pete_counter_unknown_label: 'Bis zu {cap} Fragen pro Tag',
+  ui_pete_input_label: 'Ihre Frage an Pete',
+  ui_pete_placeholder:
+    'Fragen Sie Pete etwas Konkretes, z. B. unterwegs mit Kleinkind, Rollstuhlzugang nötig, etwas zu feiern …',
+  ui_pete_send: 'Senden',
+  ui_pete_sending: 'Pete antwortet',
+  ui_pete_disabled_quota: 'Sie haben die Fragen für heute aufgebraucht',
+  ui_pete_said: 'Pete sagte',
+  ui_pete_you_said: 'Sie sagten',
+  ui_pete_open_place: '{name} öffnen',
+  ui_pete_signin_title: 'Pete braucht ein kostenloses Konto',
+  ui_pete_signin_body: 'Alles, was Sie speichern, begleitet Sie — im Web und in der App.',
+  ui_pete_signin_cta: 'Kostenloses Konto erstellen',
+  ui_pete_err_quota:
+    'Das waren alle {cap} für heute. Pete ist morgen wieder da — Ihre Frage steht noch im Feld.',
+  ui_pete_err_account:
+    'Ask Pete braucht ein kostenloses Konto. Alles, was Sie gespeichert haben, begleitet Sie.',
+  ui_pete_err_auth: 'Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an, um weiterzuschreiben.',
+  ui_pete_err_invalid:
+    'Diese Frage konnte Pete nicht lesen, es wurde also nichts verbraucht. Ihre Frage steht noch im Feld.',
+  ui_pete_err_transport:
+    'Pete war nicht erreichbar. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
+  ui_pete_err_server:
+    'Pete hat gerade Schwierigkeiten. Versuchen Sie es gleich noch einmal.',
+  ui_pete_err_stream:
+    'Pete hat mitten in der Antwort aufgehört. Die Frage hat trotzdem gezählt, entschuldigen Sie.',
+  ui_pete_clear: 'Unterhaltung löschen',
+  ui_pete_clear_title: 'Diese Unterhaltung löschen?',
+  ui_pete_clear_everywhere:
+    'Sie haben eine Unterhaltung — sie wird also auch in der App gelöscht.',
+  ui_pete_clear_forgets: 'Pete vergisst, worüber Sie gesprochen haben.',
+  ui_pete_clear_no_refund: 'Die heutigen Fragen bekommen Sie dadurch nicht zurück.',
+  ui_pete_clear_permanent: 'Das lässt sich nicht rückgängig machen.',
+  ui_pete_cleared: 'Unterhaltung gelöscht.',
+  ui_pete_clear_failed: 'Das konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.',
+  ui_language_shared: 'Gilt auch in der App',
+  ui_meta_askpete_desc:
+    'Fragen Sie einen lokalen Guide zu Zypern — Strände, Essen, Geschichte und was heute Abend geht.',
+  ui_trip_setup_title: 'Meine Reise planen',
+  ui_trip_setup_sub: 'Eine neue Reise planen',
+  ui_trip_signin_title: 'Reisen brauchen ein kostenloses Konto',
+  ui_trip_signin_body:
+    'Ihre Reisen sind im Web und in der App dieselben — planen Sie hier und folgen Sie dort.',
+  ui_trip_name_label: 'Name der Reise',
+  ui_trip_name_placeholder: 'Namen eingeben',
+  ui_trip_region_label: 'Basisort wählen',
+  ui_trip_dates_label: 'Zeitraum',
+  ui_trip_from: 'Von',
+  ui_trip_to: 'Bis',
+  ui_trip_span_error: 'Eine Reise kann 1 bis {max} Tage dauern.',
+  ui_trip_create: 'Reise erstellen',
+  ui_trip_creating: 'Wird erstellt …',
+  ui_trip_create_failed:
+    'Diese Reise konnte nicht erstellt werden. Bitte versuchen Sie es erneut.',
+  ui_trip_list: 'Liste',
+  ui_trip_map: 'Karte',
+  ui_trip_day_n: 'Tag {n}',
+  ui_trip_today: 'Heute',
+  ui_trip_tomorrow: 'Morgen',
+  ui_trip_toggle_day: 'Stopps an Tag {n}',
+  ui_trip_remove_day: 'Tag {n} entfernen',
+  ui_trip_empty_day: 'Für diesen Tag ist noch nichts geplant.',
+  ui_trip_add_stops: 'Zur Reise hinzufügen',
+  ui_trip_add_day: 'Tag hinzufügen',
+  ui_trip_delete: 'Reise löschen',
+  ui_trip_pdf: 'PDF drucken/laden',
+  ui_trip_pdf_failed: 'Das PDF konnte nicht erstellt werden. Bitte versuchen Sie es erneut.',
+  ui_trip_move_up: '{name} nach vorn schieben',
+  ui_trip_move_down: '{name} nach hinten schieben',
+  ui_trip_move_to_day: 'Zu Tag {n} verschieben',
+  ui_trip_move_label: 'Zu einem anderen Tag verschieben',
+  ui_trip_remove_stop: '{name} entfernen',
+  ui_trip_directions: 'Route anzeigen',
+  ui_trip_directions_for: 'Route zu {name} anzeigen, öffnet eine Karte',
+  ui_trip_drive: '{minutes} Min. Fahrt',
+  ui_trip_walk: '{minutes} Min. zu Fuß',
+  ui_trip_travel_pending: 'Zeiten werden berechnet …',
+  ui_trip_lunch: 'Mittagspause',
+  ui_trip_lunch_any: 'Suchen Sie sich ein Lokal in der Nähe',
+  ui_trip_lunch_near: 'Suchen Sie sich ein Lokal nahe {name}',
+  ui_trip_saving: 'Wird gespeichert …',
+  ui_trip_rename: 'Reise umbenennen',
+  ui_trip_rename_save: 'Namen speichern',
+  ui_trip_cancel: 'Abbrechen',
+  ui_trip_conflict:
+    'Diese Reise wurde woanders geändert — Sie sehen jetzt die neueste Version.',
+  ui_trip_save_failed:
+    'Diese Änderung konnte nicht gespeichert werden. Der Fehler lag bei uns — bitte versuchen Sie es erneut.',
+  ui_trip_offline:
+    'Diese Änderung konnte nicht gespeichert werden — sie hat uns nie erreicht. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
+  ui_trip_blocked:
+    'Diese Änderung konnte nicht gespeichert werden, und es wurde nichts gesendet. Laden Sie die Reise neu und versuchen Sie es erneut.',
+  ui_trip_auth_failed:
+    'Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an, um weiter zu bearbeiten.',
+  ui_trip_gone: 'Diese Reise existiert nicht mehr.',
+  ui_trip_not_found_title: 'Diese Reise ist nicht hier',
+  ui_trip_not_found_body:
+    'Sie wurde vielleicht gelöscht, oder der Link gehört zu einem anderen Konto.',
+  ui_trip_delete_title: 'Diese Reise löschen?',
+  ui_trip_delete_body:
+    'Das lässt sich nicht rückgängig machen und entfernt die Reise auch aus der App.',
+  ui_trip_deleted: 'Reise gelöscht.',
+  ui_trip_delete_failed: 'Diese Reise konnte nicht gelöscht werden.',
+  ui_trip_map_title: 'Die Karte kommt noch',
+  ui_trip_map_body:
+    'Ihre Stopps für den Tag stehen daneben — in Reihenfolge, mit Uhrzeiten.',
+  ui_trip_add_title: 'Zur Reise hinzufügen',
+  ui_trip_add_step_day: '1. Welcher Tag?',
+  ui_trip_add_step_explore: '2. Was möchten Sie erkunden?',
+  ui_trip_add_time_note:
+    'Die Zeiten werden für Sie berechnet — ein neuer Stopp beginnt, wenn der vorherige endet.',
+  ui_trip_add_search: 'Diese Orte filtern',
+  ui_trip_add_all_interests: 'Alle Interessen',
+  ui_trip_add_selected: '{count} ausgewählt',
+  ui_trip_add_cta: 'Zur Reise hinzufügen',
+  ui_trip_add_empty: 'Zu diesen Filtern passt hier nichts.',
+  ui_trip_add_full:
+    'Dieser Tag ist voll — mehr als {max} Stopps passen nicht in einen Tag.',
+  ui_trip_add_already: 'Schon an diesem Tag',
+  ui_trips_title: 'Meine Reisen',
+  ui_trips_sub: 'Alles, was Sie geplant haben',
+  ui_trips_new: 'Neue Reise planen',
+  ui_trips_empty_title: 'Noch keine Reisen',
+  ui_trips_empty_body: 'Planen Sie eine, und sie erscheint hier — und in der App.',
+  ui_trips_days: '{count} Tage',
+  ui_trips_days_one: '1 Tag',
+  ui_trips_open: '{name} öffnen',
+  ui_plan_title: 'KI-Reiseplaner',
+  ui_plan_sub: 'Ihr Reisebegleiter für Zypern',
+  ui_plan_steps_label: 'Schritte des Reiseplaners',
+  ui_plan_step_of: 'Schritt {n} von {total}',
+  ui_plan_back: 'Zurück',
+  ui_plan_continue: 'Weiter',
+  ui_plan_skip: 'Überspringen',
+  ui_plan_prefs_title: 'Wie reisen Sie am liebsten?',
+  ui_plan_prefs_sub:
+    'Pete nutzt das für jede Reise, die Sie planen — hier und in der App. Sie können es jederzeit ändern.',
+  ui_plan_pace_label: 'Tempo',
+  ui_plan_pace_relaxed: 'Entspannt',
+  ui_plan_pace_moderate: 'Ausgewogen',
+  ui_plan_pace_packed: 'Vollgepackt',
+  ui_plan_morning_label: 'Morgens',
+  ui_plan_morning_early: 'Frühaufsteher',
+  ui_plan_morning_normal: 'Normal',
+  ui_plan_morning_late: 'Langschläfer',
+  ui_plan_prefs_failed:
+    'Diese Einstellungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.',
+  ui_plan_dates_title: 'Wann geht es los?',
+  ui_plan_dates_sub:
+    'Reisen beginnen frühestens morgen und können bis zu {max} Tage dauern.',
+  ui_plan_dates_early:
+    'Reisen beginnen frühestens morgen — wählen Sie ein späteres Datum.',
+  ui_plan_dates_echo: '{from} – {to} · {count} Tage',
+  ui_plan_dates_echo_one: '{from} · 1 Tag',
+  ui_plan_places_title: 'Wo wohnen Sie, und was mögen Sie?',
+  ui_plan_places_sub: 'Pete plant um einen Basisort herum und arbeitet sich von dort nach außen.',
+  ui_plan_interests_label: 'Was möchten Sie unternehmen?',
+  ui_plan_interests_count: '{count} von {max} gewählt',
+  ui_plan_interests_full: 'Das sind {max} — wählen Sie eines ab, um ein anderes zu wählen.',
+  ui_plan_party_title: 'Wer reist mit?',
+  ui_plan_party_sub: 'Optional. Es ändert, welche Art von Orten Pete auswählt.',
+  ui_plan_party_solo: 'Allein',
+  ui_plan_party_solo_desc:
+    'Flexible Ideen, unkomplizierte Orte und Erlebnisse, die allein gut funktionieren.',
+  ui_plan_party_couple: 'Paar',
+  ui_plan_party_couple_desc:
+    'Schöne Ausblicke, gemeinsame Erlebnisse und Orte, die sich zu zweit besonders anfühlen.',
+  ui_plan_party_family: 'Familie',
+  ui_plan_party_family_desc:
+    'Familienfreundliche Orte, einfache Tagesausflüge und Erlebnisse für jedes Alter.',
+  ui_plan_party_friends: 'Freunde',
+  ui_plan_party_friends_desc:
+    'Lebendige Orte, Gruppenaktivitäten und Erlebnisse, an die man sich gemeinsam erinnert.',
+  ui_plan_children_label: 'Wie alt sind die Kinder?',
+  ui_plan_children_under_5: 'Unter 5',
+  ui_plan_children_age_5_12: '5 bis 12',
+  ui_plan_children_teenagers: 'Teenager',
+  ui_plan_review_title: 'Bereit zum Planen',
+  ui_plan_review_sub:
+    'Pete baut die ganze Reise in einem Zug. Sie können danach alles ändern.',
+  ui_plan_review_where: 'Wo',
+  ui_plan_review_when: 'Wann',
+  ui_plan_review_days: 'Tage',
+  ui_plan_review_interests: 'Interessen',
+  ui_plan_review_party: 'Unterwegs',
+  ui_plan_review_party_none: 'Keine Angabe',
+  ui_plan_review_party_profile: 'Ihr üblicher Reisestil',
+  ui_plan_create: 'Meine Reise erstellen',
+  ui_plan_duration_hint: 'Meist 20 bis 30 Sekunden. Manchmal länger.',
+  ui_plan_quota_known: 'Heute noch {n} von {cap}',
+  ui_plan_quota_unknown: 'Bis zu {cap} Reisen pro Tag',
+  ui_plan_quota_none:
+    'Das waren alle {cap} für heute. Mehr am {date}, zyprischer Zeit.',
+  ui_plan_quota_none_noday: 'Das waren alle {cap} für heute. Mehr morgen, zyprischer Zeit.',
+  ui_plan_building: 'Ihre Zypern-Route entsteht …',
+  ui_plan_building_long: 'Noch dabei — diesmal dauert es länger als üblich.',
+  ui_plan_fail_generation_title: 'Pete konnte diese Reise nicht bauen',
+  ui_plan_fail_generation_body:
+    'Andere Daten, ein anderer Basisort oder andere Interessen helfen meistens.',
+  ui_plan_fail_server_title: 'Der Planer konnte nicht fertig werden',
+  ui_plan_fail_server_body:
+    'Es kam nichts an, und auf Ihrer Liste ist keine neue Reise erschienen.',
+  ui_plan_fail_slow_title: 'Das dauert länger als erwartet',
+  ui_plan_fail_slow_body:
+    'Pete arbeitet vielleicht noch. Wenn der Plan fertig wird, finden Sie ihn unter Meine Reisen.',
+  ui_plan_fail_offline_title: 'Der Planer war nicht erreichbar',
+  ui_plan_fail_offline_body:
+    'Prüfen Sie Ihre Verbindung. Es wurde nichts verbraucht und keine Reise erstellt — ein neuer Versuch ist sicher.',
+  ui_plan_fail_quota_title: 'Das war alles für heute',
+  ui_plan_fail_invalid_title: 'Etwas an dieser Reise ergab für den Planer keinen Sinn',
+  ui_plan_fail_invalid_body:
+    'Gehen Sie zurück und prüfen Sie Daten, Basisort und Interessen.',
+  ui_plan_fail_auth_title: 'Ihre Sitzung ist abgelaufen',
+  ui_plan_fail_auth_body: 'Melden Sie sich erneut an, um eine Reise zu planen.',
+  ui_plan_counted: 'Dieser Versuch hat gezählt — heute noch {n} von {cap}.',
+  ui_plan_counted_unknown: 'Dieser Versuch hat gezählt.',
+  ui_plan_not_counted: 'Dieser Versuch hat nicht gezählt.',
+  ui_plan_counted_maybe:
+    'Wir konnten nicht bestätigen, ob dieser Versuch gezählt hat. Sehen Sie unter Meine Reisen nach, bevor Sie es erneut versuchen.',
+  ui_plan_recovered_title: 'Ihre Reise wurde erstellt',
+  ui_plan_recovered_body:
+    'Die Verbindung brach auf dem Rückweg ab, aber Pete hat den Plan fertiggestellt — und diese Generierung ist bereits gezählt.',
+  ui_plan_view_trip: 'Reise ansehen',
+  ui_plan_check_trips: 'Meine Reisen prüfen',
+  ui_plan_retry: 'Erneut versuchen',
+  ui_plan_change: 'Angaben ändern',
+  ui_plan_premium_title: 'Pete kann die ganze Reise planen',
+  ui_plan_premium_body:
+    'Nennen Sie Pete Ihre Daten, Ihren Basisort und Ihre Vorlieben, und er baut einen kompletten Tagesplan — echte Orte aus dem CyprusWay-Katalog, nach Gegend gruppiert, mit Mittagspause und Fahrzeiten. Er landet bei Ihren Reisen, fertig zum Bearbeiten.',
+  ui_plan_premium_lead: 'Die Reiseplanung ist Teil von CyprusWay Premium, zusammen mit:',
+  ui_plan_premium_gen: '{cap} geplante Reisen pro Tag',
+  ui_plan_premium_gen_body:
+    'Jede davon eine vollständige Reiseroute, die Sie umsortieren, ergänzen und kürzen können.',
+  ui_plan_premium_pdf: 'Jede Reise als PDF drucken oder laden',
+  ui_plan_premium_pdf_body: 'Der ganze Plan auf Papier, fürs Auto.',
+  ui_plan_premium_pete: 'Unbegrenzt Frag Pete',
+  ui_plan_premium_pete_body: 'Kein Tageslimit für Fragen.',
+  ui_plan_premium_note:
+    'Premium ist auf dieser Website noch nicht erhältlich — es gibt hier heute nichts zu kaufen. Hat Ihr Konto bereits Premium, melden Sie sich damit an, und der Planer öffnet sich.',
+  ui_plan_premium_alt: 'Selbst eine Reise planen',
+  ui_plan_premium_alt_body:
+    'Kostenlos und unbegrenzt. Wählen Sie Basisort und Daten, dann fügen Sie Ihre Orte hinzu.',
+  ui_plan_entry_title: 'Lassen Sie Pete planen',
+  ui_plan_entry_body:
+    'Geben Sie Pete Ihre Daten und Ihren Basisort, und er baut die ganze Reiseroute, Tag für Tag.',
+  ui_plan_entry_cta: 'KI-Reiseplaner öffnen',
+  ui_trip_short_title: 'Diese Reise kam kürzer zurück',
+  ui_trip_short_body:
+    'Pete hat {built} der {requested} gewünschten Tage geplant. Ergänzen Sie den Rest selbst, oder planen Sie neu.',
+  ui_about_intro:
+    'CyprusWay ist eine mobile Reise-App, die Reisenden hilft, Zypern mit Selbstvertrauen zu erleben. Wir glauben, dass eine großartige Reise mit guten Informationen beginnt — zu wissen, wie ein Ort wirklich aussieht, ob er zu Ihrem Tempo und Ihren Interessen passt und wie Sie dorthin kommen. Die App vereint kuratierte Orte, personalisierte Reiseplanung, einen freundlichen Reiseassistenten und Buchungshilfe, damit Sie Ihren ganzen Zypern-Urlaub an einem Ort entdecken, planen und organisieren können.',
+  ui_meta_plantrip_title: 'KI-Reiseplaner — CyprusWay',
+  ui_meta_plantrip_desc:
+    'Lassen Sie Pete Ihre Zypern-Reise Tag für Tag planen — Ihre Daten, Ihr Basisort und eine vollständige Reiseroute zum Bearbeiten.',
+  ui_meta_buildtrip_title: 'Meine Reise planen — CyprusWay',
+  ui_meta_buildtrip_desc:
+    'Eine Zypern-Reise Tag für Tag planen — Basisort, Daten und Stopps selbst wählen.',
+  ui_meta_trips_title: 'Meine Reisen — CyprusWay',
+  ui_meta_trips_desc: 'Die Reisen, die Sie mit CyprusWay geplant haben.',
+  ui_meta_place_title: '{name} — CyprusWay',
+  ui_meta_place_desc: '{name} — ein Ort auf Zypern, in {region}. Auf CyprusWay.',
+  ui_meta_place_desc_any: '{name} — ein Ort auf Zypern. Auf CyprusWay.',
+  ui_meta_home_title: 'CyprusWay — Zypern entdecken',
+  ui_meta_home_desc:
+    'Handverlesene Orte auf ganz Zypern — Fotos, Öffnungszeiten und praktische Details — und eine Reise, die Sie Tag für Tag selbst planen.',
+  ui_meta_about_title: 'Über uns — CyprusWay',
+  ui_meta_about_desc: 'Ein Reisebegleiter für die Insel, die wir lieben.',
+  ui_meta_faq_title: 'FAQ — CyprusWay',
+  ui_meta_faq_desc:
+    'Antworten zu Buchungen, Sprachen, Abdeckung und dazu, wie CyprusWay funktioniert.',
+  ui_meta_privacy_title: 'Datenschutzerklärung — CyprusWay',
+  ui_meta_privacy_desc:
+    'Wie CyprusWay Ihre persönlichen Daten erhebt, verwendet und schützt.',
+  ui_meta_terms_title: 'Nutzungsbedingungen — CyprusWay',
+  ui_meta_terms_desc: 'Die Bedingungen für Ihre Nutzung von CyprusWay.',
+  ui_meta_404_title: 'Seite nicht gefunden — CyprusWay',
+  ui_meta_404_desc: 'Die gesuchte Seite existiert nicht oder wurde verschoben.',
+};

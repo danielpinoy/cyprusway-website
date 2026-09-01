@@ -1,4 +1,4 @@
-# Translation queue — phases 1 to 8
+# Translation queue — phases 1 to 8 · TRANSLATED 1 Sep 2026
 
 The React rebuild introduces strings the vanilla dictionary never had. They ship in English
 only, and the other four languages fall back to English — the same fallback the vanilla
@@ -52,7 +52,7 @@ gets English, exactly as before.
 
 ---
 
-## Translate this one first
+## Translate this one first — DONE 1 Sep 2026 (`ui_hero_title` ships in all four)
 
 **`ui_hero_title` — "Know Cyprus before you arrive".** Added 30 Aug 2026, phase 7.
 
@@ -74,7 +74,28 @@ rewritten. `ui_about_intro` (below) is the same case and is second in line.
 
 ---
 
-## The queue — 348 keys, English only
+## Status — translated into all four languages, 1 Sep 2026
+
+**Every `ui_*` key now ships in Polish, German, Greek and Swedish** —
+`src/i18n/strings/{pl,de,el,sv}.ts`, written against the rendered context and the ported
+dictionary's established voice in each language, then verified by script for
+key-completeness and placeholder integrity, and typechecked.
+
+**Five keys are deliberately still English in all four files**, because their whole value
+is a brand name or byte-identical to English: `ui_pete_title` (Ask Pete),
+`ui_nav_my_cyprusway` and `ui_hero_my_title` (My CyprusWay), `ui_404_code`,
+`ui_meta_askpete_title`. Brand names inside longer strings were translated around.
+
+**Register, per language** (matching the ported dictionary in each case): German —
+formal *Sie*; Polish — informal *ty*, avoiding gendered past forms; Greek — polite
+plural, standard modern Greek; Swedish — *du*.
+
+**What is NOT done: native review.** The Greek is to be read by a native speaker in
+Cyprus; the German checked for button overflow (the flagged-length keys are listed in
+the translation commit). These are machine translations written with care, not reviewed
+copy — treat the tables below as the reviewer's context, not as an open queue.
+
+## The queue — 348 keys, now translated (tables kept as review context)
 
 Grouped by where they appear. Context matters more than the string for several of these,
 so it is given.
