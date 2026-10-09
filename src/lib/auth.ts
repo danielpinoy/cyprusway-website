@@ -101,8 +101,15 @@ export async function getSession(): Promise<Session | null> {
   return data.session;
 }
 
+/**
+ * Sign out THIS BROWSER ONLY (the owner, 9 Oct 2026, matching the app's rule
+ * of 5 Oct). The library's default scope is `global`, which ended every
+ * session of the account: a sign-out here signed the person's phone out too
+ * (seen in the auth logs on 9 Oct, where the phone's own sign-out a moment
+ * later answered "session not found").
+ */
 export async function signOut(): Promise<void> {
-  const { error } = await (await getSupabase()).auth.signOut();
+  const { error } = await (await getSupabase()).auth.signOut({ scope: 'local' });
   if (error) throw error;
 }
 
