@@ -16,12 +16,12 @@ export function TermsContent() {
   return (
     <div className={styles.prose}>
       <h1>Terms of Service</h1>
-      <p>Last updated: May 2026</p>
+      <p>Last updated: October 2026</p>
       <h2>1. Acceptance of terms</h2>
       <p>By accessing this website or using the CyprusWay mobile application, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you should not use the website or the application.</p>
-      <p>These terms apply to the CyprusWay marketing website and the CyprusWay mobile application, both operated by <strong>Almisource LTD</strong> ("CyprusWay," "we," "us," or "our").</p>
+      <p>These terms apply to the CyprusWay website and the CyprusWay mobile application, both operated by <strong>Almisource LTD</strong> ("CyprusWay," "we," "us," or "our").</p>
       <h2>2. Description of service</h2>
-      <p>CyprusWay provides a mobile travel companion app and marketing website that help users discover curated places across Cyprus, plan personalised trip itineraries, ask travel questions, and connect to third-party booking providers for hotels, car rental, activities, and transfers.</p>
+      <p>CyprusWay provides a mobile travel companion app and website that help users discover curated places across Cyprus, plan personalised trip itineraries, ask travel questions, and connect to third-party booking providers for hotels, car rental, activities, and transfers.</p>
       <p>The content on this website and in the CyprusWay app — including place descriptions, travel recommendations, practical tips, and other information — is provided for general informational purposes. We make reasonable efforts to keep it accurate and current, but we do not guarantee its completeness or correctness. Travel information changes; you should verify critical details (opening hours, entrance fees, availability) directly with the relevant venue or provider.</p>
       <h2>3. Third-party bookings</h2>
       <p>CyprusWay is <strong>not</strong> a travel agent, booking platform, hotel operator, car rental company, activity provider, or transfer service. When you make a booking through a link in the CyprusWay app, you are contracting directly with the third-party provider — not with CyprusWay. CyprusWay does not:</p>

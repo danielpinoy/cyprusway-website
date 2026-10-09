@@ -11,6 +11,17 @@
  *   (sections 1, 2 and 3). The site's Book with Pete card makes no booking call yet,
  *   so section 3's affiliate paragraph still speaks of the app only; widen it the day
  *   the website carries affiliate links.
+ *
+ * Edited by hand, 10 Oct 2026 (W1a of the account build, cyprusway-app
+ * docs/ACCOUNT_SCREEN_SCOPE_FULL_2026-10-05.md section 11; a DRAFT until the owner's word):
+ * - section 6: what is kept for how long, with the figures the daily job enforces
+ *   (account_config: Ask Pete 90 days, guests 180 days idle, purchase notices 12 months);
+ * - a new section 8, "Deleting your account": the in-app deletion that is live, what goes,
+ *   what stays (the anonymous purchase record), the 30 days at service providers;
+ * - section 9 (was 8): RevenueCat, Stripe and OpenAI named as processors.
+ *   TWO SENTENCES WAIT ON SOMETHING: the web page cyprusway.eu/delete-account named in
+ *   section 8 does not exist until W1b ships, and "can be restored on a new account" in
+ *   section 8 is proved only by the restore test of phase T. Neither may go live before.
  */
 import styles from './prose.module.css';
 
@@ -18,7 +29,7 @@ export function PrivacyContent() {
   return (
     <div className={styles.prose}>
       <h1>Privacy Policy</h1>
-      <p>Last updated: September 2026</p>
+      <p>Last updated: October 2026</p>
       <h2>1. Who we are</h2>
       <p>CyprusWay is a mobile travel app and website operated by <strong>Almisource LTD</strong>. This privacy policy explains how we collect, use, and protect your information when you visit this website or use the CyprusWay mobile application.</p>
       <h2>2. What information we collect</h2>
@@ -44,15 +55,22 @@ export function PrivacyContent() {
       <p>We do <strong>not</strong> sell your personal information to third parties. We do not share your personal information with third parties except as necessary to operate our service (for example, with a hosting provider) or as required by law.</p>
       <h2>6. Data retention</h2>
       <p>We retain your information only for as long as necessary to fulfil the purposes described in this policy. Email correspondence is kept for a reasonable period to maintain a record of communication. Usage data is retained in aggregate, anonymous form.</p>
-      <p>For users of the CyprusWay mobile application who create an account, the app retains conversation history with the Ask Pete feature for 90 days, in compliance with EU data protection regulations. Account-related data is deleted when you delete your account.</p>
+      <p>If you sign in to the CyprusWay app or this website with Apple or Google, your account, your trips, saved places and travel preferences are kept for as long as your account exists. Your Ask Pete conversation history is deleted 90 days after each conversation. If you use the app as a guest, without signing in, your guest session and everything saved in it are deleted after 180 days without use, never while a trip you planned still lies ahead. Purchase notifications sent to us by our purchase processor (section 9) are deleted 12 months after they arrive. Everything else about your account is deleted when you delete it (section 8).</p>
       <h2>7. Your rights</h2>
-      <p>Depending on where you are located, you may have rights regarding your personal information, including the right to access, correct, or delete your data. Cyprus is in the European Union, and CyprusWay complies with the General Data Protection Regulation (GDPR). To exercise any of your rights, contact us at <a href="mailto:partners@cyprusway.eu">partners@cyprusway.eu</a>.</p>
-      <h2>8. Third-party services</h2>
+      <p>Depending on where you are located, you may have rights regarding your personal information, including the right to access, correct, or delete your data. Cyprus is in the European Union, and CyprusWay complies with the General Data Protection Regulation (GDPR). You can delete your account yourself at any time (section 8). To exercise any other right, contact us at <a href="mailto:partners@cyprusway.eu">partners@cyprusway.eu</a>.</p>
+      <h2>8. Deleting your account</h2>
+      <p>You can delete your account at any time, in the app: open Account from the avatar at the top of any main screen and tap <strong>Delete account</strong>. You can also do it on this website at <a href="/delete-account">cyprusway.eu/delete-account</a>. If you can no longer sign in, write to us at <a href="mailto:partners@cyprusway.eu">partners@cyprusway.eu</a> from the email address of your Apple or Google account and we will delete it for you.</p>
+      <p>Deletion is immediate and cannot be undone. It removes your account and your sign-in, your trips, saved places and travel preferences, your Ask Pete conversations, and your customer record at RevenueCat, our in-app purchase processor. If you signed in with Apple, we also revoke the sign-in authorisation at Apple, so CyprusWay no longer appears in your Apple ID's "Sign in with Apple" list. Where a service provider cannot be reached at that moment, our deletion there completes within 30 days.</p>
+      <p>What we keep: if you bought CyprusWay Premium, an anonymous record of the purchase (the amount, the date and the store's transaction reference, with no link to you) for as long as accounting law requires. Apple, Google and Stripe keep their own records of purchases under their own policies. A Premium purchase made through the App Store or Google Play stays with your Apple ID or Google account and can be restored on a new account; a purchase made on this website ends with the account.</p>
+      <p>If you use the app as a guest, you can delete your guest session and everything saved in it the same way: open Account and tap <strong>Delete my data</strong>.</p>
+      <h2>9. Third-party services</h2>
       <p>This website may contain links to third-party websites and services, including booking providers. We are not responsible for the privacy practices of those third parties. We encourage you to read the privacy policies of any website you visit through a link from our site or app.</p>
       <p><strong>Tripadvisor content:</strong> Some restaurant pages in the CyprusWay mobile application show photos, ratings and reviews from Tripadvisor, including reviewers' Tripadvisor usernames as published on Tripadvisor. We do not store this content; it is loaded from Tripadvisor when you view the page. Photos are loaded directly from Tripadvisor's servers, which receive your device's IP address when they are loaded, as any website does. Links in this content open Tripadvisor's website. Tripadvisor's own privacy policy applies to its content.</p>
-      <h2>9. Changes to this policy</h2>
+      <p><strong>Purchases:</strong> A purchase of CyprusWay Premium in the app is processed by Apple (App Store) or Google (Google Play) and recorded by RevenueCat, which receives your account's identifier in the app, not your name or email address, and the store's purchase receipt. A purchase on this website is processed by Stripe, which receives your email address and your payment details; we never see your card number. Each of these companies handles that data under its own privacy policy.</p>
+      <p><strong>Ask Pete:</strong> The questions you type to Ask Pete, together with the place you are asking about, are sent to OpenAI to generate the answer. They are sent without your name, email address or account identifier. OpenAI's own privacy policy applies to that processing.</p>
+      <h2>10. Changes to this policy</h2>
       <p>We may update this privacy policy from time to time. When we do, we will revise the "Last updated" date at the top of this page. We encourage you to review this policy periodically.</p>
-      <h2>10. Contact</h2>
+      <h2>11. Contact</h2>
       <p>If you have questions about this privacy policy or how your data is handled, contact us at:</p>
       <p><strong>Email:</strong> <a href="mailto:partners@cyprusway.eu">partners@cyprusway.eu</a><br />
       <strong>Company:</strong> Almisource LTD</p>
