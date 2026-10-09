@@ -19,9 +19,10 @@
  * - a new section 8, "Deleting your account": the in-app deletion that is live, what goes,
  *   what stays (the anonymous purchase record), the 30 days at service providers;
  * - section 9 (was 8): RevenueCat, Stripe and OpenAI named as processors.
- *   TWO SENTENCES WAIT ON SOMETHING: the web page cyprusway.eu/delete-account named in
- *   section 8 does not exist until W1b ships, and "can be restored on a new account" in
- *   section 8 is proved only by the restore test of phase T. Neither may go live before.
+ *   ONE SENTENCE WAITS ON SOMETHING: the web page cyprusway.eu/delete-account named in
+ *   section 8 does not exist until W1b ships; this text may not go live before it. "Can be
+ *   restored on a new account" (section 8) was proved by the restore test of 9 Oct 2026
+ *   (bought, deleted, signed in again, restored: Premium active again).
  */
 import styles from './prose.module.css';
 
