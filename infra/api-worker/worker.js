@@ -209,10 +209,18 @@ export default {
     }
 
     /* 6. Forward — fresh headers only. Nothing inbound crosses: not authorization,
-       not apikey, not cookies, not the client's own content-type variants. */
+       not apikey, not cookies, not the client's own content-type variants.
+
+       x-cw-origin (15 Oct 2026, backend audit S6): the shared secret that tells the
+       resolver this call came through here. The resolver counts calls without it
+       first and refuses them once RESOLVER_REQUIRE_ORIGIN_SECRET is set on the
+       function, so the origin stops being reachable around this Worker's limits.
+       The Worker secret: `npx wrangler secret put ORIGIN_SECRET --config
+       infra/api-worker/wrangler.jsonc` with the same value as the function's
+       RESOLVER_ORIGIN_SECRET. Unset, the header is simply not sent. */
     const upstream = await fetch(ORIGIN + RESOLVER_PATH, {
       method: 'POST',
-      headers: JSON_TYPE,
+      headers: env.ORIGIN_SECRET ? { ...JSON_TYPE, 'x-cw-origin': env.ORIGIN_SECRET } : JSON_TYPE,
       body: raw,
     });
 
