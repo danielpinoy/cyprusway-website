@@ -34,9 +34,11 @@
  *                 turns the resolver's ~0.45 s into an edge hit. The Cache API is
  *                 per-colo (same trade the CDN Worker records).
  *
- * The request contract, read from the resolver source (index.ts @ main, 1 Sep 2026):
- * fields booking_type, accommodation_type, hotel_preference, activity_category,
- * region, locale — all strings, body-only resolution (no header, no geo, no auth is
+ * The request contract, read from the resolver source (index.ts @ main, 1 Sep 2026;
+ * the list fields 19 Oct 2026): fields booking_type, accommodation_type,
+ * hotel_preference, activity_category, region, locale — strings — and the three
+ * LISTS accommodation_types, hotel_preferences, activity_categories (several picks,
+ * one link; shape.js), body-only resolution (no header, no geo, no auth is
  * ever read), `locale` validated then discarded. Responses: 200 for the three
  * outcomes (ready | reduced_filters | unavailable), 400 invalid_request,
  * 405 method_not_allowed, 500 upstream; NO Cache-Control on any of them, which is
@@ -74,6 +76,8 @@
  * Deploy: npx wrangler deploy --config infra/api-worker/wrangler.jsonc
  */
 
+import { canonicalQuery, shapeProblem } from './shape.js';
+
 const ORIGIN = 'https://knvjmsnwzskbageetbam.supabase.co';
 const RESOLVER_PATH = '/functions/v1/book-with-pete-route';
 
@@ -86,20 +90,10 @@ const ALLOWED_ORIGINS = new Set(['https://cyprusway.eu', 'https://www.cyprusway.
    larger is not a booking selection. Checked against Content-Length first (cheap
    refusal before the body is read), then against the actual bytes. */
 const MAX_BODY_BYTES = 2048;
-const MAX_FIELD_CHARS = 64;
 
-/* Field order IS the canonical cache-key order. Every field the resolver reads,
-   none it doesn't. `locale` is included even though the origin discards it after
-   validation: excluding it would serve a cached 200 to a body the origin would
-   400 (invalid locale), and cached-vs-uncached behaviour must not diverge. */
-const KNOWN_FIELDS = [
-  'booking_type',
-  'accommodation_type',
-  'hotel_preference',
-  'activity_category',
-  'region',
-  'locale',
-];
+/* The fields, the shape check and the cache key's query are shape.js (pure,
+   tested with node --test): field order IS the canonical cache-key order, every
+   field the resolver reads and none it doesn't, a list sorted. */
 
 const CACHE_TTL_SECONDS = 300;
 
@@ -154,20 +148,9 @@ export default {
       /* The origin's own wording for the same refusal. */
       return respond(request, jsonError({ error: 'invalid_request', detail: 'body must be JSON' }, 400), 'EDGE');
     }
-    if (typeof body !== 'object' || body === null || Array.isArray(body)) {
-      return respond(request, jsonError({ error: 'invalid_request', detail: 'body must be a JSON object' }, 400), 'EDGE');
-    }
-    for (const [key, value] of Object.entries(body)) {
-      if (!KNOWN_FIELDS.includes(key)) {
-        return respond(request, jsonError({ error: 'invalid_request', detail: `unknown field: ${key}` }, 400), 'EDGE');
-      }
-      if (typeof value !== 'string' || value.length === 0 || value.length > MAX_FIELD_CHARS) {
-        return respond(
-          request,
-          jsonError({ error: 'invalid_request', detail: `${key} must be a non-empty string` }, 400),
-          'EDGE',
-        );
-      }
+    const problem = shapeProblem(body);
+    if (problem !== null) {
+      return respond(request, jsonError({ error: 'invalid_request', detail: problem }, 400), 'EDGE');
     }
 
     const passthrough = env.PASSTHROUGH === '1';
@@ -193,14 +176,13 @@ export default {
       }
     }
 
-    /* 5. Canonical cache key: known fields in fixed order, present ones only, as a
-       synthetic GET on the bound hostname (the CDN Worker's pattern — entries
-       follow the hostname). Two bodies that differ only in key order or unknown
-       whitespace share one entry; absent-vs-"none" hotel_preference makes two
-       entries with identical answers, which is harmless at 84 selections. */
-    const params = new URLSearchParams();
-    for (const field of KNOWN_FIELDS) if (field in body) params.set(field, body[field]);
-    const cacheKey = new Request(`${url.origin}/__cache${RESOLVER_PATH}?${params}`, { method: 'GET' });
+    /* 5. Canonical cache key: known fields in fixed order, present ones only, a
+       list sorted (shape.js canonicalQuery), as a synthetic GET on the bound
+       hostname (the CDN Worker's pattern — entries follow the hostname). Two
+       bodies that differ only in key order, list order or unknown whitespace
+       share one entry; absent-vs-"none" hotel_preference makes two entries with
+       identical answers, which is harmless at this many selections. */
+    const cacheKey = new Request(`${url.origin}/__cache${RESOLVER_PATH}?${canonicalQuery(body)}`, { method: 'GET' });
     const cache = caches.default;
 
     if (!passthrough) {

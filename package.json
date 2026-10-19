@@ -16,6 +16,7 @@
     "prerender": "node scripts/prerender.mjs",
     "check:css": "node scripts/check-logical-css.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
+    "test": "node --test infra/api-worker/shape.test.mjs",
     "typecheck": "tsc --noEmit",
     "preview": "wrangler dev",
     "deploy": "npm run build && wrangler deploy",
