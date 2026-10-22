@@ -85,6 +85,13 @@ export const ROUTE_META: Readonly<Record<string, RouteMeta>> = {
     changefreq: 'yearly',
     priority: '0.4',
   },
+  /* Account deletion (the privacy policy's section 8 and the page Google Play asks for).
+     Prerendered for its explanation and sign-in panel, kept out of the sitemap. */
+  '/delete-account': {
+    titleKey: 'ui_meta_delete_title',
+    descKey: 'ui_meta_delete_desc',
+    noIndex: true,
+  },
   '/404': {
     titleKey: 'ui_meta_404_title',
     descKey: 'ui_meta_404_desc',

@@ -7,6 +7,7 @@ import About from './routes/About';
 import Faq from './routes/Faq';
 import NotFound from './routes/NotFound';
 import Privacy from './routes/Privacy';
+import DeleteAccount from './routes/DeleteAccount';
 import Terms from './routes/Terms';
 import Home from './routes/home/Home';
 import Explore from './routes/explore/Explore';
@@ -46,6 +47,7 @@ export function App() {
             <Route path="/about" element={<About />} />
             <Route path="/faq" element={<Faq />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/delete-account" element={<DeleteAccount />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="*" element={<NotFound />} />
           </Route>

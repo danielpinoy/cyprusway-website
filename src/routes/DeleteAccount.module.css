@@ -1,0 +1,65 @@
+/* The deletion panel: the sign-in panel of /trips, reused for its one job here. */
+
+.panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-16);
+  margin-block: var(--cw-space-24);
+  padding: var(--cw-space-16);
+  border-radius: 12px;
+  background-color: var(--cw-white);
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 50%;
+  background-color: var(--cw-sand);
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.copy {
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: var(--cw-h5-size);
+  line-height: var(--cw-h5-line);
+  font-weight: 700;
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.panelBody {
+  margin-block: var(--cw-space-4) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-grey-3 on --cw-white = 6.08 */
+  color: var(--cw-grey-3);
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cw-space-8);
+  margin-block: var(--cw-space-12) 0;
+  font-size: var(--cw-body-size);
+  line-height: var(--cw-body-line);
+  /* contrast: --cw-navy on --cw-white = 11.14 */
+  color: var(--cw-navy);
+}
+
+.check input {
+  margin-block-start: 4px;
+  inline-size: 20px;
+  block-size: 20px;
+  flex-shrink: 0;
+}
