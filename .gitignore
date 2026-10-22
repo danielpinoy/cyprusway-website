@@ -8,3 +8,6 @@ dist-ssr/
 *.local
 .DS_Store
 Thumbs.db
+
+# Partner programme notes with CJ / GetYourGuide ids live outside git (D:\Code\Githup\CyprusWay\private)
+docs/BOOKWITHPETE*.md
