@@ -78,7 +78,7 @@ export function Gallery({ place }: { place: Place }) {
         srcSet={directusImageSrcSet(current, MAIN)}
         width={MAIN.width}
         height={MAIN.height}
-        alt=""
+        alt={place.name}
         /* The first image is the page's own hero — never lazy, it is the LCP element
            (measured 30 Aug 2026: LCP 1284 ms desktop, the photo's fetch 424→1276 ms of
            it). fetchPriority lifts it over the strip thumbnails requested alongside. */
@@ -124,7 +124,7 @@ export function Gallery({ place }: { place: Place }) {
                 srcSet={directusImageSrcSet(image, THUMB)}
                 width={THUMB.width}
                 height={THUMB.height}
-                alt=""
+                alt={place.name}
                 loading="lazy"
               />
             </button>
