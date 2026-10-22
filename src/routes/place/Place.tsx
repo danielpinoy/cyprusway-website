@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { Heart, MapPin } from 'lucide-react';
+import { Heart, MapPin, TriangleAlert } from 'lucide-react';
 
 import { Layout } from '../../components/shell/Layout';
 import { PlaceCard } from '../../components/home/PlaceCard';
@@ -239,6 +239,20 @@ function Details({ place }: { place: PlaceRow }) {
               <p key={index}>{paragraph}</p>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* THE SAFETY NOTE (legal-risk fixes phase 3, 22 Oct 2026): a warning glyph and one or
+          two English sentences, only on the places that carry one. */}
+      {place.safetyNote && (
+        <section className={styles.section} aria-labelledby="cw-place-safety">
+          <h2 id="cw-place-safety" className={styles.sectionTitle}>
+            {t('ui_place_safety')}
+          </h2>
+          <p className={styles.safety} lang="en">
+            <Icon as={TriangleAlert} size={16} />
+            <span>{place.safetyNote}</span>
+          </p>
         </section>
       )}
 

@@ -380,6 +380,8 @@ export const stringsSv: Partial<Record<UiKey, string>> = {
   ui_meta_home_title: 'CyprusWay — Upptäck Cypern',
   ui_meta_home_desc:
     'Handplockade platser över hela Cypern, med bilder och praktiska detaljer där vi har dem, och en dag-för-dag-resa du bygger själv.',
+  /* The place page's safety note heading (22 Oct 2026). */
+  ui_place_safety: 'Säkerhet',
 
   /* --- Account deletion (cyprusway.eu/delete-account, 22 Oct 2026) ---------- */
   ui_meta_delete_title: 'Radera ditt konto — CyprusWay',

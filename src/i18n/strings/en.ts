@@ -555,6 +555,8 @@ export const stringsEn = {
   /* Was the same sentence as the H1, and made the same false claim. */
   ui_meta_home_desc:
     'Hand-picked places across Cyprus, with photos and practical detail where we have them, and a day-by-day trip you can build yourself.',
+  /* The place page's safety note heading (22 Oct 2026). */
+  ui_place_safety: 'Safety',
 
   /* --- Account deletion (cyprusway.eu/delete-account, 22 Oct 2026) ---------- */
   ui_meta_delete_title: 'Delete your account — CyprusWay',

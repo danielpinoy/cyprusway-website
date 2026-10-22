@@ -86,6 +86,19 @@ export function Gallery({ place }: { place: Place }) {
         fetchPriority="high"
         decoding="async"
       />
+      {/* The photo's credit, directly under it, only when there is one (a Wikimedia
+          CC BY / BY-SA / Free Art License photo). With a source page it is a link. */}
+      {place.credits[current] && (
+        <p className={styles.credit} lang="en">
+          {place.credits[current].url ? (
+            <a href={place.credits[current].url as string} target="_blank" rel="noopener noreferrer">
+              {place.credits[current].credit}
+            </a>
+          ) : (
+            place.credits[current].credit
+          )}
+        </p>
+      )}
 
       {images.length > 1 && (
         <div

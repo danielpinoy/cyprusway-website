@@ -404,6 +404,8 @@ export const stringsDe: Partial<Record<UiKey, string>> = {
   ui_meta_home_title: 'CyprusWay — Zypern entdecken',
   ui_meta_home_desc:
     'Handverlesene Orte auf ganz Zypern, mit Fotos und praktischen Details, soweit vorhanden, und eine Reise, die Sie Tag für Tag selbst planen.',
+  /* The place page's safety note heading (22 Oct 2026). */
+  ui_place_safety: 'Sicherheit',
 
   /* --- Account deletion (cyprusway.eu/delete-account, 22 Oct 2026) ---------- */
   ui_meta_delete_title: 'Konto löschen — CyprusWay',

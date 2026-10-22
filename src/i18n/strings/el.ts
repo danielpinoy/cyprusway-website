@@ -395,6 +395,8 @@ export const stringsEl: Partial<Record<UiKey, string>> = {
   ui_meta_home_title: 'CyprusWay — Ανακαλύψτε την Κύπρο',
   ui_meta_home_desc:
     'Προσεκτικά διαλεγμένα μέρη σε όλη την Κύπρο, με φωτογραφίες και πρακτικές λεπτομέρειες όπου υπάρχουν, και ένα ταξίδι μέρα-μέρα που φτιάχνετε μόνοι σας.',
+  /* The place page's safety note heading (22 Oct 2026). */
+  ui_place_safety: 'Ασφάλεια',
 
   /* --- Account deletion (cyprusway.eu/delete-account, 22 Oct 2026) ---------- */
   ui_meta_delete_title: 'Διαγραφή λογαριασμού — CyprusWay',

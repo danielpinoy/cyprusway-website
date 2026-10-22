@@ -126,3 +126,17 @@
   color: var(--cw-navy);
   text-wrap: pretty;
 }
+
+/* The current photo's credit line (legal-risk fixes phase 3, 22 Oct 2026). */
+.credit {
+  margin: 0;
+  font-size: var(--cw-small-size, 0.875rem);
+  line-height: var(--cw-small-line, 1.4);
+  /* contrast: --cw-grey-3 on --cw-sand = 5.36 */
+  color: var(--cw-grey-3);
+}
+
+.credit a {
+  color: inherit;
+  text-decoration: underline;
+}

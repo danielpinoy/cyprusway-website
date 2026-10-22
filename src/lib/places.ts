@@ -30,6 +30,12 @@ interface PlaceRow {
   hero_image_url: string | null;
   /** Never contains the hero; the two are separate images. Measured 28 Aug. */
   gallery: unknown[] | null;
+  hero_credit: string | null;
+  hero_credit_url: string | null;
+  /** The gallery photos that carry a credit, keyed by the URL `gallery` lists (0081). */
+  gallery_credits: { url?: unknown; credit?: unknown; credit_url?: unknown }[] | null;
+  /** An optional warning for a risky place (0081). */
+  safety_note: string | null;
   virtual_tour: unknown | null;
   plannable: boolean | null;
   prominence: number | null;
@@ -47,6 +53,11 @@ export interface Badge {
   color: string | null;
 }
 
+export interface PhotoCredit {
+  credit: string;
+  url: string | null;
+}
+
 export interface Place {
   id: number;
   slug: string;
@@ -59,6 +70,11 @@ export interface Place {
   /** Hero first, then gallery, deduped. 0 on 108 of 181 places; 2 is the commonest
    *  non-zero value and only two places have six or more. */
   images: string[];
+  /** A credit line per image URL that needs one (Wikimedia CC BY / BY-SA / Free Art
+   *  License photos): the hero's from hero_credit, the gallery's from gallery_credits. */
+  credits: Record<string, PhotoCredit>;
+  /** An optional warning for a risky place, English, shown under the description. */
+  safetyNote: string | null;
   hasTour: boolean;
   prominence: number | null;
   visitDurationMinutes: number | null;
@@ -104,6 +120,20 @@ function toImageUrl(entry: unknown): string | null {
   return null;
 }
 
+/** The credits by image URL: the hero's own, then every credited gallery photo. */
+function toCredits(row: PlaceRow): Record<string, PhotoCredit> {
+  const credits: Record<string, PhotoCredit> = {};
+  if (row.hero_image_url && row.hero_credit) {
+    credits[row.hero_image_url] = { credit: row.hero_credit, url: row.hero_credit_url ?? null };
+  }
+  for (const entry of row.gallery_credits ?? []) {
+    if (typeof entry?.url === 'string' && typeof entry.credit === 'string' && entry.credit) {
+      credits[entry.url] = { credit: entry.credit, url: typeof entry.credit_url === 'string' ? entry.credit_url : null };
+    }
+  }
+  return credits;
+}
+
 function toPlace(row: PlaceRow): Place {
   const category = row.categories?.[0] ?? null;
 
@@ -132,6 +162,8 @@ function toPlace(row: PlaceRow): Place {
       .filter((text) => text.trim().length > 0),
     heroUrl: row.hero_image_url,
     images,
+    credits: toCredits(row),
+    safetyNote: typeof row.safety_note === 'string' && row.safety_note.trim() ? row.safety_note.trim() : null,
     hasTour: row.virtual_tour != null,
     prominence: row.prominence,
     visitDurationMinutes: row.visit_duration_minutes,

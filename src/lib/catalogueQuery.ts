@@ -33,6 +33,12 @@ const SELECT = [
   'short:translations->en->>short_description',
   'description:translations->en->description',
   'hero_image_url',
+  /* The photo credits (places_sync 0079 and 0081) and the safety note (0081), legal-risk
+     fixes phase 3, 22 Oct 2026: a few bytes a row, and the place page must show them. */
+  'hero_credit',
+  'hero_credit_url',
+  'gallery_credits',
+  'safety_note',
   'gallery',
   'virtual_tour',
   'destination',

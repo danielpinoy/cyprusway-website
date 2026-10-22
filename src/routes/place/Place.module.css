@@ -218,3 +218,20 @@
   font-weight: var(--cw-button-weight);
   text-decoration: none;
 }
+
+/* The safety note (legal-risk fixes phase 3, 22 Oct 2026): glyph and sentence, 16 px. */
+.safety {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cw-space-8);
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  /* contrast: --cw-navy on --cw-sand = 9.82 */
+  color: var(--cw-navy);
+}
+
+.safety svg {
+  flex-shrink: 0;
+  margin-block-start: 0.2em;
+}
