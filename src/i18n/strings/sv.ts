@@ -385,7 +385,7 @@ export const stringsSv: Partial<Record<UiKey, string>> = {
   ui_meta_place_desc_any: '{name} — en plats att besöka på Cypern. På CyprusWay.',
   ui_meta_home_title: 'CyprusWay — Upptäck Cypern',
   ui_meta_home_desc:
-    'Handplockade platser över hela Cypern — bilder, öppettider och praktiska detaljer — och en dag-för-dag-resa du bygger själv.',
+    'Handplockade platser över hela Cypern, med bilder och praktiska detaljer där vi har dem, och en dag-för-dag-resa du bygger själv.',
   ui_meta_about_title: 'Om oss — CyprusWay',
   ui_meta_about_desc: 'En resekompis för ön vi älskar.',
   ui_meta_faq_title: 'Vanliga frågor — CyprusWay',

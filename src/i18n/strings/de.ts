@@ -409,7 +409,7 @@ export const stringsDe: Partial<Record<UiKey, string>> = {
   ui_meta_place_desc_any: '{name} — ein Ort auf Zypern. Auf CyprusWay.',
   ui_meta_home_title: 'CyprusWay — Zypern entdecken',
   ui_meta_home_desc:
-    'Handverlesene Orte auf ganz Zypern — Fotos, Öffnungszeiten und praktische Details — und eine Reise, die Sie Tag für Tag selbst planen.',
+    'Handverlesene Orte auf ganz Zypern, mit Fotos und praktischen Details, soweit vorhanden, und eine Reise, die Sie Tag für Tag selbst planen.',
   ui_meta_about_title: 'Über uns — CyprusWay',
   ui_meta_about_desc: 'Ein Reisebegleiter für die Insel, die wir lieben.',
   ui_meta_faq_title: 'FAQ — CyprusWay',

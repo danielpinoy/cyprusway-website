@@ -561,7 +561,7 @@ export const stringsEn = {
   ui_meta_home_title: 'CyprusWay — Discover Cyprus',
   /* Was the same sentence as the H1, and made the same false claim. */
   ui_meta_home_desc:
-    'Hand-picked places across Cyprus — photos, opening hours and practical detail — and a day-by-day trip you can build yourself.',
+    'Hand-picked places across Cyprus, with photos and practical detail where we have them, and a day-by-day trip you can build yourself.',
   ui_meta_about_title: 'About — CyprusWay',
   ui_meta_about_desc: 'A travel companion for the island we love.',
   ui_meta_faq_title: 'FAQ — CyprusWay',

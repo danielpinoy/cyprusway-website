@@ -400,7 +400,7 @@ export const stringsPl: Partial<Record<UiKey, string>> = {
   ui_meta_place_desc_any: '{name} — miejsce warte odwiedzenia na Cyprze. Na CyprusWay.',
   ui_meta_home_title: 'CyprusWay — Odkryj Cypr',
   ui_meta_home_desc:
-    'Starannie wybrane miejsca na całym Cyprze — zdjęcia, godziny otwarcia i praktyczne szczegóły — oraz podróż dzień po dniu, którą budujesz samodzielnie.',
+    'Starannie wybrane miejsca na całym Cyprze, ze zdjęciami i praktycznymi szczegółami tam, gdzie je mamy, oraz podróż dzień po dniu, którą budujesz samodzielnie.',
   ui_meta_about_title: 'O nas — CyprusWay',
   ui_meta_about_desc: 'Towarzysz podróży dla wyspy, którą kochamy.',
   ui_meta_faq_title: 'FAQ — CyprusWay',
