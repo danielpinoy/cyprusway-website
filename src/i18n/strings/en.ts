@@ -134,13 +134,6 @@ export const stringsEn = {
   ui_404_body: "The page you're looking for doesn't exist or has been moved.",
   ui_404_home: 'Take me home',
 
-  /* --- Cookie consent ---------------------------------------------------- */
-  ui_cookie_text:
-    'This site uses cookies for essential functionality and to track affiliate bookings.',
-  ui_cookie_learn: 'Learn more',
-  ui_cookie_accept: 'Accept',
-  ui_cookie_decline: 'Decline',
-  ui_cookie_label: 'Cookie consent',
 
 
   /* --- Homepage rails (phase 2) ------------------------------------------ */
@@ -562,6 +555,25 @@ export const stringsEn = {
   /* Was the same sentence as the H1, and made the same false claim. */
   ui_meta_home_desc:
     'Hand-picked places across Cyprus, with photos and practical detail where we have them, and a day-by-day trip you can build yourself.',
+
+  /* --- Account deletion (cyprusway.eu/delete-account, 22 Oct 2026) ---------- */
+  ui_meta_delete_title: 'Delete your account — CyprusWay',
+  ui_meta_delete_desc: 'Delete your CyprusWay account and everything saved in it.',
+  ui_delete_title: 'Delete your account',
+  ui_delete_intro: 'Deleting your account removes your sign-in, your trips, saved places and travel preferences, your Ask Pete conversations and your customer record at RevenueCat, our purchase processor. It is immediate and cannot be undone. A Premium purchase made in the App Store or on Google Play stays with your Apple ID or Google account and can be restored on a new account.',
+  ui_delete_signin_title: 'Sign in to delete your account',
+  ui_delete_signin_body: 'Sign in with the Apple or Google account you use in CyprusWay. If you can no longer sign in, email partners@cyprusway.eu from that account\'s email address and we will delete it for you.',
+  ui_delete_signin_cta: 'Sign in',
+  ui_delete_signed_in_as: 'Signed in as {email}',
+  ui_delete_confirm: 'I understand that this deletes my account and everything in it, and that it cannot be undone.',
+  ui_delete_button: 'Delete my account',
+  ui_delete_busy: 'Deleting…',
+  ui_delete_done_title: 'Your account has been deleted',
+  ui_delete_done_body: 'Everything saved in it is gone. Thank you for having travelled with CyprusWay.',
+  ui_delete_apple_title: 'One more step for Apple sign-ins',
+  ui_delete_apple_body: 'An account that signs in with Apple is deleted in the app, where Apple can confirm it: open Account from the avatar at the top of any main screen and tap Delete account. If you no longer have the app, email partners@cyprusway.eu from your Apple ID\'s email address and we will delete it for you.',
+  ui_delete_failed: 'The deletion did not go through. Check your connection and try again, or email partners@cyprusway.eu.',
+  ui_delete_guest_note: 'Guest sessions exist only in the app: open Account there and tap Delete my data.',
   ui_meta_about_title: 'About — CyprusWay',
   ui_meta_about_desc: 'A travel companion for the island we love.',
   ui_meta_faq_title: 'FAQ — CyprusWay',

@@ -4,13 +4,12 @@ import { Outlet } from 'react-router';
 import { useT } from '../../i18n/I18nProvider';
 import { useDocumentHead } from '../../routes/useDocumentHead';
 import { AuthGate } from '../auth/AuthGate';
-import { CookieBanner } from './CookieBanner';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import { MobileMenu } from './MobileMenu';
 import styles from './Layout.module.css';
 
-/** Header, drawer, footer, cookie banner and the auth cards — everything every page
+/** Header, drawer, footer and the auth cards — everything every page
  *  has. Takes children rather than only an Outlet so the home route can compose it
  *  around its own states while the error takeover replaces it entirely. */
 export function Layout({ children }: { children: ReactNode }) {
@@ -33,7 +32,6 @@ export function Layout({ children }: { children: ReactNode }) {
       </main>
 
       <Footer />
-      <CookieBanner />
       <AuthGate />
     </div>
   );
