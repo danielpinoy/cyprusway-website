@@ -15,7 +15,7 @@ import { NOT_FOUND_META, PRERENDER_PATHS, ROUTE_META, SITE_ORIGIN } from './rout
  * engines — one URL per page, text swapped by JS — so prerendering English is parity.
  * Per-language URLs are a separate decision (plan Q1).
  *
- * The Supabase URL and anon key are inlined into this bundle by Vite exactly as they are
+ * The Supabase URL and publishable key are inlined into this bundle by Vite exactly as they are
  * into the client one, so the prerender pass can read the catalogue with the same query
  * the browser uses — one implementation of the projection and the row mapping, not two.
  */

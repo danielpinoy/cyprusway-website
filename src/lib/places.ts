@@ -100,10 +100,10 @@ export async function fetchPlaces(): Promise<Place[]> {
      as="fetch"> — so by the time this line runs, the response is usually already in
      flight or in the preload cache. docs/PERF-MEASUREMENT-2026-08-30.md. */
   const url = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) throw new MissingCredentialsError();
+  const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !publishableKey) throw new MissingCredentialsError();
 
-  const response = await fetch(catalogueRequest(url, anonKey));
+  const response = await fetch(catalogueRequest(url, publishableKey));
   if (!response.ok) throw new Error(`catalogue_http_${response.status}`);
 
   const rows = (await response.json()) as PlaceRow[];

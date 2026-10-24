@@ -22,14 +22,14 @@ export default defineConfig(({ mode }) => {
            env is missing — check-env fails the build first. */
         name: 'cw-catalogue-preload',
         transformIndexHtml() {
-          if (!env.VITE_SUPABASE_URL || !env.VITE_SUPABASE_ANON_KEY) return [];
+          if (!env.VITE_SUPABASE_URL || !env.VITE_SUPABASE_PUBLISHABLE_KEY) return [];
           return [
             {
               tag: 'link',
               attrs: {
                 rel: 'preload',
                 as: 'fetch',
-                href: catalogueRequest(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY),
+                href: catalogueRequest(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY),
                 crossorigin: true,
               },
               injectTo: 'head',

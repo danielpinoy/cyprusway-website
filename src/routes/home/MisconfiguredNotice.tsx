@@ -27,8 +27,8 @@ export function MisconfiguredNotice({ onRetry }: { onRetry: () => void }) {
             <code>cp .env.example .env</code>
           </li>
           <li>
-            Fill in <code>VITE_SUPABASE_ANON_KEY</code> — Supabase dashboard, Project
-            Settings → API → Project API keys → anon public.
+            Fill in <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> — Supabase dashboard, Project
+            Settings → API Keys → Publishable key.
           </li>
           <li>
             <code>npm run check:env</code> to verify, then restart the dev server. Vite

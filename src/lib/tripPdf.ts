@@ -20,7 +20,7 @@ export async function downloadTripPdf(itineraryId: string, name: string | null):
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY ?? '',
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ itinerary_id: itineraryId }),

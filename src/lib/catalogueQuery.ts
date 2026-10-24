@@ -11,7 +11,7 @@
  *      hydration. Chrome matches a preload to its consumer by URL and credentials mode,
  *      so both sides call this function rather than composing the URL themselves.
  *
- * `apikey` travels in the QUERY STRING, not a header. The anon key is public by design
+ * `apikey` travels in the QUERY STRING, not a header. The publishable key is public by design
  * (it ships in every bundle and sits in .env.example); putting it in the query keeps the
  * request free of non-safelisted headers, which keeps it a "simple" CORS request — no
  * OPTIONS preflight. The preflight measured 82 ms on the first visit of the hour
@@ -49,7 +49,7 @@ const SELECT = [
   'plannable',
 ].join(',');
 
-export function catalogueRequest(supabaseUrl: string, anonKey: string): string {
+export function catalogueRequest(supabaseUrl: string, publishableKey: string): string {
   const query = new URLSearchParams({
     select: SELECT,
     status: 'eq.published',
@@ -58,7 +58,7 @@ export function catalogueRequest(supabaseUrl: string, anonKey: string): string {
        requests — which would let Top Recommendations and Popular draw the same place
        despite taking disjoint rank bands. */
     order: 'prominence.desc.nullslast,id.asc',
-    apikey: anonKey,
+    apikey: publishableKey,
   });
   return `${supabaseUrl.replace(/\/$/, '')}/rest/v1/places_sync?${query.toString()}`;
 }

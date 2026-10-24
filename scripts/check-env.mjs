@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ENV_FILE = resolve(ROOT, '.env');
 
-const REQUIRED = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY'];
+const REQUIRED = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY'];
 
 function readEnvFile() {
   if (!existsSync(ENV_FILE)) return {};
@@ -54,16 +54,18 @@ if (url && !/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url)) {
   );
 }
 
-/* A JWT is three dot-separated base64url segments. The failure this catches is a value
-   that was concatenated with itself, which has five segments and is rejected at request
-   time with a message that says nothing about the file it came from. */
-const key = value('VITE_SUPABASE_ANON_KEY');
+/* A publishable key is `sb_publishable_` and one run of letters, digits and underscores.
+   The failure this catches is a value that was concatenated with itself or cut short,
+   which is rejected at request time with a message that says nothing about the file it
+   came from. The legacy anon JWT (eyJ...) is refused too: it is being retired, and a
+   build that still carries it stops working the day the legacy keys are disabled. */
+const key = value('VITE_SUPABASE_PUBLISHABLE_KEY');
 if (key) {
-  const segments = key.split('.');
-  if (segments.length !== 3 || !key.startsWith('eyJ')) {
+  const copies = key.split('sb_publishable_').length - 1;
+  if (!/^sb_publishable_[A-Za-z0-9_-]{20,}$/.test(key) || copies !== 1) {
     problems.push(
-      `VITE_SUPABASE_ANON_KEY is not a well-formed JWT (${segments.length} segments, ` +
-        `${key.length} characters).\n` +
+      `VITE_SUPABASE_PUBLISHABLE_KEY is not a single publishable key (${key.length} characters, ` +
+        `${key.startsWith('eyJ') ? 'a legacy JWT' : `${copies} copies of sb_publishable_`}).\n` +
         '     A doubled or truncated paste looks valid to the eye and fails at request\n' +
         '     time with "Invalid API key".',
     );
@@ -79,8 +81,8 @@ if (problems.length > 0) {
       ? `\n  Checked process.env, then ${ENV_FILE}\n`
       : '\n  There is no .env file. Create one:\n' +
           '\n     cp .env.example .env\n' +
-          '\n  then fill in VITE_SUPABASE_ANON_KEY from the Supabase dashboard:\n' +
-          '  Project Settings -> API -> Project API keys -> anon public\n',
+          '\n  then fill in VITE_SUPABASE_PUBLISHABLE_KEY from the Supabase dashboard:\n' +
+          '  Project Settings -> API Keys -> Publishable key\n',
   );
   console.error(
     '  Vite inlines VITE_* at build time, so these must also be set in the Cloudflare\n' +

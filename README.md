@@ -24,7 +24,7 @@ npm run setup:env         # copies .env.example, which already carries the key
 npm run dev               # http://localhost:5173
 ```
 
-**`.env.example` is not a template — it carries the working anon key**, and `.env` is a copy of
+**`.env.example` is not a template — it carries the working publishable key**, and `.env` is a copy of
 it. `.gitignore` ignores `.env` and `.env.*` and then re-includes `!.env.example`, so the
 example is tracked and the copy is not. `npm run setup:env` therefore produces a file you can
 use immediately, with nothing to fill in. *(Corrected 1 Sep 2026: this paragraph and the
@@ -38,9 +38,10 @@ replaces it. `npm run setup:env` refuses to overwrite for that reason. `.env` is
 has never been tracked on any branch, so it cannot be staged, committed, or removed by a branch
 switch — there is nothing to clean up before committing.
 
-The anon key is public by design — it identifies the project and is constrained by RLS, not by
+The publishable key (`sb_publishable_…`) is public by design — it identifies the project and is constrained by RLS, not by
 secrecy — but it lives in an env file so it is configured per environment rather than compiled
-in. Get it from the Supabase dashboard: Project Settings → API → anon public.
+in. Get it from the Supabase dashboard: Project Settings → API Keys → Publishable key. (The
+legacy anon JWT is being retired; `npm run check:env` refuses it.)
 
 **If the homepage shows "Cyprus is still there" with no failed network request, it is the
 `.env`, not the database.** `npm run dev` and `npm run build` both run `npm run check:env`
@@ -200,7 +201,7 @@ a regression on what the site does today.
 
 1. The Cloudflare build settings still say "no build command, output `/`". They need
    `npm ci && npm run build` and output `dist`.
-2. `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` must exist in the **Cloudflare build
+2. `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` must exist in the **Cloudflare build
    environment**. Vite inlines them at build time, so a deployment built without them ships a
    bundle with `undefined` credentials and every auth call fails at runtime.
 3. Nothing on the Supabase side. The redirect allowlist already covers production, the dev

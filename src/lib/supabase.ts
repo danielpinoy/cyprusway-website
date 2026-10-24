@@ -22,10 +22,10 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 export class MissingCredentialsError extends Error {
   constructor() {
     super(
-      'Supabase credentials are missing. VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are ' +
-        'inlined by Vite at build time. Locally: cp .env.example .env and fill in the anon ' +
-        'key. In production: set both in the Cloudflare build environment. ' +
-        '`npm run check:env` verifies both, including that the key is a well-formed JWT.',
+      'Supabase credentials are missing. VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are ' +
+        'inlined by Vite at build time. Locally: cp .env.example .env and fill in the ' +
+        'publishable key. In production: set both in the build environment. ' +
+        '`npm run check:env` verifies both, including that the key is a publishable key.',
     );
     this.name = 'MissingCredentialsError';
   }
@@ -44,9 +44,9 @@ export async function getSupabase(): Promise<SupabaseClient> {
 
 async function createLazily(): Promise<SupabaseClient> {
   const url = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-  if (!url || !anonKey) {
+  if (!url || !publishableKey) {
     /* Vite inlines VITE_* at build time, so this cannot be fixed at runtime: locally it
        means no .env, and in production it means a deployment built without the Cloudflare
        build-environment variables. Thrown as a named class so callers can tell a
@@ -57,7 +57,7 @@ async function createLazily(): Promise<SupabaseClient> {
 
   const { createClient } = await import('@supabase/supabase-js');
 
-  return createClient(url, anonKey, {
+  return createClient(url, publishableKey, {
     auth: {
       flowType: 'pkce',
       detectSessionInUrl: true,
