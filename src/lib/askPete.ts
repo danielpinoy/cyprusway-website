@@ -1,4 +1,5 @@
 import { getSupabase } from './supabase';
+import { isPremiumNow } from './profile';
 import type { LanguageCode } from '../i18n/languages';
 
 /**
@@ -492,6 +493,7 @@ interface QuotaRow {
   ai_queries_today: number;
   ai_queries_reset_at: string;
   is_premium: boolean;
+  premium_expires_at: string | null;
 }
 
 /** Apply a report from `meta` or from a 429 to whatever the pill was showing. */
@@ -564,7 +566,7 @@ export async function fetchQuota(
 ): Promise<Quota | null> {
   const { data, error } = await (await getSupabase())
     .from('users')
-    .select('ai_queries_today, ai_queries_reset_at, is_premium')
+    .select('ai_queries_today, ai_queries_reset_at, is_premium, premium_expires_at')
     .eq('id', userId)
     .maybeSingle<QuotaRow>();
 
@@ -575,7 +577,10 @@ export async function fetchQuota(
 
   const day = readDay(data.ai_queries_reset_at);
 
-  if (data.is_premium) {
+  // The flag AND the end date (the yearly Premium, 29 Oct 2026): the server's
+  // own rule (consume_ai_query, migration 0085), so a lapsed subscription
+  // counts as free here as it does there.
+  if (isPremiumNow(data)) {
     return { used: 0, cap: ASSUMED_FREE_DAILY_CAP, isPremium: true, day, certain: true };
   }
 

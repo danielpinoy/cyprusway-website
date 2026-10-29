@@ -165,12 +165,31 @@ export async function savePreferredLanguage(
 export async function fetchIsPremium(userId: string): Promise<boolean> {
   const { data, error } = await (await getSupabase())
     .from('users')
-    .select('is_premium')
+    .select('is_premium, premium_expires_at')
     .eq('id', userId)
-    .maybeSingle<{ is_premium: boolean }>();
+    .maybeSingle<{ is_premium: boolean; premium_expires_at: string | null }>();
 
   if (error || !data) return false;
-  return data.is_premium === true;
+  return isPremiumNow(data);
+}
+
+/**
+ * PREMIUM IS THE FLAG AND THE DATE since the yearly Premium (29 Oct 2026;
+ * cyprusway-directus migration 0085, `premium_active`): `is_premium` with no
+ * end date is the old one-time unlock, a website purchase, a code or a
+ * grant; with a date it is the yearly subscription or the 12-month pass,
+ * Premium until then. A lapsed subscription keeps the flag until the
+ * server's sweep and must read as free at once, as every server gate reads
+ * it. The app has the same rule (cyprusway-app `src/lib/premiumPlan.ts`).
+ */
+export function isPremiumNow(
+  row: { is_premium?: boolean | null; premium_expires_at?: string | null } | null | undefined,
+  nowMs: number = Date.now(),
+): boolean {
+  if (!row || row.is_premium !== true) return false;
+  if (row.premium_expires_at == null) return true;
+  const end = Date.parse(row.premium_expires_at);
+  return Number.isFinite(end) && end > nowMs;
 }
 
 // ---------------------------------------------------------------------------
@@ -233,11 +252,12 @@ export async function fetchPlannerProfile(userId: string): Promise<PlannerProfil
   const { data, error } = await (await getSupabase())
     .from('users')
     .select(
-      'is_premium, pace_preference, morning_preference, traveler_type, trip_generations_today, trip_generations_reset_at',
+      'is_premium, premium_expires_at, pace_preference, morning_preference, traveler_type, trip_generations_today, trip_generations_reset_at',
     )
     .eq('id', userId)
     .maybeSingle<{
       is_premium: boolean | null;
+      premium_expires_at: string | null;
       pace_preference: string | null;
       morning_preference: string | null;
       traveler_type: string | null;
@@ -258,7 +278,7 @@ export async function fetchPlannerProfile(userId: string): Promise<PlannerProfil
   }
 
   return {
-    access: data.is_premium === true ? 'premium' : 'free',
+    access: isPremiumNow(data) ? 'premium' : 'free',
     pace: PACE_VALUES.includes(data.pace_preference ?? '')
       ? (data.pace_preference as PacePreference)
       : null,
