@@ -562,7 +562,7 @@ export const stringsEn = {
   ui_meta_delete_title: 'Delete your account — CyprusWay',
   ui_meta_delete_desc: 'Delete your CyprusWay account and everything saved in it.',
   ui_delete_title: 'Delete your account',
-  ui_delete_intro: 'Deleting your account removes your sign-in, your trips, saved places and travel preferences, your Ask Pete conversations and your customer record at RevenueCat, our purchase processor. It is immediate and cannot be undone. A Premium purchase made in the App Store or on Google Play stays with your Apple ID or Google account and can be restored on a new account.',
+  ui_delete_intro: 'Deleting your account removes your sign-in, your trips, saved places and travel preferences, your Ask Pete conversations and your customer record at RevenueCat, our purchase processor. It is immediate and cannot be undone. A Premium purchase made in the App Store or on Google Play stays with your Apple ID or Google account and can be restored on a new account. Deleting your account does not cancel a Premium subscription: cancel it first in your Apple ID or Google Play subscriptions, or it keeps renewing.',
   ui_delete_signin_title: 'Sign in to delete your account',
   ui_delete_signin_body: 'Sign in with the Apple or Google account you use in CyprusWay. If you can no longer sign in, email partners@cyprusway.eu from that account\'s email address and we will delete it for you.',
   ui_delete_signin_cta: 'Sign in',

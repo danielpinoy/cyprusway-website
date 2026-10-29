@@ -387,7 +387,7 @@ export const stringsSv: Partial<Record<UiKey, string>> = {
   ui_meta_delete_title: 'Radera ditt konto — CyprusWay',
   ui_meta_delete_desc: 'Radera ditt CyprusWay-konto och allt som är sparat i det.',
   ui_delete_title: 'Radera ditt konto',
-  ui_delete_intro: 'När du raderar ditt konto försvinner din inloggning, dina resor, sparade platser och resepreferenser, dina Ask Pete-samtal och din kundpost hos RevenueCat, vår köphanterare. Det sker omedelbart och kan inte ångras. Ett Premium-köp i App Store eller på Google Play stannar hos ditt Apple-ID eller Google-konto och kan återställas på ett nytt konto.',
+  ui_delete_intro: 'När du raderar ditt konto försvinner din inloggning, dina resor, sparade platser och resepreferenser, dina Ask Pete-samtal och din kundpost hos RevenueCat, vår köphanterare. Det sker omedelbart och kan inte ångras. Ett Premium-köp i App Store eller på Google Play stannar hos ditt Apple-ID eller Google-konto och kan återställas på ett nytt konto. Att radera ditt konto avslutar inte en Premium-prenumeration: avsluta den först bland prenumerationerna för ditt Apple-ID eller på Google Play, annars fortsätter den att förnyas.',
   ui_delete_signin_title: 'Logga in för att radera ditt konto',
   ui_delete_signin_body: 'Logga in med det Apple- eller Google-konto du använder i CyprusWay. Om du inte längre kan logga in, mejla partners@cyprusway.eu från det kontots e-postadress så raderar vi det åt dig.',
   ui_delete_signin_cta: 'Logga in',

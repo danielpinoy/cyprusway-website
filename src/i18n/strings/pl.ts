@@ -402,7 +402,7 @@ export const stringsPl: Partial<Record<UiKey, string>> = {
   ui_meta_delete_title: 'Usuń konto — CyprusWay',
   ui_meta_delete_desc: 'Usuń swoje konto CyprusWay i wszystko, co jest w nim zapisane.',
   ui_delete_title: 'Usuń swoje konto',
-  ui_delete_intro: 'Usunięcie konta usuwa Twoje logowanie, podróże, zapisane miejsca i preferencje podróży, rozmowy z Ask Pete oraz Twój rekord klienta w RevenueCat, naszym operatorze zakupów. Dzieje się to natychmiast i nie da się tego cofnąć. Zakup Premium w App Store lub Google Play pozostaje przy Twoim Apple ID lub koncie Google i można go przywrócić na nowym koncie.',
+  ui_delete_intro: 'Usunięcie konta usuwa Twoje logowanie, podróże, zapisane miejsca i preferencje podróży, rozmowy z Ask Pete oraz Twój rekord klienta w RevenueCat, naszym operatorze zakupów. Dzieje się to natychmiast i nie da się tego cofnąć. Zakup Premium w App Store lub Google Play pozostaje przy Twoim Apple ID lub koncie Google i można go przywrócić na nowym koncie. Usunięcie konta nie anuluje subskrypcji Premium: najpierw anuluj ją w subskrypcjach swojego Apple ID lub w Google Play, inaczej będzie się odnawiać.',
   ui_delete_signin_title: 'Zaloguj się, aby usunąć konto',
   ui_delete_signin_body: 'Zaloguj się kontem Apple lub Google, którego używasz w CyprusWay. Jeśli nie możesz się już zalogować, napisz na partners@cyprusway.eu z adresu e-mail tego konta, a usuniemy je za Ciebie.',
   ui_delete_signin_cta: 'Zaloguj się',
