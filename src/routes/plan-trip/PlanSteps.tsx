@@ -18,7 +18,7 @@ import {
 } from '../../contracts/interests';
 import { TRAVELER_ICONS } from '../../contracts/travelerPools';
 import type { MorningPreference, PacePreference } from '../../lib/profile';
-import { MAX_TRIP_DAYS, type BaseLocation } from '../../lib/trips';
+import { MAX_GENERATED_TRIP_DAYS, type BaseLocation } from '../../lib/trips';
 import {
   MAX_INTEREST_TAGS,
   type ChildAgeRange,
@@ -141,10 +141,9 @@ export function DatesStep({
      the server's same-day refusal compares UTC while the traveller is on local time. The
      stricter bound can never 400 and never dates a trip to the user's own today.
 
-     `max` is start + 30: 31 inclusive days is the server's ceiling, and 32 is a 400
-     (probed). MAX_TRIP_DAYS is already 31 in lib/trips from the trip-edit contract — this
-     does NOT inherit the app's MAX_DURATION_DAYS = 32, whose "17 day+" chip produces a
-     request the server refuses. */
+     `max` is start + 9: 10 inclusive days is trip-generate's ceiling since 31 Oct 2026
+     (31 before; one more is a 400), MAX_GENERATED_TRIP_DAYS in lib/trips. Manual trips
+     and edits keep MAX_TRIP_DAYS, 31, the trip-edit contract's. */
   return (
     <div className={styles.form}>
       <fieldset className={styles.group}>
@@ -186,7 +185,7 @@ export function DatesStep({
           {startEarly
             ? t('ui_plan_dates_early')
             : spanError
-              ? t('ui_trip_span_error', { max: MAX_TRIP_DAYS })
+              ? t('ui_trip_span_error', { max: MAX_GENERATED_TRIP_DAYS })
               : span === 1
                 ? t('ui_plan_dates_echo_one', { from: formatDateLong(draft.startIso, lang) })
                 : span > 0

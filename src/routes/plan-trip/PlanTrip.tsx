@@ -16,7 +16,7 @@ import {
   type PacePreference,
   type PlannerProfile,
 } from '../../lib/profile';
-import { isBaseLocation, MAX_TRIP_DAYS, type BaseLocation } from '../../lib/trips';
+import { isBaseLocation, MAX_GENERATED_TRIP_DAYS, type BaseLocation } from '../../lib/trips';
 import { addDays, daysBetween, minTripStart, parseIso, toIso } from '../../lib/tripDates';
 import { regionOptions } from '../../lib/explore';
 import { explorePool } from '../../lib/rails';
@@ -148,7 +148,7 @@ export default function PlanTrip() {
   const startYmd = parseIso(draft.startIso);
   const endYmd = parseIso(draft.endIso);
   const span = startYmd && endYmd ? daysBetween(startYmd, endYmd) + 1 : 0;
-  const spanError = span < 1 || span > MAX_TRIP_DAYS;
+  const spanError = span < 1 || span > MAX_GENERATED_TRIP_DAYS;
   /* The `min` attribute constrains the picker, not the keyboard: a typed date is set and
      `onChange` fires whatever `min` says. A past date is accepted by the server and would
      plan a trip in the past; today's date is a 400 the wizard would then log as its own
@@ -362,7 +362,7 @@ export default function PlanTrip() {
             {t(heading.title)}
           </h2>
           <p className={styles.stepSub}>
-            {step === 2 ? t(heading.sub, { max: MAX_TRIP_DAYS }) : t(heading.sub)}
+            {step === 2 ? t(heading.sub, { max: MAX_GENERATED_TRIP_DAYS }) : t(heading.sub)}
           </p>
         </div>
         <StepIndicator current={step} />
@@ -381,7 +381,7 @@ export default function PlanTrip() {
         <DatesStep
           draft={draft}
           minStart={minStart}
-          maxEnd={startYmd ? toIso(addDays(startYmd, MAX_TRIP_DAYS - 1)) : undefined}
+          maxEnd={startYmd ? toIso(addDays(startYmd, MAX_GENERATED_TRIP_DAYS - 1)) : undefined}
           span={span}
           spanError={draft.endIso != null && spanError}
           startEarly={startEarly}

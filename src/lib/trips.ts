@@ -161,6 +161,12 @@ export function isBaseLocation(value: string | null | undefined): value is BaseL
 /** Trip-length bound, from the trip-edit contract. Not scheduling knowledge — a request
  *  shape bound, which is the only kind of constant this client is allowed to carry. */
 export const MAX_TRIP_DAYS = 31;
+
+/** The AI planner's bound: trip-generate refuses more than 10 days since 31 Oct 2026
+ *  (MAX_TRIP_DAYS there; 31 before, the same as edits). A request shape bound like the
+ *  one above: the server measured where long trips stop working, this only mirrors it.
+ *  Manual trips and edits keep MAX_TRIP_DAYS. */
+export const MAX_GENERATED_TRIP_DAYS = 10;
 export const MAX_STOPS_PER_DAY = 20;
 export const MAX_TRIP_NAME = 120;
 

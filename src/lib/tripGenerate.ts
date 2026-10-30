@@ -58,12 +58,16 @@ const TRIP_GENERATE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tri
  *
  * Two consequences worth keeping straight. **Crossing `GENERATE_SLOW_AFTER_MS` is not a
  * near-miss**: at 45 s the copy escalates, and the worst sample ever recorded is 57.4 s,
- * which is 48% of the bound below. And **nothing longer than 14 days has ever been
- * generated**, while the server accepts 31 — see `docs/PARKED.md`. No length is known to
- * exceed the bound; no length above 14 is known at all.
+ * which is 48% of the bound below. **Since 31 Oct 2026 the server generates at most 10
+ * days** (trip-generate `MAX_TRIP_DAYS`, MAX_GENERATED_TRIP_DAYS in lib/trips): 42 dry
+ * runs that day shipped 16 of 16 trips up to 10 days, 11 of 13 at 12, 6 of 8 at 14 and
+ * 2 of 5 at 21 and 31.
+ * Since then each model call has 45 s, the server answers by its own 110 s deadline, and
+ * any run that ends without a trip gives its generation back, so the counter re-read
+ * below shows it unmoved.
  *
- * **Neither OpenAI call carries a timeout or an
- * abort signal** (`llm.ts:109`, `index.ts:2348`), so the only real ceilings are OpenAI's
+ * Before 31 Oct 2026: **neither OpenAI call carried a timeout or an
+ * abort signal** (`llm.ts:109`, `index.ts:2348`), so the only real ceilings were OpenAI's
  * own and the platform's per-request wall clock — 150 s on the Supabase Free plan
  * according to prior reports; the project's plan is not exposed by the Management API, so
  * that figure is unverified for this project.
