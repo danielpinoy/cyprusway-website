@@ -32,6 +32,17 @@ export const INTEREST_SLUGS = [
 
 export type InterestSlug = (typeof INTEREST_SLUGS)[number];
 
+/**
+ * The AI planner's chips: every interest but nightlife (the owner, 31 Oct 2026).
+ * trip-generate cannot place nightlife (no bar or nightlife venue is plannable) and
+ * ends every day by 18:00, so the chip promised what no plan contained. The profile
+ * keeps all eleven (`users.interests`), and the server still accepts the tag from
+ * older clients.
+ */
+export const PLANNER_INTEREST_SLUGS: readonly InterestSlug[] = INTEREST_SLUGS.filter(
+  (slug) => slug !== 'nightlife',
+);
+
 export function interestLabelKey(slug: InterestSlug): TranslationKey {
   return `onb_i_${slug}` as TranslationKey;
 }

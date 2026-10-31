@@ -11,7 +11,7 @@ import {
 
 import { useI18n } from '../../i18n/I18nProvider';
 import {
-  INTEREST_SLUGS,
+  PLANNER_INTEREST_SLUGS,
   interestImage,
   interestLabelKey,
   type InterestSlug,
@@ -232,7 +232,8 @@ export function PlacesStep({
         value={draft.baseLocation}
         onChange={(slug) => onRegion(slug as BaseLocation)}
       />
-      {/* Eleven chips, 1 to 5 chosen. `petes_picks` is a valid request tag and is
+      {/* Ten chips, 1 to 5 chosen: every interest but nightlife since 31 Oct 2026
+          (PLANNER_INTEREST_SLUGS — the plan cannot place nightlife). `petes_picks` is a valid request tag and is
           deliberately absent: no frame draws a chip for it, and it cannot be written to
           `users.interests` (23514), so this would be the only place in either client that
           knew about it. Not prefilled from the stored profile either — that column holds
@@ -248,7 +249,7 @@ export function PlacesStep({
                 max: MAX_INTEREST_TAGS,
               })
         }
-        options={INTEREST_SLUGS.map((slug) => ({
+        options={PLANNER_INTEREST_SLUGS.map((slug) => ({
           value: slug,
           label: t(interestLabelKey(slug)),
           image: interestImage(slug),
