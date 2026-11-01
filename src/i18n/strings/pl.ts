@@ -132,9 +132,9 @@ export const stringsPl: Partial<Record<UiKey, string>> = {
   ui_pete_subtitle: 'Twój asystent podróży po Cyprze',
   ui_pete_greeting:
     'Cześć! 👋 Jestem Pete — Twój lokalny przewodnik po Cyprze. W czym mogę pomóc?',
-  ui_pete_starter_1: 'Najlepsza plaża w pobliżu',
-  ui_pete_starter_2: 'Co robić dziś wieczorem?',
-  ui_pete_starter_3: 'Coś o historii lub kulturze Cypru?',
+  ui_pete_starter_1: 'Ulubione cypryjskie potrawy',
+  ui_pete_starter_2: 'Historia Cypru',
+  ui_pete_starter_3: 'Najlepsze plaże',
   ui_pete_counter: '{used} z {cap} dzisiaj',
   ui_pete_counter_label: 'Wykorzystane dzisiaj pytania: {used} z {cap}',
   ui_pete_counter_unknown: 'Do {cap} dziennie',

@@ -130,9 +130,9 @@ export const stringsEl: Partial<Record<UiKey, string>> = {
   ui_pete_subtitle: 'Ο ταξιδιωτικός σας βοηθός για την Κύπρο',
   ui_pete_greeting:
     'Γεια σας! 👋 Είμαι ο Pete — ο τοπικός σας οδηγός για την Κύπρο. Πώς μπορώ να βοηθήσω;',
-  ui_pete_starter_1: 'Καλύτερη παραλία κοντά μου',
-  ui_pete_starter_2: 'Τι να κάνω απόψε;',
-  ui_pete_starter_3: 'Λίγα λόγια για την ιστορία ή τον πολιτισμό της Κύπρου;',
+  ui_pete_starter_1: 'Αγαπημένα κυπριακά φαγητά',
+  ui_pete_starter_2: 'Η ιστορία της Κύπρου',
+  ui_pete_starter_3: 'Οι καλύτερες παραλίες',
   ui_pete_counter: '{used} από {cap} σήμερα',
   ui_pete_counter_label: 'Χρησιμοποιήσατε {used} από {cap} ερωτήσεις σήμερα',
   ui_pete_counter_unknown: 'Έως {cap} την ημέρα',

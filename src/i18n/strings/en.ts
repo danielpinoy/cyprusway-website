@@ -211,9 +211,10 @@ export const stringsEn = {
   /* Client-side copy. Never sent to the model, never persisted, and rendered only when
      the server confirmed an empty history — above a loaded thread it would be a lie. */
   ui_pete_greeting: 'Hi! 👋 I am Pete — your local guide to Cyprus. What can I help with?',
-  ui_pete_starter_1: 'Best beach near me',
-  ui_pete_starter_2: 'What should I do tonight?',
-  ui_pete_starter_3: 'Know about Cyprus history or culture?',
+  /* The app's three, word for word (the owner, 1 Nov 2026). Sent to Pete as typed. */
+  ui_pete_starter_1: 'Favorite Cypriot dishes',
+  ui_pete_starter_2: 'The history of Cyprus',
+  ui_pete_starter_3: 'Best beaches',
   /* {used} counts questions ASKED, not left: the frame's limit state reads "5 of 5". */
   ui_pete_counter: '{used} of {cap} today',
   ui_pete_counter_label: '{used} of {cap} questions used today',
