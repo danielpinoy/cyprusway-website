@@ -37,6 +37,20 @@
  * - section 2: the "Tour playback reports" paragraph, after Location;
  * - section 5: the use; section 6: 90 days for reports, 30 for the test team's logs;
  * - section 9: Supabase holds the reports; still no analytics or crash-reporting provider.
+ *
+ * Edited by hand, 2 Nov 2026, branch car-rental-privacy, redone on main (the 3/18 Oct branch
+ * is kept, unpublished, as car-rental-privacy-old-2026-10-18). Car Rental and Ask Pete's Clear
+ * chat, each checked against the live system that day:
+ * - section 4: the car rental paragraph. True while car_rental_config has provider discovercars
+ *   and link_template discovercars.com{path}?a_aid={aid}&chan=app&data1={handoff_id}, and the
+ *   app opens it with expo-web-browser (cyprusway-app components/bookWithPete/HandoffSheet);
+ * - section 6: Clear chat (clear_ai_conversation, directus 0051, in the app and on this site)
+ *   and car rental's 13 months / two days (car_rental_prune, directus 0066, run every day by
+ *   .github/workflows/car-rental-prune.yml); car_rental_events has no user column;
+ * - section 9: Ask Pete also sends the last turns of the chat (mike, MIKE_HISTORY_TURNS = 6;
+ *   still no user field in the OpenAI request), and DiscoverCars with its controller as its own
+ *   privacy policy gives it on 2 Nov 2026 (AS Discover Car Hire, Riga, reg. 40103690968).
+ *   DiscoverCars is an independent controller, not our processor.
  */
 import styles from './prose.module.css';
 
@@ -44,7 +58,7 @@ export function PrivacyContent() {
   return (
     <div className={styles.prose}>
       <h1>Privacy Policy</h1>
-      <p>Last updated: October 2026</p>
+      <p>Last updated: November 2026</p>
       <h2>1. Who we are</h2>
       <p>CyprusWay is a mobile travel app and website operated by <strong>Almisource LTD</strong>. This privacy policy explains how we collect, use, and protect your information when you visit this website or use the CyprusWay mobile application.</p>
       <h2>2. What information we collect</h2>
@@ -60,6 +74,7 @@ export function PrivacyContent() {
       <p>Our <strong>mobile application</strong> uses <strong>affiliate links and affiliate tracking cookies</strong>. When you click through to a third-party booking provider (such as a hotel, car rental, or activity provider) from the CyprusWay app, a tracking cookie may be placed on your device by that provider. This cookie enables the provider to record that CyprusWay referred you. If you complete a booking, CyprusWay may earn a commission at no extra cost to you. These cookies are set and managed by the third-party provider, not by us, and are subject to that provider's own privacy policy.</p>
       <h2>4. Affiliate links and commissions</h2>
       <p>CyprusWay may earn a commission when you make a booking through links to third-party travel providers featured in our app. These commissions do not affect the price you pay. The providers are responsible for handling your booking, payment, and any related customer service. CyprusWay does not process payments or hold your payment information.</p>
+      <p><strong>Car rental:</strong> When you choose a pickup place for car rental in Book with Pete, the CyprusWay app opens DiscoverCars' page for that place in a browser window, with our partner code. DiscoverCars and the rental company show the cars and prices, take the booking and payment, and set their own cookies under their own privacy policies. CyprusWay may earn a commission if you book, at no extra cost to you. We send DiscoverCars nothing about you: the link carries only the pickup place, our partner code and a random reference for that one tap, which lets DiscoverCars tell us that a booking came through CyprusWay. The rental contract, deposit and insurance are between you, DiscoverCars and the rental company.</p>
       <h2>5. How we use your information</h2>
       <p>We use the information we collect to:</p>
       <ul>
@@ -72,6 +87,8 @@ export function PrivacyContent() {
       <h2>6. Data retention</h2>
       <p>We retain your information only for as long as necessary to fulfil the purposes described in this policy. Email correspondence is kept for a reasonable period to maintain a record of communication.</p>
       <p>If you sign in to the CyprusWay app or this website with Apple or Google, your account, your trips, saved places and travel preferences are kept for as long as your account exists. Your Ask Pete messages are deleted 90 days after they are written, by a job that runs every day. If you use the app as a guest, without signing in, your guest session and everything saved in it are deleted after 12 months without use, never while a trip you planned still lies ahead. Purchase notifications sent to us by our purchase processor (section 9) are deleted 12 months after they arrive. Tour playback reports (section 2) are deleted after 90 days, and our test team's tour logs after 30 days, by the same daily job. Everything else about your account is deleted when you delete it (section 8).</p>
+      <p>You can also delete your Ask Pete conversation yourself at any time: <strong>Clear chat</strong>, in the app or on this website, deletes it from our systems straight away.</p>
+      <p>For car rental, we keep anonymous usage records — which pickup place was chosen, whether the partner's page opened, the app's language, the random reference of that tap, and whether you used the app as a guest or with an account, never who you are — for up to 13 months. To prevent abuse, we also count how many car rental requests each account or guest session makes in a day; that count is linked to the app's internal ID for your session and is deleted after two days.</p>
       <h2>7. Your rights</h2>
       <p>Depending on where you are located, you may have rights regarding your personal information, including the right to access, correct, or delete your data. Cyprus is in the European Union, and CyprusWay complies with the General Data Protection Regulation (GDPR). You can delete your account yourself at any time (section 8). To exercise any other right, contact us at <a href="mailto:partners@cyprusway.eu">partners@cyprusway.eu</a>.</p>
       <h2>8. Deleting your account</h2>
@@ -83,7 +100,8 @@ export function PrivacyContent() {
       <p>This website may contain links to third-party websites and services, including booking providers. We are not responsible for the privacy practices of those third parties. We encourage you to read the privacy policies of any website you visit through a link from our site or app.</p>
       <p><strong>Tripadvisor content:</strong> Some restaurant pages in the CyprusWay mobile application show photos, ratings and reviews from Tripadvisor, including reviewers' Tripadvisor usernames as published on Tripadvisor. We do not store this content; it is loaded from Tripadvisor when you view the page. Photos are loaded directly from Tripadvisor's servers, which receive your device's IP address when they are loaded, as any website does. Links in this content open Tripadvisor's website. Tripadvisor's own privacy policy applies to its content.</p>
       <p><strong>Purchases:</strong> A purchase of CyprusWay Premium in the app is processed by Apple (App Store) or Google (Google Play) and recorded by RevenueCat, which receives your account's identifier in the app, not your name or email address, and the store's purchase receipt. Nothing is sold on this website at present; if that changes, the payment processor and what it receives will be named here first. Each of these companies handles that data under its own privacy policy.</p>
-      <p><strong>Ask Pete:</strong> The questions you type to Ask Pete, together with the place you are asking about, are sent to OpenAI, Inc. in the United States to generate the answer. They are sent without your name, email address or account identifier. That transfer outside the EU is covered by OpenAI's data processing terms, which include the EU's standard contractual clauses; OpenAI's own privacy policy applies to the processing.</p>
+      <p><strong>Ask Pete:</strong> The questions you type to Ask Pete, together with the place you are asking about and the last few messages of that chat (yours and Pete's), are sent to OpenAI, Inc. in the United States to generate the answer. They are sent without your name, email address or account identifier. That transfer outside the EU is covered by OpenAI's data processing terms, which include the EU's standard contractual clauses; OpenAI's own privacy policy applies to the processing. Clearing the chat deletes our copy; what OpenAI has already received stays under OpenAI's terms.</p>
+      <p><strong>DiscoverCars:</strong> Car rental in the CyprusWay mobile application opens the website of DiscoverCars, operated by AS Discover Car Hire (Riga, Latvia), in a browser window. Whatever you enter there, and the cookies it sets, are handled by DiscoverCars and the rental company you book with under their own privacy policies: <a href="https://www.discovercars.com/privacy">discovercars.com/privacy</a>.</p>
       <p><strong>The companies that run our service for us</strong>, and what each one holds: <strong>Supabase</strong> (Frankfurt, EU) stores accounts, sign-in sessions, trips, saved places, travel preferences, Ask Pete history and the tour playback reports. <strong>Railway</strong> (Amsterdam, EU) hosts the system that holds our place descriptions and photos; it sees your device's IP address when a photo loads. <strong>Cloudflare</strong> hosts this website and, like any host, sees the IP address of every visit. <strong>Bunny</strong> streams the 360° tour videos and sees the IP address of the device that plays them. <strong>Google</strong> and <strong>Apple</strong> provide the sign-in and learn that you signed in to CyprusWay. <strong>RevenueCat</strong> and <strong>OpenAI</strong> are described above. We have no analytics or crash-reporting provider: the tour playback reports in section 2 are our own and stay with Supabase.</p>
       <h2>10. Changes to this policy</h2>
       <p>We may update this privacy policy from time to time. When we do, we will revise the "Last updated" date at the top of this page. We encourage you to review this policy periodically.</p>

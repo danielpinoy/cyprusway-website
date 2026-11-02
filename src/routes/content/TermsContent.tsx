@@ -7,6 +7,10 @@
  * described a service that is not provided. This is legal copy and the change is a
  * deletion, not a rewrite — nothing else in the paragraph is touched.
  *
+ * Edited by hand, 2 Nov 2026, branch car-rental-privacy (redone on main): the Car rental
+ * paragraph in §3, after the list of what CyprusWay does not do. The partner is DiscoverCars,
+ * linked directly (car_rental_config provider discovercars).
+ *
  * English only, as it was there: this page carried no data-i18n attributes. Presentation
  * classes were dropped; the prose stylesheet styles by element.
  */
@@ -16,7 +20,7 @@ export function TermsContent() {
   return (
     <div className={styles.prose}>
       <h1>Terms of Service</h1>
-      <p>Last updated: October 2026</p>
+      <p>Last updated: November 2026</p>
       <h2>1. Acceptance of terms</h2>
       <p>By accessing this website or using the CyprusWay mobile application, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you should not use the website or the application.</p>
       <p>These terms apply to the CyprusWay website and the CyprusWay mobile application, both operated by <strong>Almisource LTD</strong> ("CyprusWay," "we," "us," or "our").</p>
@@ -32,6 +36,7 @@ export function TermsContent() {
       <li>Handle cancellations, refunds, or disputes</li>
       <li>Provide customer service for bookings</li>
       </ul>
+      <p><strong>Car rental</strong> is booked with DiscoverCars and the rental company, not with CyprusWay. Prices, availability, deposits, insurance and driver requirements (such as age and licence) are theirs and can change until you book. CyprusWay is not the rental provider.</p>
       <p>All booking-related issues — including cancellations, refunds, changes, complaints, and disputes — must be resolved directly with the third-party provider. CyprusWay's role is limited to connecting you to those providers. CyprusWay may earn a commission from bookings made through these connections, as disclosed in our Privacy Policy.</p>
       <h2>4. Acceptable use</h2>
       <p>You agree to use this website and the CyprusWay app lawfully and responsibly. You must not:</p>
