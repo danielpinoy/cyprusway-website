@@ -60,6 +60,11 @@
  *   still no user field in the OpenAI request), and DiscoverCars with its controller as its own
  *   privacy policy gives it on 2 Nov 2026 (AS Discover Car Hire, Riga, reg. 40103690968).
  *   DiscoverCars is an independent controller, not our processor.
+ *
+ * Edited by hand, 3 Nov 2026, branch premium-release (the owner's request): a new section 10,
+ * "Children" (not directed at children under 14, nothing knowingly collected from them, a
+ * parent or guardian can have a child's account deleted); Changes and Contact renumbered 11
+ * and 12. No other page names those two numbers.
  */
 import styles from './prose.module.css';
 
@@ -113,9 +118,11 @@ export function PrivacyContent() {
       <p><strong>Ask Pete:</strong> The questions you type to Ask Pete, together with the place you are asking about and the last few messages of that chat (yours and Pete's), are sent to OpenAI, Inc. in the United States to generate the answer. They are sent without your name, email address or account identifier. That transfer outside the EU is covered by OpenAI's data processing terms, which include the EU's standard contractual clauses; OpenAI's own privacy policy applies to the processing. Clearing the chat deletes our copy; what OpenAI has already received stays under OpenAI's terms.</p>
       <p><strong>DiscoverCars:</strong> Car rental in the CyprusWay mobile application opens the website of DiscoverCars, operated by AS Discover Car Hire (Riga, Latvia), in a browser window. Whatever you enter there, and the cookies it sets, are handled by DiscoverCars and the rental company you book with under their own privacy policies: <a href="https://www.discovercars.com/privacy">discovercars.com/privacy</a>.</p>
       <p><strong>The companies that run our service for us</strong>, and what each one holds: <strong>Supabase</strong> (Frankfurt, EU) stores accounts, sign-in sessions, trips, saved places, travel preferences, Ask Pete history and the tour playback reports. <strong>Railway</strong> (Amsterdam, EU) hosts the system that holds our place descriptions and photos; it sees your device's IP address when a photo loads. <strong>Cloudflare</strong> hosts this website and, like any host, sees the IP address of every visit. <strong>Bunny</strong> streams the 360° tour videos and sees the IP address of the device that plays them. <strong>Google</strong> and <strong>Apple</strong> provide the sign-in and learn that you signed in to CyprusWay. <strong>RevenueCat</strong> and <strong>OpenAI</strong> are described above. We have no analytics or crash-reporting provider: the tour playback reports in section 2 are our own and stay with Supabase.</p>
-      <h2>10. Changes to this policy</h2>
+      <h2>10. Children</h2>
+      <p>CyprusWay is not directed at children under 14, and we do not knowingly collect personal information from them. If you are a parent or guardian and believe a child under 14 has created a CyprusWay account, write to us at <a href="mailto:partners@cyprusway.eu">partners@cyprusway.eu</a> and we will delete the account and everything saved in it.</p>
+      <h2>11. Changes to this policy</h2>
       <p>We may update this privacy policy from time to time. When we do, we will revise the "Last updated" date at the top of this page. We encourage you to review this policy periodically.</p>
-      <h2>11. Contact</h2>
+      <h2>12. Contact</h2>
       <p>If you have questions about this privacy policy or how your data is handled, contact us at:</p>
       <p><strong>Email:</strong> <a href="mailto:partners@cyprusway.eu">partners@cyprusway.eu</a><br />
       <strong>Company:</strong> Almisource LTD</p>
